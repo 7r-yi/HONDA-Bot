@@ -8,4 +8,4 @@
 .idea/vcs.xml
 __pycache__/
 secret.py
-quiz.json
+!/quiz.json
