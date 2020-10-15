@@ -102,20 +102,27 @@ async def on_message(ctx):
 
         for i in range(1, 11):
             await ctx.channel.send(f"Next →　問題{i}/10")
-            j, winner = 1, []
-            while j <= 3:
+            j, flag, winner = 1, False, []
+            while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
                 if reply.content == quiz[f"Q{i}"] and reply.author.id not in winner:
                     winner.append(reply.author.id)
-                    j += 1
-            await ctx.channel.send(f"正解者が出揃ったので問題{i}を終了します\n(正解 : {quiz[f'Q{i}']})")
-            for k in range(3):
-                if winner[k] not in constant.result:
-                    constant.result[winner[k]] = constant.point[k]
-                else:
-                    new_pts = constant.result[winner[k]] + constant.point[k]
-                    constant.result[winner[k]] = new_pts
-            await asyncio.sleep(3)
+                    j, flag = j + 1, True
+                elif reply.content.lower() == "skip" and 'Administrator' in [k.name for k in reply.author.roles]:
+                    await ctx.channel.send(f"問題{i}はスキップされました (正解 : {quiz[f'Q{i}']})")
+                    j = -1
+                elif reply.content.lower() == "cancel" and 'Administrator' in [k.name for k in reply.author.roles]:
+                    await ctx.channel.send(f"クイズを中断しました")
+                    return
+            if flag:
+                await ctx.channel.send(f"正解者が出揃ったので問題{i}を終了します (正解 : {quiz[f'Q{i}']})")
+                for k in range(3):
+                    if winner[k] not in constant.result:
+                        constant.result[winner[k]] = constant.point[k]
+                    else:
+                        new_pts = constant.result[winner[k]] + constant.point[k]
+                        constant.result[winner[k]] = new_pts
+            await asyncio.sleep(5)
 
         all_user, all_result = list(constant.result.keys()), sorted(list(constant.result.values()), reverse=True)
         ranker = []
