@@ -19,7 +19,8 @@ async def on_message(ctx):
         return not ctx_wait.author.bot
 
     if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
-        img, hand, msg = zyanken.honda_to_zyanken(ctx.content)
+        img, hand, msg, emoji = zyanken.honda_to_zyanken(ctx.content)
+        await ctx.add_reaction(emoji)
         await ctx.channel.send(hand)
         await ctx.channel.send(file=discord.File(img))
         await ctx.channel.send(msg)

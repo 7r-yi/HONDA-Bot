@@ -38,18 +38,24 @@ def honda_to_zyanken(my_hand):
     if my_hand == "グー":
         if 774 <= per_win <= 780:
             honda_hand = "チョキ"
+            emoji = "✌"
         else:
             honda_hand = "パー"
+            emoji = "✋"
     elif my_hand == "チョキ":
         if 774 <= per_win <= 780:
             honda_hand = "パー"
+            emoji = "✋"
         else:
             honda_hand = "グー"
+            emoji = "✊"
     elif my_hand == "パー":
         if 774 <= per_win <= 780:
             honda_hand = "グー"
+            emoji = "✊"
         else:
             honda_hand = "チョキ"
+            emoji = "✌"
 
     if 774 <= per_win <= 780:
         img_pass = './image/YOU WIN.jpg'
@@ -58,4 +64,4 @@ def honda_to_zyanken(my_hand):
         img_pass = './image/YOU LOSE.jpg'
         msg = honda_word(False)
 
-    return img_pass, honda_hand, msg
+    return img_pass, honda_hand, msg, emoji
