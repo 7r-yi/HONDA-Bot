@@ -35,7 +35,7 @@ async def on_message(ctx):
         if ctx.content == password:
             role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
             await ctx.author.add_roles(role)
-            msg = await ctx.channel.send(f'{ctx.author.mention} 入室しました')
+            await ctx.channel.send(f'{ctx.author.mention} 入室しました')
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} 入室コマンドが違います')
             await asyncio.sleep(5)
