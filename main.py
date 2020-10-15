@@ -59,10 +59,8 @@ async def on_message(ctx):
         await asyncio.sleep(20)
         await msg.delete()
 
-    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"]:  # 参加希望者の抽選を行う
-        if 'Administrator' not in [i.name for i in ctx.author.roles]:
-            return
-
+    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and \
+            'Administrator' not in [i.name for i in ctx.author.roles]:  # 参加希望者の抽選を行う
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
             num_list = list(range(len(constant.joiner)))
@@ -81,21 +79,15 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.lower() in ["_r", "_reset"]:  # ロールParticipantをリセットする
-        if 'Administrator' not in [i.name for i in ctx.author.roles]:
-            return
-
+    if ctx.content.lower() in ["_r", "_reset"] and 'Administrator' not in [i.name for i in ctx.author.roles]:
         role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
         for member in role.members:
             if member.id != constant.Shichi:
-                await member.remove_roles(role)
+                await member.remove_roles(role)  # ロールParticipantをリセットする
         constant.joiner = []
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
-    if ctx.content.lower() in ["_qs", "_quizstart"]:
-        if 'Administrator' not in [i.name for i in ctx.author.roles]:
-            return
-
+    if ctx.content.lower() in ["_qs", "_quizstart"] and 'Administrator' not in [i.name for i in ctx.author.roles]:
         with open('quiz.json', encoding="utf-8") as file:
             quiz = json.load(file)
         await ctx.channel.send("クイズを開始します")
