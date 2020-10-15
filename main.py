@@ -5,12 +5,9 @@ import asyncio
 import json
 import random
 import os
-from dotenv import load_dotenv
 import keep_alive
 import constant
 import zyanken
-
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client = discord.Client()
 
 
@@ -147,4 +144,4 @@ async def on_message(ctx):
 
 
 keep_alive.keep_alive()
-client.run(os.environ.get('TOKEN'))
+client.run(os.getenv('TOKEN'))
