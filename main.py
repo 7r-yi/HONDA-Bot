@@ -30,16 +30,18 @@ async def on_message(ctx):
         await msg2.delete()
         await msg3.delete()
 
-    if ctx.channel.id == constant.Gate and ctx.author.id != constant.System and not ctx.author.bot:  # Gateでの入力チェック
+    if ctx.channel.id == constant.Gate and not ctx.author.bot:  # Gateでの入力チェック
         password = f"_join {datetime.now().strftime('%Y/%m/%d')}"
-        await ctx.delete()
         if ctx.content == password:
             role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
             await ctx.author.add_roles(role)
-            await ctx.channel.send(f'{ctx.author.mention} 入室しました')
+            msg = await ctx.channel.send(f'{ctx.author.mention} 入室しました')
+            await asyncio.sleep(5)
+            await msg.delete()
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} 入室コマンドが違います')
             await asyncio.sleep(5)
+            await ctx.delete()
             await msg.delete()
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
