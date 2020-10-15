@@ -6,6 +6,7 @@ import random
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
+import keep_alive
 import constant
 
 dotenv_path = join(dirname(__file__), '.env')
@@ -137,4 +138,5 @@ async def on_message(ctx):
         constant.result = {}
 
 
+keep_alive.keep_alive()
 client.run(TOKEN)
