@@ -4,14 +4,11 @@ import asyncio
 import json
 import random
 import os
-from os.path import join, dirname
 from dotenv import load_dotenv
 import keep_alive
 import constant
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-TOKEN = os.environ.get('TOKEN')
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client = discord.Client()
 
 
@@ -139,4 +136,4 @@ async def on_message(ctx):
 
 
 keep_alive.keep_alive()
-client.run(TOKEN)
+client.run(os.environ.get('TOKEN'))
