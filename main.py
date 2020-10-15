@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 import keep_alive
 import constant
+import zyanken
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client = discord.Client()
@@ -16,6 +17,11 @@ client = discord.Client()
 async def on_message(ctx):
     def bot_check(ctx_wait):
         return not ctx_wait.author.bot
+
+    if ctx.content in ["グー", "チョキ", "パー"]:
+        img, str = zyanken.honda_to_zyanken(ctx.content)
+        await ctx.channel.send(file=discord.File(img))
+        await ctx.channel.send(str)
 
     if ctx.channel.id == constant.Gate and ctx.author.id != constant.System and not ctx.author.bot:  # Gateでの入力チェック
         password = f"_join {datetime.now().strftime('%Y/%m/%d')}"
