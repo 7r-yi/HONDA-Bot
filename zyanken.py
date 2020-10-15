@@ -32,36 +32,40 @@ def honda_word(win):
 
 
 def honda_to_zyanken(my_hand):
-    honda_hand = ""
     per_win = random.randint(1, 1000)
 
     if my_hand == "グー":
         if 774 <= per_win <= 780:
             honda_hand = "チョキ"
-            emoji = "✌"
+            emoji1 = "✌"
         else:
             honda_hand = "パー"
-            emoji = "✋"
+            emoji1 = "✋"
     elif my_hand == "チョキ":
         if 774 <= per_win <= 780:
             honda_hand = "パー"
-            emoji = "✋"
+            emoji1 = "✋"
         else:
             honda_hand = "グー"
-            emoji = "✊"
+            emoji1 = "✊"
     elif my_hand == "パー":
         if 774 <= per_win <= 780:
             honda_hand = "グー"
-            emoji = "✊"
+            emoji1 = "✊"
         else:
             honda_hand = "チョキ"
-            emoji = "✌"
+            emoji1 = "✌"
+    else:
+        honda_hand = ""
+        emoji1 = ""
 
     if 774 <= per_win <= 780:
         img_pass = './image/YOU WIN.jpg'
         msg = honda_word(True)
+        emoji2 = "👏"
     else:
         img_pass = './image/YOU LOSE.jpg'
         msg = honda_word(False)
+        emoji2 = "👎"
 
-    return img_pass, honda_hand, msg, emoji
+    return img_pass, honda_hand, msg, emoji1, emoji2
