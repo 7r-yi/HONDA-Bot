@@ -101,7 +101,7 @@ async def on_message(ctx):
         await ctx.channel.send("クイズを開始します")
 
         for i in range(1, 11):
-            await ctx.channel.send(f"Next →　問題{i}/10")
+            await ctx.channel.send(f"Next → 問題{i}/10")
             j, flag, winner = 1, False, []
             while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
