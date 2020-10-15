@@ -3,9 +3,10 @@ from datetime import datetime
 import asyncio
 import json
 import random
+import secret
 import constant
 
-TOKEN = 'MzU5MzMwNjY4MTEyNjQyMDU5.Wb_Kww.hUX-kRHtUcgAbbclBPApXqD29jU'
+TOKEN = secret.TOKEN
 client = discord.Client()
 
 
