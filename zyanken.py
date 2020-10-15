@@ -32,7 +32,7 @@ def honda_word(win):
 
 
 def honda_to_zyanken(my_hand):
-    per_win = random.randint(1, 1000)
+    per_win = random.randint(1, 1000)  # 勝率0.7%
 
     if my_hand == "グー":
         if 774 <= per_win <= 780:

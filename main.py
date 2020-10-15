@@ -22,9 +22,13 @@ async def on_message(ctx):
         img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
         await ctx.add_reaction(emoji1)
         await ctx.add_reaction(emoji2)
-        await ctx.channel.send(hand)
-        await ctx.channel.send(file=discord.File(img))
-        await ctx.channel.send(msg)
+        msg1 = await ctx.channel.send(hand)
+        msg2 = await ctx.channel.send(file=discord.File(img))
+        msg3 = await ctx.channel.send(msg)
+        await asyncio.sleep(15)
+        await msg1.delete()
+        await msg2.delete()
+        await msg3.delete()
 
     if ctx.channel.id == constant.Gate and ctx.author.id != constant.System and not ctx.author.bot:  # Gateでの入力チェック
         password = f"_join {datetime.now().strftime('%Y/%m/%d')}"
