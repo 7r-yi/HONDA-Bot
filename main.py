@@ -17,15 +17,6 @@ async def on_message(ctx):
     def bot_check(ctx_wait):
         return not ctx_wait.author.bot
 
-    if ctx.content.lower() in ["_rb", "_reboot"] and 'Administrator' in [i.name for i in ctx.author.roles]:
-        await ctx.channel.send("Botを再起動します")
-        await client.close()
-
-    if ctx.content.lower() in ["_sd", "_shutdown"] and 'Administrator' in [i.name for i in ctx.author.roles]:
-        print("shutdown")
-        await ctx.channel.send("Botをシャットダウンします")
-        await client.close()
-
     if ctx.channel.id == constant.Gate and ctx.author.id != constant.System and not ctx.author.bot:  # Gateでの入力チェック
         password = f"_join {datetime.now().strftime('%Y/%m/%d')}"
         await ctx.delete()
