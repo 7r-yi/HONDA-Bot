@@ -72,7 +72,7 @@ async def on_message(ctx):
         await msg.delete()
 
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and \
-            'Administrator' not in [i.name for i in ctx.author.roles]:  # 参加希望者の抽選を行う
+            'Administrator' in [i.name for i in ctx.author.roles]:  # 参加希望者の抽選を行う
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
             num_list = list(range(len(constant.joiner)))
