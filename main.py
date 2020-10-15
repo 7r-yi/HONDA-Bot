@@ -3,9 +3,14 @@ from datetime import datetime
 import asyncio
 import json
 import random
-import secret
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 import constant
 
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+TOKEN = os.environ.get('TOKEN')
 client = discord.Client()
 
 
@@ -132,4 +137,4 @@ async def on_message(ctx):
         constant.result = {}
 
 
-client.run(secret.TOKEN)
+client.run(TOKEN)
