@@ -5,7 +5,7 @@ import json
 import random
 import constant
 
-TOKEN = 'MzU5MzMwNjY4MTEyNjQyMDU5.Wb_Kww.hUX-kRHtUcgAbbclBPApXqD29jU'
+TOKEN = 'XXXX'
 client = discord.Client()
 
 
