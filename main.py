@@ -6,7 +6,6 @@ import random
 import secret
 import constant
 
-TOKEN = secret.TOKEN
 client = discord.Client()
 
 
@@ -133,4 +132,4 @@ async def on_message(ctx):
         constant.result = {}
 
 
-client.run(TOKEN)
+client.run(secret.TOKEN)
