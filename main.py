@@ -25,7 +25,7 @@ async def on_message(ctx):
         msg1 = await ctx.channel.send(hand)
         msg2 = await ctx.channel.send(file=discord.File(img))
         msg3 = await ctx.channel.send(msg)
-        await asyncio.sleep(15)
+        await asyncio.sleep(10)
         await msg1.delete()
         await msg2.delete()
         await msg3.delete()
