@@ -53,9 +53,9 @@ def honda_to_zyanken(my_hand):
 
     if 774 <= per_win <= 780:
         img_pass = './image/YOU WIN.jpg'
-        msg = f"{honda_hand}！\n\n{honda_word(True)}"
+        msg = honda_word(True)
     else:
         img_pass = './image/YOU LOSE.jpg'
-        msg = f"{honda_hand}！\n\n{honda_word(False)}"
+        msg = honda_word(False)
 
-    return img_pass, msg
+    return img_pass, honda_hand, msg

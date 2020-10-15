@@ -19,9 +19,10 @@ async def on_message(ctx):
         return not ctx_wait.author.bot
 
     if ctx.content in ["グー", "チョキ", "パー"]:
-        img, str = zyanken.honda_to_zyanken(ctx.content)
+        img, hand, msg = zyanken.honda_to_zyanken(ctx.content)
+        await ctx.channel.send(hand)
         await ctx.channel.send(file=discord.File(img))
-        await ctx.channel.send(str)
+        await ctx.channel.send(msg)
 
     if ctx.channel.id == constant.Gate and ctx.author.id != constant.System and not ctx.author.bot:  # Gateでの入力チェック
         password = f"_join {datetime.now().strftime('%Y/%m/%d')}"
