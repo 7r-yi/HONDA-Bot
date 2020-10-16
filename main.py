@@ -13,7 +13,7 @@ client = discord.Client()
 
 @client.event
 async def on_member_join(member):
-    time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+    time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     await client.get_channel(constant.Gate).send(f"{member.mention} が入室しました ({time})")
 
 
