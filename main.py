@@ -9,7 +9,9 @@ import keep_alive
 import constant
 import zyanken
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+client = discord.Client(intents=intents)
 
 
 @client.event
@@ -101,6 +103,7 @@ async def on_message(ctx):
             guild = client.get_guild(constant.Server)
             role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
             for i in pick_num:
+                print(guild.get_member(constant.Joiner[i]))
                 await guild.get_member(constant.Joiner[i]).add_roles(role)
             await ctx.channel.send(f"{str}リストのユーザーにロール {role.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
