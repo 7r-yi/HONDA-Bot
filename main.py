@@ -16,8 +16,12 @@ async def on_message(ctx):
     def bot_check(ctx_wait):
         return not ctx_wait.author.bot
 
-    def role_check(ctx_role):
+    def role_check_admin(ctx_role):
         return 'Administrator' in [roles.name for roles in ctx_role.author.roles]
+
+    def role_check_mode(ctx_role):
+        roles = [roles.name for roles in ctx_role.author.roles]
+        return any(['Administrator' in roles, 'Moderator' in roles])
 
     if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
         img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
@@ -71,7 +75,7 @@ async def on_message(ctx):
         await asyncio.sleep(20)
         await msg.delete()
 
-    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check(ctx):  # 参加希望者の抽選を行う
+    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
             num_list = list(range(len(constant.Joiner)))
@@ -90,7 +94,7 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.lower() in ["_r", "_reset"] and role_check(ctx):
+    if ctx.content.lower() in ["_r", "_reset"] and role_check_mode(ctx):
         role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
         for member in role.members:
             if member.id != constant.Shichi:
@@ -98,7 +102,7 @@ async def on_message(ctx):
         constant.Joiner = []
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
-    if ctx.content.lower() in ["_qe", "_quizentry"] and role_check(ctx):
+    if ctx.content.lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         await ctx.channel.send("クイズの問題を登録します(Backで1問前に戻る、Skipで次の問題へ、Cancelで中断)")
         i = 0
         while i < 10:
@@ -129,7 +133,7 @@ async def on_message(ctx):
                     i += 1
         await ctx.channel.send(f"全ての問題の登録が完了しました")
 
-    if ctx.content.lower() in ["_qr", "_quizreset"] and role_check(ctx):
+    if ctx.content.lower() in ["_qr", "_quizreset"] and role_check_admin(ctx):
         await ctx.channel.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
         reply = (await client.wait_for('message', check=bot_check)).content
         if reply.lower() == "yes":
@@ -140,7 +144,7 @@ async def on_message(ctx):
             await ctx.channel.send("キャンセルしました")
             return
 
-    if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
+    if ctx.content.lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         result = {}
         point = [4, 2, 1]
         mag = [1, 1, 1, 1, 2, 1, 1, 1, 1, 3]
@@ -157,10 +161,10 @@ async def on_message(ctx):
                 if reply.content == constant.Answer[f'A{i + 1}'] and reply.author.id not in winner:
                     winner.append(reply.author.id)
                     j, flag = j + 1, True
-                elif reply.content.lower() == "skip" and role_check(reply):
+                elif reply.content.lower() == "skip" and role_check_admin(reply):
                     await ctx.channel.send(f"問題{i + 1}はスキップされました (正解 : {constant.Answer[f'A{i + 1}']})")
                     j = -1
-                elif reply.content.lower() == "cancel" and role_check(reply):
+                elif reply.content.lower() == "cancel" and role_check_admin(reply):
                     await ctx.channel.send(f"クイズを中断しました")
                     return
             if flag:
