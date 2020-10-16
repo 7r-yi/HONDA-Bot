@@ -100,6 +100,8 @@ async def on_message(ctx):
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
     if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
+        result = {}
+        point = [4, 2, 1]
         with open('quiz.json', encoding="utf-8") as file:
             quiz = json.load(file)
         await ctx.channel.send("クイズを開始します")
@@ -121,19 +123,19 @@ async def on_message(ctx):
             if flag:
                 await ctx.channel.send(f"正解者が出揃ったので問題{i}を終了します (正解 : {quiz[f'Q{i}']})")
                 for k in range(3):
-                    if winner[k] not in constant.result:
-                        constant.result[winner[k]] = constant.point[k]
+                    if winner[k] not in result:
+                        result[winner[k]] = point[k]
                     else:
-                        new_pts = constant.result[winner[k]] + constant.point[k]
-                        constant.result[winner[k]] = new_pts
+                        new_pts = result[winner[k]] + point[k]
+                        result[winner[k]] = new_pts
             await asyncio.sleep(5)
 
-        all_user, all_result = list(constant.result.keys()), sorted(list(constant.result.values()), reverse=True)
+        all_user, all_result = list(result.keys()), sorted(list(result.values()), reverse=True)
         ranker = []
         str = "集計結果\n```"
         for i in range(5):
             for j in range(len(all_user)):
-                if constant.result[all_user[j]] == all_result[i]:
+                if result[all_user[j]] == all_result[i]:
                     str += f"{i + 1}位 : {client.get_user(all_user[j]).display_name} ({all_result[i]}pts)\n"
                     ranker.append(all_user[j])
         str += "```"
@@ -143,7 +145,6 @@ async def on_message(ctx):
         await ctx.channel.send(f"{str}クイズを終了しました\n"
                                f"{guild.get_member(ranker[0]).mention} にロール {role.mention} を付与しました\n"
                                f"{client.get_channel(constant.Winner_room).mention} にアクセス出来るようになります")
-        constant.result = {}
 
 
 keep_alive.keep_alive()

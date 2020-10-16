@@ -1,6 +1,4 @@
 joiner = []
-point = [4, 2, 1]
-result = {}
 
 Shichi = 193407417256640512
 Server = 764419309610598420
