@@ -129,6 +129,17 @@ async def on_message(ctx):
                     i += 1
         await ctx.channel.send(f"全ての問題の登録が完了しました")
 
+    if ctx.content.lower() in ["_qr", "_quizreset"] and role_check(ctx):
+        await ctx.channel.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
+        reply = (await client.wait_for('message', check=bot_check)).content
+        if reply.lower() == "yes":
+            constant.Question = {}
+            constant.Answer = {}
+            await ctx.channel.send("消去しました")
+        else:
+            await ctx.channel.send("キャンセルしました")
+            return
+
     if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
         result = {}
         point = [4, 2, 1]
