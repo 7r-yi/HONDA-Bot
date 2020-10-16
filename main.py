@@ -43,8 +43,8 @@ async def on_message(ctx):
             await msg.delete()
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
-        if ctx.author.id not in constant.joiner:
-            constant.joiner.append(ctx.author.id)
+        if ctx.author.id not in constant.Joiner:
+            constant.Joiner.append(ctx.author.id)
             msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望者リストに追加しました')
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} すでに参加希望が出されています')
@@ -52,8 +52,8 @@ async def on_message(ctx):
         await msg.delete()
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_d", "_drop"]:  # 参加希望を取り消す
-        if ctx.author.id in constant.joiner:
-            constant.joiner.remove(ctx.author.id)
+        if ctx.author.id in constant.Joiner:
+            constant.Joiner.remove(ctx.author.id)
             msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望を取り消しました')
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望が出されていません')
@@ -61,10 +61,10 @@ async def on_message(ctx):
         await msg.delete()
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_l", "_list"]:  # 参加希望者を表示する
-        if len(constant.joiner) >= 1:
+        if len(constant.Joiner) >= 1:
             str = "参加希望者リスト\n```"
-            for i in range(len(constant.joiner)):
-                str += f"{i + 1}. {client.get_user(constant.joiner[i]).display_name}\n"
+            for i in range(len(constant.Joiner)):
+                str += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
             str += "```"
         else:
             str = "参加希望者はいません"
@@ -75,19 +75,19 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check(ctx):  # 参加希望者の抽選を行う
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
-            num_list = list(range(len(constant.joiner)))
+            num_list = list(range(len(constant.Joiner)))
             pick_num = sorted(random.sample(num_list, num))
             str = "参加者リスト 抽選結果\n```"
             for i in pick_num:
-                str += f"{i + 1}. {client.get_user(constant.joiner[i]).display_name}\n"
+                str += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
             str += "```"
             guild = client.get_guild(constant.Server)
             role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
             for i in pick_num:
-                await guild.get_member(constant.joiner[i]).add_roles(role)
+                await guild.get_member(constant.Joiner[i]).add_roles(role)
             await ctx.channel.send(f"{str}リストのユーザーにロール {role.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
-            constant.joiner = []
+            constant.Joiner = []
         except ValueError:
             await ctx.channel.send("入力エラー")
 
@@ -96,34 +96,56 @@ async def on_message(ctx):
         for member in role.members:
             if member.id != constant.Shichi:
                 await member.remove_roles(role)  # ロールParticipantをリセットする
-        constant.joiner = []
+        constant.Joiner = []
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
+
+    if ctx.content.lower() in ["_qe", "_quizentry"] and role_check(ctx):
+        await ctx.channel.send("クイズの問題を登録します")
+        i = 0
+        while i < 10:
+            await ctx.channel.send(f"**{i + 1}**/10問目の解答を入力してください (Backで1つ前に戻る)")
+            reply = (await client.wait_for('message', check=bot_check)).content
+            if reply.lower() == "back" and i >= 1:
+                i -= 1
+                await ctx.channel.send(f"{i + 1}問目の登録に戻ります")
+            else:
+                constant.Question[f"Q{i + 1}"] = reply
+                await ctx.channel.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
+                reply = (await client.wait_for('message', check=bot_check)).content
+                if reply.lower() == "back" and i >= 1:
+                    i -= 1
+                    await ctx.channel.send(f"{i + 1}問目の登録に戻ります")
+                else:
+                    constant.Answer[f"A{i + 1}"] = reply
+                    await ctx.channel.send(f"{i + 1}問目の解答を登録しました")
+                    i += 1
+        await ctx.channel.send(f"全ての問題の登録が完了しました")
 
     if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
         result = {}
         point = [4, 2, 1]
         mag = [1, 1, 1, 1, 2, 1, 1, 1, 1, 3]
-        with open('quiz.json', encoding="utf-8") as file:
-            quiz = json.load(file)
         await ctx.channel.send("クイズを開始します")
 
-        for i in range(1, 11):
-            await ctx.channel.send(f"Next → 問題{i}/10 **(1位 +{point[0] * mag[i]}点, "
-                                   f"2位 +{point[1] * mag[i]}点, 3位 +{point[2] * mag[i]}点)**")
+        for i in range(10):
+            await ctx.channel.send(f"問題**{i + 1}**/10 **(1位 +{point[0] * mag[i]}点,  "
+                                   f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)**")
+            await asyncio.sleep(3)
+            await ctx.channel.send(f"{constant.Question[f'Q{i + 1}']}")
             j, flag, winner = 1, False, []
             while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
-                if reply.content == quiz[f"Q{i}"] and reply.author.id not in winner:
+                if reply.content == constant.Answer[f'A{i + 1}'] and reply.author.id not in winner:
                     winner.append(reply.author.id)
                     j, flag = j + 1, True
                 elif reply.content.lower() == "skip" and role_check(reply):
-                    await ctx.channel.send(f"問題{i}はスキップされました (正解 : {quiz[f'Q{i}']})")
+                    await ctx.channel.send(f"問題{i + 1}はスキップされました (正解 : {constant.Answer[f'A{i + 1}']})")
                     j = -1
                 elif reply.content.lower() == "cancel" and role_check(reply):
                     await ctx.channel.send(f"クイズを中断しました")
                     return
             if flag:
-                await ctx.channel.send(f"正解者が出揃ったので問題{i}を終了します (正解 : {quiz[f'Q{i}']})")
+                await ctx.channel.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {constant.Answer[f'A{i + 1}']})")
                 for k in range(3):
                     if winner[k] not in result:
                         result[winner[k]] = point[k] * mag[i]

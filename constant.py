@@ -1,4 +1,6 @@
-joiner = []
+Joiner = []
+Question = {}
+Answer = {}
 
 Shichi = 193407417256640512
 Server = 764419309610598420
