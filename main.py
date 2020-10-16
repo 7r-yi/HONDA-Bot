@@ -24,8 +24,8 @@ async def on_message(ctx):
         img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
         await ctx.add_reaction(emoji1)
         await ctx.add_reaction(emoji2)
-        msg1 = await ctx.channel.send(hand, file=discord.File(img))
-        msg2 = await ctx.channel.send(msg)
+        msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
+        msg2 = await ctx.channel.send(f"**{msg}**")
         await asyncio.sleep(15)
         await msg1.delete()
         await msg2.delete()
@@ -102,12 +102,14 @@ async def on_message(ctx):
     if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
         result = {}
         point = [4, 2, 1]
+        mag = [1, 1, 1, 1, 2, 1, 1, 1, 1, 3]
         with open('quiz.json', encoding="utf-8") as file:
             quiz = json.load(file)
         await ctx.channel.send("クイズを開始します")
 
         for i in range(1, 11):
-            await ctx.channel.send(f"Next → 問題{i}/10")
+            await ctx.channel.send(f"Next → 問題{i}/10 **(1位 +{point[0] * mag[i]}点, "
+                                   f"2位 +{point[1] * mag[i]}点, 3位 +{point[2] * mag[i]}点)**")
             j, flag, winner = 1, False, []
             while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
@@ -124,9 +126,9 @@ async def on_message(ctx):
                 await ctx.channel.send(f"正解者が出揃ったので問題{i}を終了します (正解 : {quiz[f'Q{i}']})")
                 for k in range(3):
                     if winner[k] not in result:
-                        result[winner[k]] = point[k]
+                        result[winner[k]] = point[k] * mag[i]
                     else:
-                        new_pts = result[winner[k]] + point[k]
+                        new_pts = result[winner[k]] + point[k] * mag[i]
                         result[winner[k]] = new_pts
             await asyncio.sleep(5)
 
