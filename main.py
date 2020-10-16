@@ -12,6 +12,12 @@ client = discord.Client()
 
 
 @client.event
+async def on_member_join(member):
+    time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+    await client.get_channel(constant.Gate).send(f"{member.mention} が入室しました ({time})")
+
+
+@client.event
 async def on_message(ctx):
     def bot_check(ctx_wait):
         return not ctx_wait.author.bot
@@ -39,9 +45,9 @@ async def on_message(ctx):
         if ctx.content == password:
             role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
             await ctx.author.add_roles(role)
-            await ctx.channel.send(f'{ctx.author.mention} 入室しました')
+            await ctx.channel.send(f'{ctx.author.mention} 参加しました')
         else:
-            msg = await ctx.channel.send(f'{ctx.author.mention} 入室コマンドが違います')
+            msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
             await asyncio.sleep(5)
             await msg.delete()
 
