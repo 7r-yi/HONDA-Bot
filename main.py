@@ -5,6 +5,7 @@ import asyncio
 import json
 import random
 import os
+from dotenv import load_dotenv
 import keep_alive
 import constant
 import zyanken
@@ -15,6 +16,9 @@ client = discord.Client()
 async def on_message(ctx):
     def bot_check(ctx_wait):
         return not ctx_wait.author.bot
+
+    def role_check(ctx_role):
+        return 'Administrator' in [roles.name for roles in ctx_role.author.roles]
 
     if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
         img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
@@ -68,8 +72,7 @@ async def on_message(ctx):
         await asyncio.sleep(20)
         await msg.delete()
 
-    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and \
-            'Administrator' in [i.name for i in ctx.author.roles]:  # 参加希望者の抽選を行う
+    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check(ctx):  # 参加希望者の抽選を行う
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
             num_list = list(range(len(constant.joiner)))
@@ -88,7 +91,7 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.lower() in ["_r", "_reset"] and 'Administrator' in [i.name for i in ctx.author.roles]:
+    if ctx.content.lower() in ["_r", "_reset"] and role_check(ctx):
         role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
         for member in role.members:
             if member.id != constant.Shichi:
@@ -96,7 +99,7 @@ async def on_message(ctx):
         constant.joiner = []
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
-    if ctx.content.lower() in ["_qs", "_quizstart"] and 'Administrator' in [i.name for i in ctx.author.roles]:
+    if ctx.content.lower() in ["_qs", "_quizstart"] and role_check(ctx):
         with open('quiz.json', encoding="utf-8") as file:
             quiz = json.load(file)
         await ctx.channel.send("クイズを開始します")
@@ -109,10 +112,10 @@ async def on_message(ctx):
                 if reply.content == quiz[f"Q{i}"] and reply.author.id not in winner:
                     winner.append(reply.author.id)
                     j, flag = j + 1, True
-                elif reply.content.lower() == "skip" and 'Administrator' in [k.name for k in reply.author.roles]:
+                elif reply.content.lower() == "skip" and role_check(reply):
                     await ctx.channel.send(f"問題{i}はスキップされました (正解 : {quiz[f'Q{i}']})")
                     j = -1
-                elif reply.content.lower() == "cancel" and 'Administrator' in [k.name for k in reply.author.roles]:
+                elif reply.content.lower() == "cancel" and role_check(reply):
                     await ctx.channel.send(f"クイズを中断しました")
                     return
             if flag:
@@ -144,4 +147,5 @@ async def on_message(ctx):
 
 
 keep_alive.keep_alive()
-client.run(os.getenv('TOKEN'))
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+client.run(os.environ.get('TOKEN'))
