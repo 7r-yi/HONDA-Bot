@@ -35,7 +35,7 @@ async def on_message(ctx):
         await ctx.add_reaction(emoji2)
         msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
         msg2 = await ctx.channel.send(f"**{msg}**")
-        await asyncio.sleep(15)
+        await asyncio.sleep(10)
         await msg1.delete()
         await msg2.delete()
 
