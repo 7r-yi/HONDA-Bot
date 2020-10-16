@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import keep_alive
 import constant
 import zyanken
+
 client = discord.Client()
 
 
@@ -29,15 +30,9 @@ async def on_message(ctx):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles])
 
-    if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
-        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
-        await ctx.add_reaction(emoji1)
-        await ctx.add_reaction(emoji2)
-        msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
-        msg2 = await ctx.channel.send(f"**{msg}**")
-        await asyncio.sleep(10)
-        await msg1.delete()
-        await msg2.delete()
+    def role_check_visit(ctx_role):
+        roles = [roles.name for roles in ctx_role.author.roles]
+        return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
     if ctx.channel.id == constant.Gate and not ctx.author.bot:  # Gateでの入力チェック
         await ctx.delete()
@@ -50,6 +45,19 @@ async def on_message(ctx):
             msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
             await asyncio.sleep(5)
             await msg.delete()
+
+    if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
+        return
+
+    if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
+        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
+        await ctx.add_reaction(emoji1)
+        await ctx.add_reaction(emoji2)
+        msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
+        msg2 = await ctx.channel.send(f"**{msg}**")
+        await asyncio.sleep(10)
+        await msg1.delete()
+        await msg2.delete()
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
