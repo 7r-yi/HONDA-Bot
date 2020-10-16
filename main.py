@@ -2,7 +2,6 @@ import discord
 from datetime import datetime
 from pytz import timezone
 import asyncio
-import json
 import random
 import os
 from dotenv import load_dotenv
@@ -100,21 +99,30 @@ async def on_message(ctx):
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
     if ctx.content.lower() in ["_qe", "_quizentry"] and role_check(ctx):
-        await ctx.channel.send("クイズの問題を登録します")
+        await ctx.channel.send("クイズの問題を登録します(Backで1問前に戻る、Skipで次の問題へ、Cancelで中断)")
         i = 0
         while i < 10:
-            await ctx.channel.send(f"**{i + 1}**/10問目の解答を入力してください (Backで1つ前に戻る)")
+            await ctx.channel.send(f"**{i + 1}**/10問目の解答を入力してください")
             reply = (await client.wait_for('message', check=bot_check)).content
             if reply.lower() == "back" and i >= 1:
+                await ctx.channel.send(f"{i}問目の登録に戻ります")
                 i -= 1
-                await ctx.channel.send(f"{i + 1}問目の登録に戻ります")
+            elif reply.lower() == "skip":
+                await ctx.channel.send(f"{i + 1}問目の登録をスキップします")
+                i += 1
+            elif reply.lower() == "cancel":
+                await ctx.channel.send("問題の登録を中断しました")
+                return
             else:
                 constant.Question[f"Q{i + 1}"] = reply
                 await ctx.channel.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
                 reply = (await client.wait_for('message', check=bot_check)).content
                 if reply.lower() == "back" and i >= 1:
+                    await ctx.channel.send(f"{i}問目の登録に戻ります")
                     i -= 1
-                    await ctx.channel.send(f"{i + 1}問目の登録に戻ります")
+                elif reply.lower() == "cancel":
+                    await ctx.channel.send("問題の登録を中断しました")
+                    return
                 else:
                     constant.Answer[f"A{i + 1}"] = reply
                     await ctx.channel.send(f"{i + 1}問目の解答を登録しました")
