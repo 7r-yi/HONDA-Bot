@@ -98,7 +98,7 @@ def result_output(id):
     for i in range(3):
         cnt_lose += lose_data[i]
 
-    return f"```★勝率{round((cnt_win / (cnt_win + cnt_lose)) * 100, 1)}% (計{cnt_win + cnt_lose}回)\n\n" \
+    return f"```★勝率{round((cnt_win / (cnt_win + cnt_lose)) * 100, 2)}% (計{cnt_win + cnt_lose}回)\n\n" \
            f"・YOU WIN {cnt_win}回\n" \
            f"(グー勝ち {win_data[0]}回, チョキ勝ち {win_data[1]}回, パー勝ち {win_data[2]}回)\n\n" \
            f"・YOU LOSE {cnt_lose}回\n" \
