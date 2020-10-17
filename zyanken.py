@@ -73,13 +73,12 @@ def honda_to_zyanken(my_hand, user):
 
     with open('zyanken_record.json', 'r') as f:
         data = json.load(f)
-    if str(user) in data:
-        if win:
-            data[str(user)]["win"][my_hand] += 1
-        else:
-            data[str(user)]["lose"][my_hand] += 1
-    else:
+    if str(user) not in data:
         data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
+    if win:
+        data[str(user)]["win"][my_hand] += 1
+    else:
+        data[str(user)]["lose"][my_hand] += 1
     with open('zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
 
