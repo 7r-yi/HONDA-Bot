@@ -37,15 +37,17 @@ async def on_message(ctx):
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
     if ctx.channel.id == constant.Gate and not ctx.author.bot:  # Gateでの入力チェック
-        await ctx.delete()
-        password = f"_join {datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d')}"
+        time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
+        password = f"_join {time.strftime('%Y/%m/%d')}"
         if ctx.content == password:
+            await ctx.delete()
             role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
             await ctx.author.add_roles(role)
-            await ctx.channel.send(f'{ctx.author.mention} 参加しました')
+            await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
             await asyncio.sleep(5)
+            await ctx.delete()
             await msg.delete()
 
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
