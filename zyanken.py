@@ -76,7 +76,7 @@ def honda_to_zyanken(my_hand, user):
         else:
             data[str(user)]["lose"][my_hand] += 1
     else:
-        data[str(user)] = {"win": {"グー": 0, "チョキ": 0, "パー": 0}, "lose": {"グー": 0, "チョキ": 0, "パー": 0}}
+        data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
     with open('zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
 
