@@ -69,15 +69,25 @@ async def on_message(ctx):
             guild = client.get_guild(constant.Server)
             name = guild.get_member(ctx.author.id).display_name
         role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
-        stc = None
         for member in role.members:
             if name == member.display_name:
-                stc = zyanken.result_output(member.id)
-                break
-        if stc is not None:
-            await ctx.channel.send(stc)
-        else:
-            await ctx.channel.send("データが見つかりませんでした")
+                data = zyanken.result_output(member.id)
+                embed = discord.Embed(title=name, color=0xFF8000)
+                embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
+                embed.set_thumbnail(url=data[4])
+                embed.add_field(name="★勝率★", value=f"{round((data[0] / (data[0] + data[1])) * 100, 2)}%", inline=False)
+                embed.add_field(name="Total", value=f"{data[0] + data[1]}回")
+                embed.add_field(name="YOU WIN", value=f"{data[0]}回")
+                embed.add_field(name="YOU LOSE", value=f"{data[1]}回")
+                embed.add_field(name="グー勝ち", value=f"{data[2][0]}回")
+                embed.add_field(name="チョキ勝ち", value=f"{data[2][1]}回")
+                embed.add_field(name="パー勝ち", value=f"{data[2][2]}回")
+                embed.add_field(name="グー負け", value=f"{data[3][0]}回")
+                embed.add_field(name="チョキ負け", value=f"{data[3][1]}回")
+                embed.add_field(name="パー負け", value=f"{data[3][2]}回")
+                await ctx.channel.send(embed=embed)
+                return
+        await ctx.channel.send("データが見つかりませんでした")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:

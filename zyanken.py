@@ -97,8 +97,9 @@ def result_output(id):
     for i in range(3):
         cnt_lose += lose_data[i]
 
-    return f"```★勝率{round((cnt_win / (cnt_win + cnt_lose)) * 100, 2)}% (計{cnt_win + cnt_lose}回)\n\n" \
-           f"・YOU WIN {cnt_win}回\n" \
-           f"(グー勝ち {win_data[0]}回, チョキ勝ち {win_data[1]}回, パー勝ち {win_data[2]}回)\n\n" \
-           f"・YOU LOSE {cnt_lose}回\n" \
-           f"(グー負け {lose_data[0]}回, チョキ負け {lose_data[1]}回, パー負け {lose_data[2]}回)```"
+    if round((cnt_win / (cnt_win + cnt_lose)) * 100, 2) < 0.7:
+        url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
+    else:
+        url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
+
+    return [cnt_win, cnt_lose, win_data, lose_data, url]
