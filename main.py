@@ -76,8 +76,6 @@ async def on_message(ctx):
                 embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
                 embed.set_thumbnail(url=data[5])
                 embed.add_field(name="★勝率★", value=f"{data[2]}% ({data[0]+data[1]}戦{data[0]}勝{data[1]}敗)", inline=False)
-                embed.add_field(name="YOU WIN", value=f"{data[0]}回")
-                embed.add_field(name="YOU LOSE", value=f"{data[1]}回", inline=False)
                 embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
                 embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
                 embed.add_field(name="パー勝ち", value=f"{data[3][2]}回")
