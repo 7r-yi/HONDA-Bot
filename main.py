@@ -51,8 +51,8 @@ async def on_message(ctx):
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
 
-    if ctx.content in ["グー", "チョキ", "パー"] and not ctx.author.bot:
-        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content)
+    if ctx.content in ["グー", "チョキ", "パー"] and ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
+        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx)
         await ctx.add_reaction(emoji1)
         await ctx.add_reaction(emoji2)
         msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
@@ -60,6 +60,22 @@ async def on_message(ctx):
         await asyncio.sleep(10)
         await msg1.delete()
         await msg2.delete()
+
+    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:]
+        if " " not in ctx.content.strip():
+            guild = client.get_guild(constant.Server)
+            name = guild.get_member(ctx.author.id).display_name
+        role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
+        stc = None
+        for member in role.members:
+            if name == member.display_name:
+                stc = zyanken.result_output(member.id)
+                break
+        if stc is not None:
+            await ctx.channel.send(stc)
+        else:
+            await ctx.channel.send("データが見つかりませんでした")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
@@ -81,13 +97,13 @@ async def on_message(ctx):
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_l", "_list"]:  # 参加希望者を表示する
         if len(constant.Joiner) >= 1:
-            str = "参加希望者リスト\n```"
+            stc = "参加希望者リスト\n```"
             for i in range(len(constant.Joiner)):
-                str += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
-            str += "```"
+                stc += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
+            stc += "```"
         else:
-            str = "参加希望者はいません"
-        msg = await ctx.channel.send(str)
+            stc = "参加希望者はいません"
+        msg = await ctx.channel.send(stc)
         await asyncio.sleep(20)
         await msg.delete()
 
@@ -96,15 +112,15 @@ async def on_message(ctx):
             num = int(ctx.content[ctx.content.find(" ") + 1:])
             num_list = list(range(len(constant.Joiner)))
             pick_num = sorted(random.sample(num_list, num))
-            str = "参加者リスト 抽選結果\n```"
+            stc = "参加者リスト 抽選結果\n```"
             for i in pick_num:
-                str += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
-            str += "```"
+                stc += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
+            stc += "```"
             guild = client.get_guild(constant.Server)
             role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
             for i in pick_num:
                 await guild.get_member(constant.Joiner[i]).add_roles(role)
-            await ctx.channel.send(f"{str}リストのユーザーにロール {role.mention} を付与しました\n"
+            await ctx.channel.send(f"{stc}リストのユーザーにロール {role.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
             constant.Joiner = []
         except ValueError:
@@ -195,17 +211,17 @@ async def on_message(ctx):
 
         all_user, all_result = list(result.keys()), sorted(list(result.values()), reverse=True)
         ranker = []
-        str = "集計結果\n```"
+        stc = "集計結果\n```"
         for i in range(5):
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
-                    str += f"{i + 1}位 : {client.get_user(all_user[j]).display_name} ({all_result[i]}pts)\n"
+                    stc += f"{i + 1}位 : {client.get_user(all_user[j]).display_name} ({all_result[i]}pts)\n"
                     ranker.append(all_user[j])
-        str += "```"
+        stc += "```"
         guild = client.get_guild(constant.Server)
         role = discord.utils.get(ctx.guild.roles, id=constant.Winner)
         await guild.get_member(ranker[0]).add_roles(role)
-        await ctx.channel.send(f"{str}クイズを終了しました\n"
+        await ctx.channel.send(f"{stc}クイズを終了しました\n"
                                f"{guild.get_member(ranker[0]).mention} にロール {role.mention} を付与しました\n"
                                f"{client.get_channel(constant.Winner_room).mention} にアクセス出来るようになります")
 
