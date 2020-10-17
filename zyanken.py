@@ -40,6 +40,7 @@ def honda_to_zyanken(my_hand, user):
         win = False
 
     if my_hand == "グー":
+        my_hand = "r"
         if win:
             honda_hand = "チョキ"
             emoji1 = "✌"
@@ -47,6 +48,7 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "パー"
             emoji1 = "✋"
     elif my_hand == "チョキ":
+        my_hand = "s"
         if win:
             honda_hand = "パー"
             emoji1 = "✋"
@@ -54,6 +56,7 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "グー"
             emoji1 = "✊"
     else:  # my_hand == "パー"
+        my_hand = "p"
         if win:
             honda_hand = "グー"
             emoji1 = "✊"
