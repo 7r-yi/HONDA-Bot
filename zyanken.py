@@ -32,8 +32,7 @@ def honda_word(win):
         return "YOU WIN 俺の負け！\n今日は負けを認めます\tただ勝ち逃げは許しませんよ"
 
 
-def honda_to_zyanken(ctx):
-    my_hand = ctx.content
+def honda_to_zyanken(my_hand, user):
     per_win = random.randint(1, 1000)
     if 774 <= per_win <= 780:  # 勝率0.7%
         win = True
@@ -71,13 +70,13 @@ def honda_to_zyanken(ctx):
 
     with open('zyanken_record.json', 'r') as f:
         data = json.load(f)
-    if str(ctx.author.id) in data:
+    if str(user) in data:
         if win:
-            data[str(ctx.author.id)]["win"][my_hand] += 1
+            data[str(user)]["win"][my_hand] += 1
         else:
-            data[str(ctx.author.id)]["lose"][my_hand] += 1
+            data[str(user)]["lose"][my_hand] += 1
     else:
-        data[str(ctx.author.id)] = {"win": {"グー": 0, "チョキ": 0, "パー": 0}, "lose": {"グー": 0, "チョキ": 0, "パー": 0}}
+        data[str(user)] = {"win": {"グー": 0, "チョキ": 0, "パー": 0}, "lose": {"グー": 0, "チョキ": 0, "パー": 0}}
     with open('zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
 

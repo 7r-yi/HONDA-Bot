@@ -52,7 +52,7 @@ async def on_message(ctx):
         return
 
     if ctx.content in ["グー", "チョキ", "パー"] and ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
-        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx)
+        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content, ctx.author.id)
         await ctx.add_reaction(emoji1)
         await ctx.add_reaction(emoji2)
         msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
