@@ -70,9 +70,9 @@ async def on_message(ctx):
             name = guild.get_member(ctx.author.id).display_name
         role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
         for member in role.members:
-            if name == member.display_name:
+            if name.lower() == member.display_name.lower():
                 data = zyanken.result_output(member.id)
-                embed = discord.Embed(title=name, color=0xFF8000)
+                embed = discord.Embed(title=member.display_name, color=0xFF8000)
                 embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
                 embed.set_thumbnail(url=data[4])
                 embed.add_field(name="★勝率★", value=f"{round((data[0] / (data[0] + data[1])) * 100, 2)}%", inline=False)
