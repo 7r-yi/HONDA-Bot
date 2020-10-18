@@ -81,7 +81,7 @@ async def on_message(ctx):
         embed = discord.Embed(title=user, color=0xFF8000)
         embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
         embed.set_thumbnail(url=data[5])
-        embed.add_field(name="勝率", value=f"{data[2]}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
+        embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
         embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
         embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
         embed.add_field(name="パー勝ち", value=f"{data[3][2]}回")
@@ -96,27 +96,7 @@ async def on_message(ctx):
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
             return
-        users_data, sort_data = zyanken.ranking_output(type)
-        guild = client.get_guild(constant.Server)
-        stc = "```"
-        if type == "wins":
-            title = "勝利数基準"
-            for i in range(len(sort_data)):
-                for j in range(len(users_data)):
-                    if sort_data[i][1] == users_data[j][0]:
-                        stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                               f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2)}%)\n"
-                        break
-        else:  # type == "rate"
-            title = "勝率基準"
-            for i in range(len(sort_data)):
-                for j in range(len(users_data)):
-                    if sort_data[i][1] == users_data[j][0]:
-                        stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                               f"(勝率{round(users_data[j][4], 2)}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
-                        break
-        stc += "```"
-        await ctx.channel.send(f"じゃんけん戦績ランキング({title}){stc}")
+        await ctx.channel.send(zyanken.ranking_output(type, client.get_guild(constant.Server)))
 
     if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
         await ctx.channel.send(file=discord.File('zyanken_record.json'))

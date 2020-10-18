@@ -115,7 +115,7 @@ def stats_output(id):
     return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, url]
 
 
-def ranking_output(type):
+def ranking_output(type, guild):
     with open('zyanken_record.json', 'r') as f:
         data = json.load(f)
 
@@ -152,4 +152,23 @@ def ranking_output(type):
             else:
                 break
 
-    return users_data, sort_data
+    stc = "```"
+    if type == "wins":
+        title = "勝利数基準"
+        for i in range(len(sort_data)):
+            for j in range(len(users_data)):
+                if sort_data[i][1] == users_data[j][0]:
+                    stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
+                           f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
+                    break
+    else:  # type == "rate"
+        title = "勝率基準"
+        for i in range(len(sort_data)):
+            for j in range(len(users_data)):
+                if sort_data[i][1] == users_data[j][0]:
+                    stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
+                           f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
+                    break
+    stc += "```"
+
+    return f"じゃんけん戦績ランキング({title}){stc}"
