@@ -91,7 +91,8 @@ async def on_message(ctx):
 
     if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
-        await ctx.channel.send("出力しました")
+        time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+        await ctx.channel.send(f"出力しました ({time})")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
