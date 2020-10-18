@@ -261,10 +261,11 @@ async def on_message(ctx):
         embed = discord.Embed(color=0xFF0000)
         embed.set_author(name='Ranking', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/jrl3EDv.png')
-        i, k, n = 0, 0, 5
+        i, n = 0, 5
         if len(all_user) < 5:
             n = len(all_user)
         while i < n:
+            k = 0
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
                     name = client.get_user(all_user[j]).display_name
