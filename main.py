@@ -147,11 +147,16 @@ async def on_message(ctx):
         constant.Joiner = []
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
-    if ctx.content.lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
+    if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
+        try:
+            num = ctx.content[ctx.content.find(" ") + 1:]
+        except ValueError:
+            await ctx.channel.send("入力エラー")
+            return
         await ctx.channel.send("クイズの問題を登録します(Backで1問前に戻る、Skipで次の問題へ、Cancelで中断)")
         i = 0
-        while i < 10:
-            await ctx.channel.send(f"**{i + 1}**/10問目の解答を入力してください")
+        while i < num:
+            await ctx.channel.send(f"**{i + 1}**/{num}問目の解答を入力してください")
             reply = (await client.wait_for('message', check=bot_check)).content
             if reply.lower() == "back" and i >= 1:
                 await ctx.channel.send(f"{i}問目の登録に戻ります")
@@ -189,14 +194,19 @@ async def on_message(ctx):
             await ctx.channel.send("キャンセルしました")
             return
 
-    if ctx.content.lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
+    if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
+        try:
+            num = ctx.content[ctx.content.find(" ") + 1:]
+        except ValueError:
+            await ctx.channel.send("入力エラー")
+            return
         result = {}
         point = [4, 2, 1]
         mag = [1, 1, 1, 1, 2, 1, 1, 1, 1, 3]
         await ctx.channel.send("クイズを開始します")
 
-        for i in range(10):
-            await ctx.channel.send(f"問題**{i + 1}**/10 **(1位 +{point[0] * mag[i]}点,  "
+        for i in range(num):
+            await ctx.channel.send(f"問題**{i + 1}**/{num} **(1位 +{point[0] * mag[i]}点,  "
                                    f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)**")
             await asyncio.sleep(3)
             await ctx.channel.send(f"{constant.Question[f'Q{i + 1}']}")
@@ -224,19 +234,21 @@ async def on_message(ctx):
 
         all_user, all_result = list(result.keys()), sorted(list(result.values()), reverse=True)
         ranker = []
-        stc = "集計結果\n```"
+        embed = discord.Embed(color=0xFF0000)
+        embed.set_author(name='Ranking', icon_url='https://i.imgur.com/F2oH0Bu.png')
+        embed.set_thumbnail(url='https://i.imgur.com/jrl3EDv.png')
         for i in range(5):
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
-                    stc += f"{i + 1}位 : {client.get_user(all_user[j]).display_name} ({all_result[i]}pts)\n"
+                    name = client.get_user(all_user[j]).display_name
+                    embed.add_field(name=f"{i + 1}位", value=f"{name} ({all_result[i]}pts)")
                     ranker.append(all_user[j])
-        stc += "```"
+                    break
+        await ctx.channel.send(embed=embed)
         guild = client.get_guild(constant.Server)
         role = discord.utils.get(ctx.guild.roles, id=constant.Winner)
         await guild.get_member(ranker[0]).add_roles(role)
-        await ctx.channel.send(f"{stc}クイズを終了しました\n"
-                               f"{guild.get_member(ranker[0]).mention} にロール {role.mention} を付与しました\n"
-                               f"{client.get_channel(constant.Winner_room).mention} にアクセス出来るようになります")
+        await ctx.channel.send(f"クイズを終了しました\n{role.mention} → {guild.get_member(ranker[0]).mention}")
 
 
 keep_alive.keep_alive()
