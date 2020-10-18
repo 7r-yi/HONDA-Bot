@@ -261,16 +261,17 @@ async def on_message(ctx):
         embed = discord.Embed(color=0xFF0000)
         embed.set_author(name='Ranking', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/jrl3EDv.png')
-        n = 5
+        i, k, n = 0, 0, 5
         if len(all_user) < 5:
             n = len(all_user)
-        for i in range(n):
+        while i < n:
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
                     name = client.get_user(all_user[j]).display_name
                     embed.add_field(name=f"{i + 1}位", value=f"{name} ({all_result[i]}pts)")
                     ranker.append(all_user[j])
-                    break
+                    k += 1
+            i += k
         await ctx.channel.send(embed=embed)
         guild = client.get_guild(constant.Server)
         role = discord.utils.get(ctx.guild.roles, id=constant.Winner)
