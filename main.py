@@ -69,26 +69,28 @@ async def on_message(ctx):
             guild = client.get_guild(constant.Server)
             name = guild.get_member(ctx.author.id).display_name
         role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
+        data, user = None, None
         for member in role.members:
             if name.lower() == member.display_name.lower():
-                try:
-                    data = zyanken.stats_output(member.id)
-                except KeyError:
-                    await ctx.channel.send("データが見つかりませんでした")
-                    return
-                embed = discord.Embed(title=member.display_name, color=0xFF8000)
-                embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
-                embed.set_thumbnail(url=data[5])
-                embed.add_field(name="勝率", value=f"{data[2]}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)",
-                                inline=False)
-                embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
-                embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
-                embed.add_field(name="パー勝ち", value=f"{data[3][2]}回")
-                embed.add_field(name="グー負け", value=f"{data[4][0]}回")
-                embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
-                embed.add_field(name="パー負け", value=f"{data[4][2]}回")
-                await ctx.channel.send(embed=embed)
-                break
+                data = zyanken.stats_output(member.id)
+                user = member.display_name
+        if name == "ケイスケホンダ" and data is None:
+            data = zyanken.stats_output(constant.Honda)
+            user = name
+        elif data is None:
+            await ctx.channel.send("データが見つかりませんでした")
+            return
+        embed = discord.Embed(title=user, color=0xFF8000)
+        embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
+        embed.set_thumbnail(url=data[5])
+        embed.add_field(name="勝率", value=f"{data[2]}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
+        embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
+        embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
+        embed.add_field(name="パー勝ち", value=f"{data[3][2]}回")
+        embed.add_field(name="グー負け", value=f"{data[4][0]}回")
+        embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
+        embed.add_field(name="パー負け", value=f"{data[4][2]}回")
+        await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:  # プレイヤーのじゃんけん戦績を表示
         if ctx.content[ctx.content.find(" ") + 1:].lower() in ["wins", "rate"]:
