@@ -161,36 +161,45 @@ async def on_message(ctx):
         i = 0
         while i < num:
             await ctx.channel.send(f"**{i + 1}**/{num}問目の問題文を入力してください")
-            reply = (await client.wait_for('message', check=role_check_admin)).content
-            if reply.lower() == "back" and i >= 1:
+            while True:
+                reply = await client.wait_for('message', check=bot_check)
+                if role_check_admin(reply):
+                    break
+            if reply.content.lower() == "back" and i >= 1:
                 await ctx.channel.send(f"{i}問目の登録に戻ります")
                 i -= 1
-            elif reply.lower() == "skip":
+            elif reply.content.lower() == "skip":
                 await ctx.channel.send(f"{i + 1}問目の登録をスキップします")
                 i += 1
-            elif reply.lower() == "cancel":
+            elif reply.content.lower() == "cancel":
                 await ctx.channel.send("問題の登録を中断しました")
                 return
             else:
-                constant.Question[f"Q{i + 1}"] = reply
+                constant.Question[f"Q{i + 1}"] = reply.content
                 await ctx.channel.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
-                reply = (await client.wait_for('message', check=role_check_admin)).content
-                if reply.lower() == "back" and i >= 1:
+                while True:
+                    reply = await client.wait_for('message', check=bot_check)
+                    if role_check_admin(reply):
+                        break
+                if reply.content.lower() == "back" and i >= 1:
                     await ctx.channel.send(f"{i}問目の登録に戻ります")
                     i -= 1
-                elif reply.lower() == "cancel":
+                elif reply.content.lower() == "cancel":
                     await ctx.channel.send("問題の登録を中断しました")
                     return
                 else:
-                    constant.Answer[f"A{i + 1}"] = reply
+                    constant.Answer[f"A{i + 1}"] = reply.content
                     await ctx.channel.send(f"{i + 1}問目の解答を登録しました")
                     i += 1
         await ctx.channel.send(f"全ての問題の登録が完了しました")
 
     if ctx.content.lower() in ["_qr", "_quizreset"] and role_check_admin(ctx):
         await ctx.channel.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
-        reply = (await client.wait_for('message', check=role_check_admin)).content
-        if reply.lower() == "yes":
+        while True:
+            reply = await client.wait_for('message', check=bot_check)
+            if role_check_admin(reply):
+                break
+        if reply.content.lower() == "yes":
             constant.Question = {}
             constant.Answer = {}
             await ctx.channel.send("消去しました")
