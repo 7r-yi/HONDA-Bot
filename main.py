@@ -149,7 +149,7 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
-            num = ctx.content[ctx.content.find(" ") + 1:]
+            num = int(ctx.content[ctx.content.find(" ") + 1:])
         except:
             await ctx.channel.send("入力エラー")
             return
@@ -196,7 +196,7 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
-            num = ctx.content[ctx.content.find(" ") + 1:]
+            num = int(ctx.content[ctx.content.find(" ") + 1:])
         except:
             await ctx.channel.send("入力エラー")
             return
