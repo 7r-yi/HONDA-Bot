@@ -214,6 +214,7 @@ async def on_message(ctx):
         await ctx.channel.send("クイズを開始します")
 
         for i in range(num):
+            await asyncio.sleep(5)
             await ctx.channel.send(f"問題**{i + 1}**/{num} **(1位 +{point[0] * mag[i]}点,  "
                                    f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)**")
             await asyncio.sleep(3)
@@ -232,20 +233,28 @@ async def on_message(ctx):
                     return
             if flag:
                 await ctx.channel.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {constant.Answer[f'A{i + 1}']})")
-                for k in range(3):
+            if len(winner) != 0:
+                stc = f"```問題{i + 1} 結果\n"
+                for k in range(len(winner)):
+                    stc += f"{k + 1}位 : {client.get_user(winner[k]).display_name} (+{point[k] * mag[i]}点)\n"
+                stc += "```"
+                await ctx.channel.send(stc)
+                for k in range(len(winner)):
                     if winner[k] not in result:
                         result[winner[k]] = point[k] * mag[i]
                     else:
                         new_pts = result[winner[k]] + point[k] * mag[i]
                         result[winner[k]] = new_pts
-            await asyncio.sleep(5)
 
         all_user, all_result = list(result.keys()), sorted(list(result.values()), reverse=True)
         ranker = []
         embed = discord.Embed(color=0xFF0000)
         embed.set_author(name='Ranking', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/jrl3EDv.png')
-        for i in range(5):
+        n = 5
+        if len(all_user) < 5:
+            n = len(all_user)
+        for i in range(n):
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
                     name = client.get_user(all_user[j]).display_name
