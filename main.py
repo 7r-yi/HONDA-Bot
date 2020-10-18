@@ -71,7 +71,11 @@ async def on_message(ctx):
         role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
         for member in role.members:
             if name.lower() == member.display_name.lower():
-                data = zyanken.result_output(member.id)
+                try:
+                    data = zyanken.result_output(member.id)
+                except KeyError:
+                    await ctx.channel.send("データが見つかりませんでした")
+                    return
                 embed = discord.Embed(title=member.display_name, color=0xFF8000)
                 embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
                 embed.set_thumbnail(url=data[5])
@@ -83,8 +87,7 @@ async def on_message(ctx):
                 embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
                 embed.add_field(name="パー負け", value=f"{data[4][2]}回")
                 await ctx.channel.send(embed=embed)
-                return
-        await ctx.channel.send("データが見つかりませんでした")
+                break
 
     if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
