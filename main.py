@@ -213,7 +213,6 @@ async def on_message(ctx):
             await ctx.channel.send("消去しました")
         else:
             await ctx.channel.send("キャンセルしました")
-            return
 
     if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
