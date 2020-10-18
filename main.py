@@ -57,11 +57,9 @@ async def on_message(ctx):
         img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content, ctx.author.id)
         await ctx.add_reaction(emoji1)
         await ctx.add_reaction(emoji2)
-        msg1 = await ctx.channel.send(f"{ctx.author.mention} {hand}", file=discord.File(img))
-        msg2 = await ctx.channel.send(f"**{msg}**")
-        await asyncio.sleep(10)
-        await msg1.delete()
-        await msg2.delete()
+        msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
+        await asyncio.sleep(5)
+        await msg.delete()
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:  # プレイヤーのじゃんけん戦績を表示
         name = ctx.content[ctx.content.find(" ") + 1:]
