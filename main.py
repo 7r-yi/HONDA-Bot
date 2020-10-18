@@ -73,7 +73,7 @@ async def on_message(ctx):
             if name.lower() == member.display_name.lower():
                 try:
                     data = zyanken.result_output(member.id)
-                except:
+                except KeyError:
                     await ctx.channel.send("データが見つかりませんでした")
                     return
                 embed = discord.Embed(title=member.display_name, color=0xFF8000)
