@@ -72,14 +72,15 @@ async def on_message(ctx):
         for member in role.members:
             if name.lower() == member.display_name.lower():
                 try:
-                    data = zyanken.result_output(member.id)
+                    data = zyanken.stats_output(member.id)
                 except KeyError:
                     await ctx.channel.send("データが見つかりませんでした")
                     return
                 embed = discord.Embed(title=member.display_name, color=0xFF8000)
                 embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
                 embed.set_thumbnail(url=data[5])
-                embed.add_field(name="勝率", value=f"{data[2]}% ({data[0]+data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
+                embed.add_field(name="勝率", value=f"{data[2]}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)",
+                                inline=False)
                 embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
                 embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
                 embed.add_field(name="パー勝ち", value=f"{data[3][2]}回")
@@ -88,6 +89,32 @@ async def on_message(ctx):
                 embed.add_field(name="パー負け", value=f"{data[4][2]}回")
                 await ctx.channel.send(embed=embed)
                 break
+
+    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:  # プレイヤーのじゃんけん戦績を表示
+        if ctx.content[ctx.content.find(" ") + 1:].lower() in ["wins", "rate"]:
+            type = ctx.content[ctx.content.find(" ") + 1:].lower()
+        else:
+            await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
+            return
+        users_data, sort_data = zyanken.ranking_output(type)
+        guild = client.get_guild(constant.Server)
+        stc = "```"
+        if type == "wins":
+            title = "勝利数基準"
+            for i in range(len(users_data)):
+                if sort_data[0][1] == users_data[i][0]:
+                    stc += f"{i + 1}位 : {guild.get_member(users_data[i][0]).display_name} " \
+                           f"({users_data[i][1]}勝{users_data[i][2]}負, 勝率{round(users_data[i][4], 2)}%\n"
+                    break
+        else:  # type == "rate"
+            title = "勝率基準"
+            for i in range(len(users_data)):
+                if sort_data[0][1] == users_data[i][0]:
+                    stc += f"{i + 1}位 : {guild.get_member(users_data[i][0]).display_name} " \
+                           f"({round(users_data[i][4], 2)}%, {users_data[i][1]}勝{users_data[i][2]}負)\n"
+                    break
+        stc += "```"
+        await ctx.channel.send(f"じゃんけん戦績ランキング({title}){stc}")
 
     if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
         await ctx.channel.send(file=discord.File('zyanken_record.json'))

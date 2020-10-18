@@ -1,5 +1,6 @@
 import random
 import json
+import constant
 
 
 def honda_word(win):
@@ -32,6 +33,15 @@ def honda_word(win):
         return "YOU WIN 俺の負け！\n今日は負けを認めます\tただ勝ち逃げは許しませんよ"
 
 
+def hiragana_to_alpha(hand):
+    if hand == "グー":
+        return "r"
+    elif hand == "チョキ":
+        return "s"
+    else:
+        return "p"
+
+
 def honda_to_zyanken(my_hand, user):
     per_win = random.randint(1, 1000)
     if 774 <= per_win <= 780:  # 勝率0.7%
@@ -40,7 +50,6 @@ def honda_to_zyanken(my_hand, user):
         win = False
 
     if my_hand == "グー":
-        my_hand = "r"
         if win:
             honda_hand = "チョキ"
             emoji1 = "✌"
@@ -48,7 +57,6 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "パー"
             emoji1 = "✋"
     elif my_hand == "チョキ":
-        my_hand = "s"
         if win:
             honda_hand = "パー"
             emoji1 = "✋"
@@ -56,7 +64,6 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "グー"
             emoji1 = "✊"
     else:  # my_hand == "パー"
-        my_hand = "p"
         if win:
             honda_hand = "グー"
             emoji1 = "✊"
@@ -76,16 +83,18 @@ def honda_to_zyanken(my_hand, user):
     if str(user) not in data:
         data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
     if win:
-        data[str(user)]["win"][my_hand] += 1
+        data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+        data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
     else:
-        data[str(user)]["lose"][my_hand] += 1
+        data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+        data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
     with open('zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 
 
-def result_output(id):
+def stats_output(id):
     with open('zyanken_record.json', 'r') as f:
         data = json.load(f)
 
@@ -104,3 +113,43 @@ def result_output(id):
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
     return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, url]
+
+
+def ranking_output(type):
+    with open('zyanken_record.json', 'r') as f:
+        data = json.load(f)
+
+    user = list(data.keys())
+    users_data, user_id, user_win, user_rate, user_lose = [], [], [], [], []
+    for i in range(len(user)):
+        cnt_win = sum(data[user[i]]["win"].values())
+        cnt_lose = sum(data[user[i]]["lose"].values())
+        cnt = cnt_win + cnt_lose
+        users_data.append([int(user[i]), cnt_win, cnt_lose, cnt, (cnt_win / cnt) * 100])
+        user_id.append(int(user[i]))
+        user_win.append(cnt_win)
+        user_lose.append(cnt_lose)
+        user_rate.append((cnt_win / cnt) * 100)
+
+    if type == "wins":
+        sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate), tuple(user_lose)), reverse=True)
+    else:  # type == "rate"
+        sort_data = sorted(zip(tuple(user_rate), tuple(user_id), tuple(user_win), tuple(user_lose)), reverse=True)
+    sort_data = list(map(list, sort_data))
+
+    for i in range(len(users_data)):
+        for j in range(1, len(users_data) - i):
+            if sort_data[i][0] == sort_data[i + j][0]:
+                if sort_data[i][2] < sort_data[i + j][2]:  # 勝利数でソート
+                    tmp = sort_data[i]
+                    sort_data[i] = sort_data[i + j]
+                    sort_data[i + j] = tmp
+                elif sort_data[i][2] == sort_data[i + j][2]:  # 勝利数=0 → 敗北数でソート
+                    if sort_data[i][3] > sort_data[i + j][3]:
+                        tmp = sort_data[i]
+                        sort_data[i] = sort_data[i + j]
+                        sort_data[i + j] = tmp
+            else:
+                break
+
+    return users_data, sort_data
