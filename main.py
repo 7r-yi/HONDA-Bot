@@ -159,7 +159,7 @@ async def on_message(ctx):
         await ctx.channel.send("クイズの問題を登録します(Backで1問前に戻る、Skipで次の問題へ、Cancelで中断)")
         i = 0
         while i < num:
-            await ctx.channel.send(f"**{i + 1}**/{num}問目の解答を入力してください")
+            await ctx.channel.send(f"**{i + 1}**/{num}問目の問題文を入力してください")
             reply = (await client.wait_for('message', check=bot_check)).content
             if reply.lower() == "back" and i >= 1:
                 await ctx.channel.send(f"{i}問目の登録に戻ります")
