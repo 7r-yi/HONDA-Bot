@@ -150,7 +150,7 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
             num = ctx.content[ctx.content.find(" ") + 1:]
-        except TypeError:
+        except:
             await ctx.channel.send("入力エラー")
             return
         await ctx.channel.send("クイズの問題を登録します(Backで1問前に戻る、Skipで次の問題へ、Cancelで中断)")
@@ -197,7 +197,7 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
             num = ctx.content[ctx.content.find(" ") + 1:]
-        except TypeError:
+        except:
             await ctx.channel.send("入力エラー")
             return
         result, point, mag = {}, [4, 2, 1], []
