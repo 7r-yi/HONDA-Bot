@@ -200,9 +200,14 @@ async def on_message(ctx):
         except TypeError:
             await ctx.channel.send("入力エラー")
             return
-        result = {}
-        point = [4, 2, 1]
-        mag = [1, 1, 1, 1, 2, 1, 1, 1, 1, 3]
+        result, point, mag = {}, [4, 2, 1], []
+        for i in range(num):
+            if i + 1 == num:
+                mag.append(3)
+            elif (i + 1) % 5 != 0:
+                mag.append(1)
+            else:
+                mag.append(2)
         await ctx.channel.send("クイズを開始します")
 
         for i in range(num):
