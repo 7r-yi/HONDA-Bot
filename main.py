@@ -91,8 +91,8 @@ async def on_message(ctx):
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:  # プレイヤーのじゃんけん戦績を表示
-        if ctx.content[ctx.content.find(" ") + 1:].lower() in ["wins", "rate"]:
-            type = ctx.content[ctx.content.find(" ") + 1:].lower()
+        type = ctx.content[ctx.content.find(" ") + 1:].lower()
+        if type in ["wins", "rate"]:
             await ctx.channel.send(zyanken.ranking_output(type, client.get_guild(constant.Server)))
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
