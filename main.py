@@ -103,18 +103,20 @@ async def on_message(ctx):
         stc = "```"
         if type == "wins":
             title = "勝利数基準"
-            for i in range(len(users_data)):
-                if sort_data[0][1] == users_data[i][0]:
-                    stc += f"{i + 1}位 : {guild.get_member(users_data[i][0]).display_name} " \
-                           f"({users_data[i][1]}勝{users_data[i][2]}負, 勝率{round(users_data[i][4], 2)}%\n"
-                    break
+            for i in range(len(sort_data)):
+                for j in range(len(users_data)):
+                    if sort_data[i][1] == users_data[j][0]:
+                        stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
+                               f"({users_data[j][1]}勝{users_data[j][2]}負, 勝率{round(users_data[j][4], 2)}%)\n"
+                        break
         else:  # type == "rate"
             title = "勝率基準"
-            for i in range(len(users_data)):
-                if sort_data[0][1] == users_data[i][0]:
-                    stc += f"{i + 1}位 : {guild.get_member(users_data[i][0]).display_name} " \
-                           f"({round(users_data[i][4], 2)}%, {users_data[i][1]}勝{users_data[i][2]}負)\n"
-                    break
+            for i in range(len(sort_data)):
+                for j in range(len(users_data)):
+                    if sort_data[i][1] == users_data[j][0]:
+                        stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
+                               f"(勝率{round(users_data[j][4], 2)}%, {users_data[j][1]}勝{users_data[j][2]}負)\n"
+                        break
         stc += "```"
         await ctx.channel.send(f"じゃんけん戦績ランキング({title}){stc}")
 
