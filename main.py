@@ -86,6 +86,10 @@ async def on_message(ctx):
                 return
         await ctx.channel.send("データが見つかりませんでした")
 
+    if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
+        await ctx.channel.send(file=discord.File('zyanken_record.json'))
+        await ctx.channel.send("出力しました")
+
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
             constant.Joiner.append(ctx.author.id)
