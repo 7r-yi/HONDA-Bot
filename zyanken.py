@@ -97,10 +97,10 @@ def result_output(id):
     for i in range(3):
         cnt_lose += lose_data[i]
 
-    win_rate = round((cnt_win / (cnt_win + cnt_lose)) * 100, 2)
+    win_rate = cnt_win / (cnt_win + cnt_lose)
     if win_rate < 0.7:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
-    return [cnt_win, cnt_lose, win_rate, win_data, lose_data, url]
+    return [cnt_win, cnt_lose, round(win_rate * 100, 2), win_data, lose_data, url]
