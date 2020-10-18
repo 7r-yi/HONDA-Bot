@@ -105,7 +105,7 @@ async def on_message(ctx):
                 for j in range(len(users_data)):
                     if sort_data[i][1] == users_data[j][0]:
                         stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                               f"({users_data[j][1]}勝{users_data[j][2]}負, 勝率{round(users_data[j][4], 2)}%)\n"
+                               f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2)}%)\n"
                         break
         else:  # type == "rate"
             title = "勝率基準"
@@ -113,7 +113,7 @@ async def on_message(ctx):
                 for j in range(len(users_data)):
                     if sort_data[i][1] == users_data[j][0]:
                         stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                               f"(勝率{round(users_data[j][4], 2)}%, {users_data[j][1]}勝{users_data[j][2]}負)\n"
+                               f"(勝率{round(users_data[j][4], 2)}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
                         break
         stc += "```"
         await ctx.channel.send(f"じゃんけん戦績ランキング({title}){stc}")
