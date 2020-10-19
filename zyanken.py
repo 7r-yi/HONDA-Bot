@@ -120,29 +120,38 @@ def ranking_output(type, guild):
         user_lose.append(cnt_lose)
         user_rate.append((cnt_win / cnt) * 100)
 
-    if type == "wins":
+    if type in ["wins", "winsall"]:
         sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate), tuple(user_lose)), reverse=True)
-    else:  # type == "rate"
+    else:  # type in ["rate", "rateall"]
         sort_data = sorted(zip(tuple(user_rate), tuple(user_id), tuple(user_win), tuple(user_lose)), reverse=True)
-    sort_data = list(map(list, sort_data))
-
-    for i in range(len(users_data)):
-        for j in range(1, len(users_data) - i):
-            if sort_data[i][0] == sort_data[i + j][0]:
-                if sort_data[i][2] < sort_data[i + j][2]:  # 勝利数でソート
+    sort_data = list(map(list, sort_data))  # 勝利数or勝率でソート
+    i = 0
+    while i < len(sort_data):
+        for j in range(1, len(sort_data) - i):
+            if sort_data[i][0] < 0.7 and type == "wins":  # 勝率0.7%未満は除外
+                sort_data.remove(sort_data[i])
+                i -= 1
+                break
+            elif sort_data[i][0] <= 1 and type == "rate":  # 勝利数1以下は除外
+                sort_data.remove(sort_data[i])
+                i -= 1
+                break
+            elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数or勝率が一致していた場合
+                if sort_data[i][2] < sort_data[i + j][2]:  # 勝率or勝利数でソート
                     tmp = sort_data[i]
                     sort_data[i] = sort_data[i + j]
                     sort_data[i + j] = tmp
-                elif sort_data[i][2] == sort_data[i + j][2]:  # 勝利数=0 → 敗北数でソート
+                elif sort_data[i][2] == sort_data[i + j][2]:  # 勝率も勝利数も0 → 敗北数でソート
                     if sort_data[i][3] > sort_data[i + j][3]:
                         tmp = sort_data[i]
                         sort_data[i] = sort_data[i + j]
                         sort_data[i + j] = tmp
             else:
                 break
+        i += 1
 
     stc = "```"
-    if type == "wins":
+    if type in ["wins", "winsall"]:
         title = "勝利数基準"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
@@ -150,7 +159,7 @@ def ranking_output(type, guild):
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
                     break
-    else:  # type == "rate"
+    else:  # type in ["rate", "rateall"]
         title = "勝率基準"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
