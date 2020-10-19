@@ -71,8 +71,8 @@ async def on_message(ctx):
         await asyncio.sleep(5)
         await msg.delete()
 
-    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:  # プレイヤーのじゃんけん戦績を表示
-        name = ctx.content[ctx.content.find(" ") + 1:]
+    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"] and ctx.channel.id == constant.Zyanken_room:
+        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             guild = client.get_guild(constant.Server)
             name = guild.get_member(ctx.author.id).display_name
@@ -100,8 +100,8 @@ async def on_message(ctx):
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
         await ctx.channel.send(embed=embed)
 
-    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:  # プレイヤーのじゃんけん戦績を表示
-        type = ctx.content[ctx.content.find(" ") + 1:].lower()
+    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"] and ctx.channel.id == constant.Zyanken_room:
+        type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "rate", "rateall"]:
             await ctx.channel.send(zyanken.ranking_output(type, client.get_guild(constant.Server)))
         else:
