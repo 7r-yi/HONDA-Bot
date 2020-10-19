@@ -1,5 +1,4 @@
 import random
-import json
 import constant
 
 
@@ -78,29 +77,22 @@ def honda_to_zyanken(my_hand, user):
         img_pass = './image/YOU LOSE.jpg'
         emoji2 = "👎"
 
-    with open('zyanken_record.json', 'r') as f:
-        data = json.load(f)
-    if str(user) not in data:
-        data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
+    if str(user) not in constant.zyanken_data:
+        constant.zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
     if win:
-        data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
-        data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+        constant.zyanken_data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+        constant.zyanken_data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
     else:
-        data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
-        data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-    with open('zyanken_record.json', 'w') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        constant.zyanken_data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+        constant.zyanken_data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 
 
 def stats_output(id):
-    with open('zyanken_record.json', 'r') as f:
-        data = json.load(f)
-
     cnt_win, cnt_lose = 0, 0
-    win_data = list(data[str(id)]["win"].values())
-    lose_data = list(data[str(id)]["lose"].values())
+    win_data = list(constant.zyanken_data[str(id)]["win"].values())
+    lose_data = list(constant.zyanken_data[str(id)]["lose"].values())
     for i in range(3):
         cnt_win += win_data[i]
     for i in range(3):
@@ -116,14 +108,11 @@ def stats_output(id):
 
 
 def ranking_output(type, guild):
-    with open('zyanken_record.json', 'r') as f:
-        data = json.load(f)
-
-    user = list(data.keys())
+    user = list(constant.zyanken_data.keys())
     users_data, user_id, user_win, user_rate, user_lose = [], [], [], [], []
     for i in range(len(user)):
-        cnt_win = sum(data[user[i]]["win"].values())
-        cnt_lose = sum(data[user[i]]["lose"].values())
+        cnt_win = sum(constant.zyanken_data[user[i]]["win"].values())
+        cnt_lose = sum(constant.zyanken_data[user[i]]["lose"].values())
         cnt = cnt_win + cnt_lose
         users_data.append([int(user[i]), cnt_win, cnt_lose, cnt, (cnt_win / cnt) * 100])
         user_id.append(int(user[i]))

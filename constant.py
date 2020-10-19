@@ -1,6 +1,11 @@
+import json
+
 Joiner = []
 Question = {}
 Answer = {}
+
+with open('zyanken_record.json', 'r') as f:
+    zyanken_data = json.load(f)
 
 Shichi = 193407417256640512
 Honda = 359330668112642059

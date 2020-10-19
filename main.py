@@ -5,6 +5,8 @@ import asyncio
 import random
 import os
 from dotenv import load_dotenv
+import json
+import sys
 import keep_alive
 import constant
 import zyanken
@@ -35,6 +37,14 @@ async def on_message(ctx):
     def role_check_visit(ctx_role):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
+
+    if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
+        with open('zyanken_record.json', 'w') as f:
+            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        await ctx.channel.send(file=discord.File('zyanken_record.json'))
+        await ctx.channel.send("Botをシャットダウンします")
+        await client.logout()
+        await sys.exit()
 
     if ctx.channel.id == constant.Gate and not ctx.author.bot:  # Gateでの入力チェック
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
@@ -98,9 +108,11 @@ async def on_message(ctx):
             await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
 
     if ctx.content in ["_so", "_statsoutput"] and role_check_admin(ctx):
+        with open('zyanken_record.json', 'w') as f:
+            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        await ctx.channel.send(f"出力しました ({time})")
+        await ctx.channel.send(f"全戦績データを出力しました ({time})")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
