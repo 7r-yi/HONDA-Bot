@@ -153,6 +153,8 @@ def ranking_output(type, guild):
     stc = "```"
     if type in ["wins", "winsall"]:
         title = "勝利数基準"
+        if type == "wins":
+            title += "(勝率0.7%以上)"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:
@@ -161,6 +163,8 @@ def ranking_output(type, guild):
                     break
     else:  # type in ["rate", "rateall"]
         title = "勝率基準"
+        if type == "rate":
+            title += "(勝利数2回以上)"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:

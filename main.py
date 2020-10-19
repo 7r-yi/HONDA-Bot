@@ -105,7 +105,7 @@ async def on_message(ctx):
         if type in ["wins", "winsall", "rate", "rateall"]:
             await ctx.channel.send(zyanken.ranking_output(type, client.get_guild(constant.Server)))
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
+            await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins / WinsAll / Rate / RateAll ")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken_record.json', 'w') as f:
