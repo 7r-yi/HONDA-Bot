@@ -128,11 +128,11 @@ def ranking_output(type, guild):
     i = 0
     while i < len(sort_data):
         for j in range(1, len(sort_data) - i):
-            if sort_data[i][0] < 0.7 and type == "wins":  # 勝率0.7%未満は除外
+            if sort_data[i][2] < 0.7 and type == "wins":  # 勝率0.7%未満は除外
                 sort_data.remove(sort_data[i])
                 i -= 1
                 break
-            elif sort_data[i][0] <= 1 and type == "rate":  # 勝利数1以下は除外
+            elif sort_data[i][2] <= 1 and type == "rate":  # 勝利数1以下は除外
                 sort_data.remove(sort_data[i])
                 i -= 1
                 break
@@ -149,12 +149,13 @@ def ranking_output(type, guild):
             else:
                 break
         i += 1
+    sort_data.pop(-1)
 
     stc = "```"
     if type in ["wins", "winsall"]:
         title = "勝利数基準"
         if type == "wins":
-            title += "(勝率0.7%以上)"
+            title += ", 勝率0.7%以上"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:
@@ -164,7 +165,7 @@ def ranking_output(type, guild):
     else:  # type in ["rate", "rateall"]
         title = "勝率基準"
         if type == "rate":
-            title += "(勝利数2回以上)"
+            title += ", 勝利数2回以上"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:
