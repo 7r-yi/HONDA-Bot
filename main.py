@@ -66,17 +66,15 @@ async def on_message(ctx):
 
     if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
         hands = ["グー", "チョキ", "パー"]
-        img, hand, msg, emoji1, emoji2 = None, None, None, None, None
         for hand in hands:
             if hand in jaconv.hira2kata(ctx.content):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
+                await ctx.add_reaction(emoji1)
+                await ctx.add_reaction(emoji2)
+                msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
+                await asyncio.sleep(5)
+                await msg.delete()
                 break
-        if msg is not None:
-            await ctx.add_reaction(emoji1)
-            await ctx.add_reaction(emoji2)
-            msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
-            await asyncio.sleep(5)
-            await msg.delete()
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
