@@ -152,7 +152,7 @@ def ranking_output(type, guild):
     if type in ["wins", "rate"]:
         sort_data.pop(-1)
 
-    stc = "```"
+    stc = ""
     if type in ["wins", "winsall"]:
         title = "勝利数基準"
         if type == "wins":
@@ -173,6 +173,12 @@ def ranking_output(type, guild):
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
                     break
-    stc += "```"
 
-    return f"じゃんけん戦績ランキング({title}){stc}"
+    return title, stc.split("\n")
+
+a = "そばゆをグーとパーで殴る"
+hands = ["グー", "チョキ", "パー"]
+for hand in hands:
+    if hand in a:
+        print(hand)
+        break

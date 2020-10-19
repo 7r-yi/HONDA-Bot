@@ -63,13 +63,19 @@ async def on_message(ctx):
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
 
-    if ctx.content in ["グー", "チョキ", "パー"] and ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
-        img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content, ctx.author.id)
-        await ctx.add_reaction(emoji1)
-        await ctx.add_reaction(emoji2)
-        msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
-        await asyncio.sleep(5)
-        await msg.delete()
+    if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
+        hands = ["グー", "チョキ", "パー"]
+        img, hand, msg, emoji1, emoji2 = None, None, None, None, None
+        for hand in hands:
+            if hand in ctx.content:
+                img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(ctx.content, ctx.author.id)
+                break
+        if msg is not None:
+            await ctx.add_reaction(emoji1)
+            await ctx.add_reaction(emoji2)
+            msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
+            await asyncio.sleep(5)
+            await msg.delete()
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
@@ -103,9 +109,22 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"] and ctx.channel.id == constant.Zyanken_room:
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "rate", "rateall"]:
-            await ctx.channel.send(zyanken.ranking_output(type, client.get_guild(constant.Server)))
+            title, stc = zyanken.ranking_output(type, client.get_guild(constant.Server))
+            await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
+            start, cnt = 0, len(stc) // 1900
+            for i in range(cnt + 1):
+                j = 0
+                while True:
+                    if stc[(i + 1) * 1900 - j] == "\n":
+                        await ctx.channel.send(f"```{stc[start:((i + 1) * 1900 - j)]}```")
+                        start = (i + 1) * 1900 - j + 1
+                        break
+                    j -= 1
+                if i == cnt - 1:
+                    await ctx.channel.send(f"```{stc[start:]}```")
+                    break
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins / WinsAll / Rate / RateAll ")
+            await ctx.channel.send("Typeを入力してください\n>>> **_ranking Type**\nType = Wins / WinsAll / Rate / RateAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken_record.json', 'w') as f:
