@@ -149,7 +149,8 @@ def ranking_output(type, guild):
             else:
                 break
         i += 1
-    sort_data.pop(-1)
+    if type in ["wins", "rate"]:
+        sort_data.pop(-1)
 
     stc = "```"
     if type in ["wins", "winsall"]:
