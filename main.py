@@ -111,12 +111,13 @@ async def on_message(ctx):
         if type in ["wins", "winsall", "rate", "rateall"]:
             title, stc = zyanken.ranking_output(type, client.get_guild(constant.Server))
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
-            if len(stc) // 1900 >= 1:
-                start, cnt = 0, len(stc) // 1900
+            cnt = len(stc) // 1900
+            if cnt >= 1:  # 文字数が多い場合は分割して送信
+                start = 0
                 for i in range(cnt + 1):
                     j = 0
                     while True:
-                        if stc[start + 1900 - j] == "\n":
+                        if stc[start + 1900 - j] == "\n":  # 1900文字毎を目安、改行で区切る
                             await ctx.channel.send(f"```{stc[start:(start + 1900 - j)]}```")
                             start = start + 1900 - j
                             break
@@ -127,7 +128,7 @@ async def on_message(ctx):
             else:
                 await ctx.channel.send(f"```{stc}```")
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_ranking Type**\nType = Wins / WinsAll / Rate / RateAll")
+            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken_record.json', 'w') as f:
@@ -185,12 +186,20 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.lower() in ["_r", "_reset"] and role_check_mode(ctx):
-        role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
+    if ctx.content.split(" ")[0].lower() in ["_r", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
+        role_name = ctx.content[ctx.content.find(" ") + 1:].lower()
+        if role_name == "participant":
+            id = constant.Participant
+            constant.Joiner = []
+        elif role_name == "winner":
+            id = constant.Winner
+        else:
+            await ctx.channel.send("Roleを入力してください\n>>> **_ReSet RoleName**\nRoleName = Participant / Winner")
+            return
+        role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
             if member.id != constant.Shichi:
-                await member.remove_roles(role)  # ロールParticipantをリセットする
-        constant.Joiner = []
+                await member.remove_roles(role)
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
@@ -273,9 +282,10 @@ async def on_message(ctx):
             j, flag, winner = 1, False, []
             while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
-                if reply.content == constant.Answer[f'A{i + 1}'] and reply.author.id not in winner:
-                    winner.append(reply.author.id)
-                    j, flag = j + 1, True
+                if reply.content == constant.Answer[f'A{i + 1}'] and reply.channel.id == constant.Quiz_room:
+                    if reply.author.id not in winner:
+                        winner.append(reply.author.id)
+                        j, flag = j + 1, True
                 elif reply.content.lower() == "skip" and role_check_admin(reply):
                     await ctx.channel.send(f"問題{i + 1}はスキップされました (正解 : {constant.Answer[f'A{i + 1}']})")
                     j = -1
