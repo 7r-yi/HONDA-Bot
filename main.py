@@ -106,7 +106,7 @@ async def on_message(ctx):
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
         await ctx.channel.send(embed=embed)
 
-    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"] and ctx.channel.id == constant.Zyanken_room:
+    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "rate", "rateall"]:
             title, stc = zyanken.ranking_output(type, client.get_guild(constant.Server))
@@ -115,9 +115,9 @@ async def on_message(ctx):
             for i in range(cnt + 1):
                 j = 0
                 while True:
-                    if stc[(i + 1) * 1900 - j] == "\n":
-                        await ctx.channel.send(f"```{stc[start:((i + 1) * 1900 - j)]}```")
-                        start = (i + 1) * 1900 - j + 1
+                    if stc[start + 1900 - j] == "\n":
+                        await ctx.channel.send(f"```{stc[start:(start + 1900 - j)]}```")
+                        start = start + 1900 - j
                         break
                     j -= 1
                 if i == cnt - 1:

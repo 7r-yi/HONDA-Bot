@@ -174,11 +174,4 @@ def ranking_output(type, guild):
                            f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
                     break
 
-    return title, stc.split("\n")
-
-a = "そばゆをグーとパーで殴る"
-hands = ["グー", "チョキ", "パー"]
-for hand in hands:
-    if hand in a:
-        print(hand)
-        break
+    return title, stc
