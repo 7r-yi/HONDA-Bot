@@ -186,7 +186,7 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.split(" ")[0].lower() in ["_r", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
+    if ctx.content.split(" ")[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
         role_name = ctx.content[ctx.content.find(" ") + 1:].lower()
         if role_name == "participant":
             id = constant.Participant
