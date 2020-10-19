@@ -74,7 +74,7 @@ async def on_message(ctx):
                 msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
                 await asyncio.sleep(5)
                 await msg.delete()
-                break
+                return
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
