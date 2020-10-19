@@ -112,7 +112,7 @@ async def on_message(ctx):
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        await ctx.channel.send(f"全戦績データを出力しました ({time})")
+        await ctx.channel.send(f"全戦績データを出力＆セーブしました ({time})")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
