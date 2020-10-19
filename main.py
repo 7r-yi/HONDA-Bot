@@ -107,7 +107,7 @@ async def on_message(ctx):
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_ranking X**\nX = Wins or Rate")
 
-    if ctx.content in ["_so", "_statsoutput"] and role_check_mode(ctx):
+    if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
