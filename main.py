@@ -111,7 +111,7 @@ async def on_message(ctx):
         if type in ["wins", "winsall", "rate", "rateall"]:
             title, stc = zyanken.ranking_output(type, client.get_guild(constant.Server))
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
-            if type in ["winsall", "rateall"]:
+            if len(stc) // 1900 >= 1:
                 start, cnt = 0, len(stc) // 1900
                 for i in range(cnt + 1):
                     j = 0
@@ -124,7 +124,7 @@ async def on_message(ctx):
                     if i == cnt - 1:
                         await ctx.channel.send(f"```{stc[start:]}```")
                         break
-            else:  # type in ["wins", "rate"]
+            else:
                 await ctx.channel.send(f"```{stc}```")
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_ranking Type**\nType = Wins / WinsAll / Rate / RateAll")
