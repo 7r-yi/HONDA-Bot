@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 import json
 import sys
+import jaconv
 import keep_alive
 import constant
 import zyanken
@@ -67,7 +68,7 @@ async def on_message(ctx):
         hands = ["グー", "チョキ", "パー"]
         img, hand, msg, emoji1, emoji2 = None, None, None, None, None
         for hand in hands:
-            if hand in ctx.content:
+            if hand in jaconv.hira2kata(ctx.content):
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
                 break
         if msg is not None:
