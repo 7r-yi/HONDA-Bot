@@ -68,7 +68,7 @@ async def on_message(ctx):
         hands = ["グー", "チョキ", "パー"]
         img, hand, msg, emoji1, emoji2 = None, None, None, None, None
         for hand in hands:
-            if hand in jaconv.hira2kata(ctx.content):
+            if hand in jaconv.hira2kata(ctx.content):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
                 break
         if msg is not None:
