@@ -194,7 +194,7 @@ async def on_message(ctx):
         elif role_name == "winner":
             id = constant.Winner
         else:
-            await ctx.channel.send("Roleを入力してください\n>>> **_ReSet RoleName**\nRoleName = Participant / Winner")
+            await ctx.channel.send("RoleNameを入力してください\n>>> **_ReSet RoleName**\nRoleName = Participant / Winner")
             return
         role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
