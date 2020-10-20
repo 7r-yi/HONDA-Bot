@@ -143,12 +143,14 @@ async def on_message(ctx):
                 await asyncio.sleep(5)
                 await guild.get_member(best).add_roles(role1)
                 constant.Former_winner_wins = best
+                nfc = "Winner"
                 if type == "rate":
                     if constant.Former_loser_rate is not None:
                         await guild.get_member(constant.Former_loser_rate).remove_roles(role2)
                     await guild.get_member(worst).add_roles(role2)
                     constant.Former_winner_rate = worst
-                await ctx.channel.send(f"ロールWinner/Loserが更新されました")
+                    nfc += " / Loser"
+                await ctx.channel.send(f"__ロール {nfc} が更新されました__")
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 
