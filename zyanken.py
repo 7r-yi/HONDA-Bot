@@ -152,7 +152,7 @@ def ranking_output(type, guild):
     if type in ["wins", "rate"]:
         sort_data.pop(-1)
 
-    stc = ""
+    stc, best, worst = "", 0, 1
     if type in ["wins", "winsall"]:
         title = "勝利数基準"
         if type == "wins":
@@ -162,6 +162,9 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
+                    if i == 0:
+                        best = j
+                    worst = j
                     break
     else:  # type in ["rate", "rateall"]
         title = "勝率基準"
@@ -172,6 +175,9 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
+                    if i == 0:
+                        best = j
+                    worst = j
                     break
 
-    return title, stc
+    return title, stc, users_data[best][0], users_data[worst][0]

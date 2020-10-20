@@ -76,7 +76,9 @@ async def on_message(ctx):
                 await msg.delete()
                 return
 
-    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"] and ctx.channel.id == constant.Zyanken_room:
+    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
+        if ctx.channel.id != constant.Zyanken_room or constant.Test_room:
+            return
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             guild = client.get_guild(constant.Server)
@@ -105,10 +107,13 @@ async def on_message(ctx):
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
         await ctx.channel.send(embed=embed)
 
-    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"] and ctx.channel.id == constant.Zyanken_room:
+    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
+        if ctx.channel.id != constant.Zyanken_room or constant.Test_room:
+            return
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "rate", "rateall"]:
-            title, stc = zyanken.ranking_output(type, client.get_guild(constant.Server))
+            guild = client.get_guild(constant.Server)
+            title, stc, best, worst = zyanken.ranking_output(type, guild)
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
             cnt = len(stc) // 1900
             if cnt >= 1:  # 文字数が多い場合は分割して送信
@@ -126,6 +131,16 @@ async def on_message(ctx):
                         break
             else:
                 await ctx.channel.send(f"```{stc}```")
+            if type in ["wins", "rate"]:
+                role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
+                for member in role1.members:
+                    await member.remove_roles(role1)
+                await guild.get_member(best).add_roles(role1)
+                if type == "rate":
+                    role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
+                    for member in role2.members:
+                        await member.remove_roles(role2)
+                    await guild.get_member(best).add_roles(role2)
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 
