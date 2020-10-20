@@ -128,7 +128,7 @@ def ranking_output(type, guild):
     i = 0
     while i < len(sort_data):
         for j in range(1, len(sort_data) - i):
-            if sort_data[i][2] < 0.7 and type == "wins":  # 勝率0.7%未満は除外
+            if sort_data[i][2] < 0.7 and type == "wins":  # 勝率0.8%未満は除外
                 sort_data.remove(sort_data[i])
                 i -= 1
                 break

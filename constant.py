@@ -5,6 +5,7 @@ Question = {}
 Answer = {}
 Former_winner_wins = None
 Former_winner_rate = None
+Former_loser_all = None
 Former_loser_rate = None
 with open('zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
@@ -15,6 +16,7 @@ Server = 764419309610598420
 System = 766243950087897109
 Welcome = 765164785443930134
 Gate = 765950697572663317
+General = 766007292729753610
 Recruit = 765164299777605643
 Quiz_room = 766006209236303933
 Zyanken_room = 766963547770716182
