@@ -27,8 +27,13 @@ async def loop():
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         msg = await client.get_channel(constant.Test_room).channel.send(time, file=discord.File('zyanken_record.json'))
-        await asyncio.sleep(305)
+        await asyncio.sleep(300)
         await msg.delete()
+
+
+@client.event
+async def on_ready():
+    loop.start()
 
 
 @client.event
