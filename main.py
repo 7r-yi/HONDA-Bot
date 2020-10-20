@@ -1,4 +1,5 @@
 import discord
+from discord.ext import tasks
 from datetime import datetime
 from pytz import timezone
 import asyncio
@@ -15,6 +16,19 @@ import zyanken
 intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
+
+
+@tasks.loop(minutes=5)
+async def loop():
+    with open('zyanken_record.json', 'r') as f:
+        before_zyanken_data = json.load(f)
+    if constant.zyanken_data != before_zyanken_data:
+        with open('zyanken_record.json', 'w') as f:
+            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+        msg = await client.get_channel(constant.Test_room).channel.send(time, file=discord.File('zyanken_record.json'))
+        await asyncio.sleep(305)
+        await msg.delete()
 
 
 @client.event
@@ -367,4 +381,5 @@ async def on_message(ctx):
 
 keep_alive.keep_alive()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+loop.start()
 client.run(os.environ.get('TOKEN'))
