@@ -18,7 +18,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=60)
 async def data_auto_save():
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
@@ -27,7 +27,7 @@ async def data_auto_save():
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         msg = await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))
-        await asyncio.sleep(30)
+        await asyncio.sleep(60)
         await msg.delete()
 
 
