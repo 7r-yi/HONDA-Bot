@@ -5,6 +5,7 @@ from pytz import timezone
 import asyncio
 import random
 import os
+import shutil
 from dotenv import load_dotenv
 import json
 import sys
@@ -27,6 +28,7 @@ async def data_auto_save():
             await constant.file_backup.delete()
         with open('zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        shutil.copyfile('zyanken_record.json', 'zyanken_record_backup.json')
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         constant.file_backup = \
             await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))

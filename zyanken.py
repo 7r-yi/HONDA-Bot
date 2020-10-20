@@ -77,7 +77,7 @@ def honda_to_zyanken(my_hand, user):
         img_pass = './image/YOU LOSE.jpg'
         emoji2 = "👎"
 
-    if str(user) not in constant.rm_user_data: # 過去に退出したことがあるユーザーは記録なし
+    if str(user) not in constant.rm_user_data:  # 過去に退出したことがあるユーザーは記録なし
         if str(user) not in constant.zyanken_data:
             constant.zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
         if win:
