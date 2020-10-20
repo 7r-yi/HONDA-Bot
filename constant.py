@@ -1,5 +1,6 @@
 import json
 
+file_backup = None
 Joiner = []
 Question = {}
 Answer = {}
@@ -9,6 +10,8 @@ Former_loser_all = None
 Former_loser_rate = None
 with open('zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
+with open('remove_user.json', 'r') as f:
+    rm_user_data = json.load(f)
 
 Shichi = 193407417256640512
 Honda = 359330668112642059

@@ -23,12 +23,13 @@ async def data_auto_save():
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
     if constant.zyanken_data != before_zyanken_data:
+        if constant.file_backup is not None:
+            await constant.file_backup.delete()
         with open('zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        msg = await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))
-        await asyncio.sleep(60)
-        await msg.delete()
+        constant.file_backup = \
+            await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))
 
 
 @client.event
@@ -40,6 +41,14 @@ async def on_ready():
 async def on_member_join(member):
     time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     await client.get_channel(constant.Gate).send(f"{member.mention} が入室しました ({time})")
+
+
+@client.event
+async def on_member_remove(member):
+    if str(member.id) in constant.zyanken_data:
+        constant.zyanken_data.pop(member.id)
+        if str(member.id) not in constant.rm_user_data:
+            constant.rm_user_data[str(member.id)] = {str(member.id): member.display_name}
 
 
 @client.event
