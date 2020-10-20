@@ -10,6 +10,7 @@ python-dotenv = "^0.14.0"
 flask = "^1.1.2"
 pytz = "^2020.1"
 "discord.py" = "^1.5.0"
+jaconv = "^0.2.4"
 
 [tool.poetry.dev-dependencies]
 
