@@ -19,7 +19,7 @@ client = discord.Client(intents=intents)
 
 
 @tasks.loop(minutes=5)
-async def loop():
+async def data_auto_save():
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
     if constant.zyanken_data != before_zyanken_data:
@@ -33,7 +33,7 @@ async def loop():
 
 @client.event
 async def on_ready():
-    loop.start()
+    data_auto_save.start()
 
 
 @client.event
@@ -386,5 +386,4 @@ async def on_message(ctx):
 
 keep_alive.keep_alive()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-loop.start()
 client.run(os.environ.get('TOKEN'))
