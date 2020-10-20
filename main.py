@@ -34,6 +34,11 @@ async def data_auto_save():
 
 
 @client.event
+async def on_ready():
+    data_auto_save.start()
+
+
+@client.event
 async def on_member_join(member):
     time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     await client.get_channel(constant.Gate).send(f"{member.mention} が入室しました ({time})")
@@ -381,7 +386,6 @@ async def on_message(ctx):
         await ctx.channel.send(f"クイズを終了しました\n{role.mention} → {guild.get_member(ranker[0]).mention}")
 
 
-data_auto_save.start()
 keep_alive.keep_alive()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client.run(os.environ.get('TOKEN'))
