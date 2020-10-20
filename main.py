@@ -18,22 +18,19 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(minutes=5)
+@tasks.loop(seconds=10)
 async def data_auto_save():
+    await client.get_channel(constant.Test_room).send("aaa")
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
+    print(constant.zyanken_data != before_zyanken_data)
     if constant.zyanken_data != before_zyanken_data:
         with open('zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        msg = await client.get_channel(constant.Test_room).channel.send(time, file=discord.File('zyanken_record.json'))
+        msg = await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))
         await asyncio.sleep(300)
         await msg.delete()
-
-
-@client.event
-async def on_ready():
-    data_auto_save.start()
 
 
 @client.event
@@ -384,6 +381,7 @@ async def on_message(ctx):
         await ctx.channel.send(f"クイズを終了しました\n{role.mention} → {guild.get_member(ranker[0]).mention}")
 
 
+data_auto_save.start()
 keep_alive.keep_alive()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client.run(os.environ.get('TOKEN'))
