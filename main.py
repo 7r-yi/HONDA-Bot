@@ -77,7 +77,7 @@ async def on_message(ctx):
                 return
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
-        if ctx.channel.id != constant.Zyanken_room or constant.Test_room:
+        if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
@@ -108,7 +108,7 @@ async def on_message(ctx):
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
-        if ctx.channel.id != constant.Zyanken_room or constant.Test_room:
+        if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "rate", "rateall"]:
@@ -133,14 +133,22 @@ async def on_message(ctx):
                 await ctx.channel.send(f"```{stc}```")
             if type in ["wins", "rate"]:
                 role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
-                for member in role1.members:
-                    await member.remove_roles(role1)
+                role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
+                if type == "wins":
+                    check = constant.Former_winner_wins
+                else:  # type == "rate":
+                    check = constant.Former_winner_rate
+                if check is not None:
+                    await guild.get_member(check).remove_roles(role1)
+                await asyncio.sleep(5)
                 await guild.get_member(best).add_roles(role1)
+                constant.Former_winner_wins = best
                 if type == "rate":
-                    role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
-                    for member in role2.members:
-                        await member.remove_roles(role2)
-                    await guild.get_member(best).add_roles(role2)
+                    if constant.Former_loser_rate is not None:
+                        await guild.get_member(constant.Former_loser_rate).remove_roles(role2)
+                    await guild.get_member(worst).add_roles(role2)
+                    constant.Former_winner_rate = worst
+                await ctx.channel.send(f"ロールWinner/Loserが更新されました")
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 

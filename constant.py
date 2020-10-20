@@ -3,7 +3,9 @@ import json
 Joiner = []
 Question = {}
 Answer = {}
-
+Former_winner_wins = None
+Former_winner_rate = None
+Former_loser_rate = None
 with open('zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
 
