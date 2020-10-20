@@ -20,10 +20,8 @@ client = discord.Client(intents=intents)
 
 @tasks.loop(seconds=10)
 async def data_auto_save():
-    await client.get_channel(constant.Test_room).send("aaa")
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
-    print(constant.zyanken_data != before_zyanken_data)
     if constant.zyanken_data != before_zyanken_data:
         with open('zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
