@@ -184,13 +184,13 @@ async def on_message(ctx):
             role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
             if type in ["wins", "winskeep"]:
                 if type == "wins":
-                    check = constant.Former_winner_wins
+                    before_check, same_check = constant.Former_winner_wins, constant.Former_winner_keep
                     constant.Former_winner_wins = best
                 else:  # type == "winskeep":
-                    check = constant.Former_winner_keep
+                    before_check, same_check = constant.Former_winner_keep, constant.Former_winner_wins
                     constant.Former_winner_keep = best
-                if check is not None:
-                    await guild.get_member(check).remove_roles(role1)
+                if before_check is not None and before_check != same_check:
+                    await guild.get_member(before_check).remove_roles(role1)
                 await guild.get_member(best).add_roles(role1)
             elif type == "winsall":
                 if constant.Former_loser_all is not None:

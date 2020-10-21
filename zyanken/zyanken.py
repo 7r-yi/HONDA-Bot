@@ -154,7 +154,12 @@ def ranking_output(type, guild):
                 i -= 1
                 break
             elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数/敗北数/連勝数が一致していた場合
-                if sort_data[i][2] < sort_data[i + j][2]:  # 勝率/勝利数/最大連勝数でソート
+                sort_flag = False
+                if type == "loses" and sort_data[i][2] > sort_data[i + j][2]:  # _/勝利数/_でソート
+                    sort_flag = True
+                elif type != "loses" and sort_data[i][2] < sort_data[i + j][2]:  # 勝率/_/最大連勝数でソート
+                    sort_flag = True
+                if sort_flag:
                     tmp = sort_data[i]
                     sort_data[i] = sort_data[i + j]
                     sort_data[i + j] = tmp
