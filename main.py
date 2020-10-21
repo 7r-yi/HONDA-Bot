@@ -38,7 +38,7 @@ async def on_ready():
     boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
     bot_msgs = await client.get_channel(constant.Test_room).history(limit=50).filter(lambda m: m.author.bot).flatten()
     for msg in bot_msgs:
-        if msg.content in "Botが起動しました":
+        if "Botが起動しました" in msg.content:
             time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
             msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
                 .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
