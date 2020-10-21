@@ -29,7 +29,7 @@ async def data_auto_save():
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         constant.file_backup = \
-            await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken_record.json'))
+            await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken/zyanken_record.json'))
 
 
 @client.event
@@ -43,7 +43,8 @@ async def on_ready():
             msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
                 .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
             zyanken_restore.data_restore(msgs)
-            await client.get_channel(constant.Test_room).send("前回のデータ復元完了", file=discord.File('zyanken_record.json'))
+            await client.get_channel(constant.Test_room).send(
+                "前回のデータ復元完了", file=discord.File('zyanken/zyanken_record.json'))
             break
     await client.get_channel(constant.Test_room).send(f"{boot_time}\nBotが起動しました")
 
@@ -82,7 +83,7 @@ async def on_message(ctx):
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
-        await ctx.channel.send(file=discord.File('zyanken_record.json'))
+        await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         await ctx.channel.send("Botをシャットダウンします")
         await client.logout()
         await sys.exit()
@@ -203,7 +204,7 @@ async def on_message(ctx):
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
-        await ctx.channel.send(file=discord.File('zyanken_record.json'))
+        await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         await ctx.channel.send(f"全戦績データを出力＆セーブしました ({time})")
 
