@@ -15,10 +15,13 @@ def check_hand(message):
 
 
 def check_reaction(reactions):
-    flag = False
+    flag = 0
     for reaction in reactions:
-        if reaction.me and (reaction.emoji == "🎉" or reaction.emoji == "👎"):
-            flag = True
+        if reaction.me and reaction.emoji == "🎉":
+            flag = 1
+            break
+        elif reaction.me and reaction.emoji == "👎":
+            flag = 2
             break
 
     return flag
@@ -52,7 +55,8 @@ def check_win(reactions, word):
 def data_restore(messages):
     data = constant.zyanken_data
     for message in messages:
-        if check_reaction(message.reactions):
+        key = check_reaction(message.reactions)
+        if key in [1, 2]:
             word = jaconv.hira2kata(jaconv.h2z(message.content))
             if "グー" in word:
                 my, honda, my_rslt, honda_rslt = check_win(message.reactions, word)
@@ -65,6 +69,22 @@ def data_restore(messages):
                                                 "keep": {"flag": 0, "cnt": 0, "max": 0}}
             data[str(message.author.id)][my_rslt][my] += 1
             data[str(constant.Honda)][honda_rslt][honda] += 1
+            if key == 1:
+                data[str(message.author.id)]["keep"]["flag"] = 1
+                data[str(message.author.id)]["keep"]["cnt"] += 1
+                if data[str(message.author.id)]["keep"]["cnt"] > data[str(message.author.id)]["keep"]["max"]:
+                    data[str(message.author.id)]["keep"]["max"] = data[str(message.author.id)]["keep"]["cnt"]
+                if data[str(constant.Honda)]["keep"]["flag"] == 1:
+                    data[str(constant.Honda)]["keep"]["flag"] = 0
+                    data[str(constant.Honda)]["keep"]["cnt"] = 0
+            else:
+                if data[str(message.author.id)]["keep"]["flag"] == 1:
+                    data[str(message.author.id)]["keep"]["flag"] = 0
+                    data[str(message.author.id)]["keep"]["cnt"] = 0
+                data[str(constant.Honda)]["keep"]["flag"] = 1
+                data[str(constant.Honda)]["keep"]["cnt"] += 1
+                if data[str(constant.Honda)]["keep"]["cnt"] > data[str(constant.Honda)]["keep"]["max"]:
+                    data[str(constant.Honda)]["keep"]["max"] = data[str(constant.Honda)]["keep"]["cnt"]
     constant.zyanken_data = data
     with open('zyanken/zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
