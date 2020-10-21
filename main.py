@@ -1,6 +1,6 @@
 import discord
 from discord.ext import tasks
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 import asyncio
 import random
@@ -12,13 +12,14 @@ import jaconv
 import keep_alive
 import constant
 import zyanken
+import zyanken_restore
 
 intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(seconds=60)
+@tasks.loop(seconds=30)
 async def data_auto_save():
     with open('zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
@@ -35,6 +36,17 @@ async def data_auto_save():
 @client.event
 async def on_ready():
     data_auto_save.start()
+    boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+    bot_msgs = await client.get_channel(constant.Test_room).history(limit=50).filter(lambda m: m.author.bot).flatten()
+    for msg in bot_msgs:
+        if msg.content in "Botが起動しました":
+            time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
+            msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
+                .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
+            zyanken_restore.data_restore(msgs)
+            await client.get_channel(constant.Test_room).send("前回のデータ復元完了", file=discord.File('zyanken_record.json'))
+            break
+    await client.get_channel(constant.Test_room).send(f"{boot_time}\nBotが起動しました")
 
 
 @client.event
@@ -176,20 +188,16 @@ async def on_message(ctx):
                 if check is not None:
                     await guild.get_member(check).remove_roles(role1)
                 await guild.get_member(best).add_roles(role1)
-                nfc = "Winner"
                 if type == "rate":
                     if constant.Former_loser_rate is not None:
                         await guild.get_member(constant.Former_loser_rate).remove_roles(role2)
                     await guild.get_member(worst).add_roles(role2)
                     constant.Former_loser_rate = worst
-                    nfc += " / Loser"
             else:
                 if constant.Former_loser_all is not None:
                     await guild.get_member(constant.Former_loser_all).remove_roles(role2)
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_all = worst
-                nfc = "Loser"
-            await ctx.channel.send(f"__ロール {nfc} が更新されました__")
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 

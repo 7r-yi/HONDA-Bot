@@ -42,11 +42,14 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    per_win = random.randint(1, 1000)
-    if 774 <= per_win <= 780:  # 勝率0.7%
+    if 774 <= random.randint(1, 1000) <= 780:  # 勝率0.7%
         win = True
+        img_pass = './image/YOU WIN.jpg'
+        emoji2 = "👏"
     else:
         win = False
+        img_pass = './image/YOU LOSE.jpg'
+        emoji2 = "👎"
 
     if my_hand == "グー":
         if win:
@@ -70,14 +73,7 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "チョキ"
             emoji1 = "✌"
 
-    if win:
-        img_pass = './image/YOU WIN.jpg'
-        emoji2 = "👏"
-    else:
-        img_pass = './image/YOU LOSE.jpg'
-        emoji2 = "👎"
-
-    if str(user) not in constant.rm_user_data:  # 過去に退出したことがあるユーザーは記録なし
+    if str(user) not in constant.rm_user_data:  # 過去に退出したことがあるユーザーは記録しない
         if str(user) not in constant.zyanken_data:
             constant.zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
         if win:
