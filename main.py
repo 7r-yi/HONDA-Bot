@@ -18,7 +18,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(seconds=30)
+@tasks.loop(minutes=10)
 async def data_auto_save():
     with open('zyanken/zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
@@ -28,25 +28,24 @@ async def data_auto_save():
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        constant.file_backup = \
-            await client.get_channel(constant.Test_room).send(time, file=discord.File('zyanken/zyanken_record.json'))
+        constant.file_backup = await client.get_channel(constant.Test_room).send(
+            f"{time}\nData Auto Saved", file=discord.File('zyanken/zyanken_record.json'))
 
 
 @client.event
 async def on_ready():
     data_auto_save.start()
     boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-    bot_msgs = await client.get_channel(constant.Test_room).history(limit=50).filter(lambda m: m.author.bot).flatten()
+    bot_msgs = await client.get_channel(constant.Test_room).history(limit=30).flatten()
     for msg in bot_msgs:
-        if "Botが起動しました" in msg.content:
+        if "Data Restored" in msg.content:
             time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
             msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
                 .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
             zyanken_restore.data_restore(msgs)
             await client.get_channel(constant.Test_room).send(
-                "前回のデータ復元完了", file=discord.File('zyanken/zyanken_record.json'))
+                f"{boot_time}\nData Restored", file=discord.File('zyanken/zyanken_record.json'))
             break
-    await client.get_channel(constant.Test_room).send(f"{boot_time}\nBotが起動しました")
 
 
 @client.event
