@@ -1,5 +1,4 @@
 import json
-import shutil
 
 file_backup = None
 Joiner = []
@@ -10,7 +9,6 @@ Former_winner_rate = None
 Former_loser_all = None
 Former_loser_rate = None
 
-shutil.copyfile('zyanken_record_backup.json', 'zyanken_record.json')
 with open('zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
 with open('remove_user.json', 'r') as f:
