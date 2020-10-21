@@ -9,9 +9,9 @@ Former_winner_rate = None
 Former_loser_all = None
 Former_loser_rate = None
 
-with open('zyanken_record.json', 'r') as f:
+with open('zyanken/zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
-with open('no_data_user.json', 'r') as f:
+with open('zyanken/no_data_user.json', 'r') as f:
     rm_user_data = json.load(f)
 
 Shichi = 193407417256640512

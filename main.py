@@ -11,8 +11,7 @@ import sys
 import jaconv
 import keep_alive
 import constant
-import zyanken
-import zyanken_restore
+from zyanken import zyanken, zyanken_restore
 
 intents = discord.Intents.default()
 intents.members = True
@@ -21,12 +20,12 @@ client = discord.Client(intents=intents)
 
 @tasks.loop(seconds=30)
 async def data_auto_save():
-    with open('zyanken_record.json', 'r') as f:
+    with open('zyanken/zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
     if constant.zyanken_data != before_zyanken_data:
         if constant.file_backup is not None:
             await constant.file_backup.delete()
-        with open('zyanken_record.json', 'w') as f:
+        with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         constant.file_backup = \
@@ -81,7 +80,7 @@ async def on_message(ctx):
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
-        with open('zyanken_record.json', 'w') as f:
+        with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
         await ctx.channel.send("Botをシャットダウンします")
@@ -202,7 +201,7 @@ async def on_message(ctx):
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / Rate / RateAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
-        with open('zyanken_record.json', 'w') as f:
+        with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
