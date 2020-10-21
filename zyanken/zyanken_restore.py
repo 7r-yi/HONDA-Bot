@@ -54,7 +54,7 @@ def check_win(reactions, word):
 
 def data_restore(messages):
     data = constant.zyanken_data
-    for message in messages.reactions:
+    for message in messages:
         if check_reaction(message.reactions):
             word = jaconv.hira2kata(jaconv.h2z(message.content))
             if "グー" in word:
