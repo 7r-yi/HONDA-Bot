@@ -186,7 +186,7 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][2]}敗{users_data[j][1]}勝)\n"
-                    if i == 0:
+                    if i == 1:
                         best, worst = 0, j
     else:  # type == "winskeep"
         title = "現在の連勝数基準"
