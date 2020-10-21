@@ -98,8 +98,8 @@ async def on_message(ctx):
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
             await asyncio.sleep(5)
-            await ctx.delete()
             await msg.delete()
+            await ctx.delete()
 
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
