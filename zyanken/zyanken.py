@@ -197,7 +197,7 @@ def ranking_output(type, guild):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                           f"(現在{users_data[j][5]}連勝, 最大{users_data[j][6]}連勝)\n"
+                           f"(現在{users_data[j][5]}連勝中, 最大{users_data[j][6]}連勝)\n"
                     if i == 0:
                         best = j
                     if i == len(sort_data) - 2:

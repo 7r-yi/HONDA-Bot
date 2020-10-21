@@ -186,7 +186,7 @@ async def on_message(ctx):
                 if type == "wins":
                     check = constant.Former_winner_wins
                     constant.Former_winner_wins = best
-                else:  # type == "rate":
+                else:  # type == "winskeep":
                     check = constant.Former_winner_keep
                     constant.Former_winner_keep = best
                 if check is not None:
