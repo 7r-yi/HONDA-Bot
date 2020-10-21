@@ -160,7 +160,7 @@ async def on_message(ctx):
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
-        if type in ["wins", "winsall", "winskeep", "rateall"]:
+        if type in ["wins", "winsall", "winskeep", "loses"]:
             guild = client.get_guild(constant.Server)
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
@@ -192,11 +192,16 @@ async def on_message(ctx):
                 if check is not None:
                     await guild.get_member(check).remove_roles(role1)
                 await guild.get_member(best).add_roles(role1)
-            else:  # type in ["winsall", "rateall"]
+            elif type == "winsall":
                 if constant.Former_loser_all is not None:
                     await guild.get_member(constant.Former_loser_all).remove_roles(role2)
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_all = worst
+            else:  # type == "loses"
+                if constant.Former_loser_all is not None:
+                    await guild.get_member(constant.Former_loser_loses).remove_roles(role2)
+                await guild.get_member(worst).add_roles(role2)
+                constant.Former_loser_loses = worst
         else:
             await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / WinsKeep / RateAll")
 

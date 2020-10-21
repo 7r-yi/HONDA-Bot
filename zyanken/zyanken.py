@@ -140,11 +140,11 @@ def ranking_output(type, guild):
         user_maxwin.append(cnt_keepwin)
 
     if type in ["wins", "winsall"]:
-        sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate), tuple(user_lose)), reverse=True)
-    elif type == "rateall":
-        sort_data = sorted(zip(tuple(user_rate), tuple(user_id), tuple(user_win), tuple(user_lose)), reverse=True)
+        sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate)), reverse=True)
+    elif type == "loses":
+        sort_data = sorted(zip(tuple(user_lose), tuple(user_id), tuple(user_win)), reverse=True)
     else:  # type == "winskeep"
-        sort_data = sorted(zip(tuple(user_keepwin), tuple(user_id), tuple(user_maxwin), tuple(user_lose)), reverse=True)
+        sort_data = sorted(zip(tuple(user_keepwin), tuple(user_id), tuple(user_maxwin)), reverse=True)
     sort_data = list(map(list, sort_data))  # 勝利数or勝率でソート
     i = 0
     while i < len(sort_data):
@@ -153,7 +153,7 @@ def ranking_output(type, guild):
                 sort_data.remove(sort_data[i])
                 i -= 1
                 break
-            elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数/勝率/連勝数が一致していた場合
+            elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数/敗北数/連勝数が一致していた場合
                 if sort_data[i][2] < sort_data[i + j][2]:  # 勝率/勝利数/最大連勝数でソート
                     tmp = sort_data[i]
                     sort_data[i] = sort_data[i + j]
@@ -179,18 +179,15 @@ def ranking_output(type, guild):
                     if i == len(sort_data) - 2:
                         worst = j
                     break
-    elif type == "rateall":
-        title = "勝率基準"
+    elif type == "loses":
+        title = "敗北数基準"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                           f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
+                           f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][2]}敗{users_data[j][1]}勝)\n"
                     if i == 0:
-                        best = j
-                    if i == len(sort_data) - 2:
-                        worst = j
-                    break
+                        best, worst = 0, j
     else:  # type == "winskeep"
         title = "現在の連勝数基準"
         for i in range(len(sort_data)):

@@ -7,6 +7,7 @@ Answer = {}
 Former_winner_wins = None
 Former_winner_keep = None
 Former_loser_all = None
+Former_loser_loses = None
 
 with open('zyanken/zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
