@@ -54,5 +54,5 @@ def data_restore(messages):
         data[str(message.author.id)][my_rslt][my] += 1
         data[str(constant.Honda)][honda_rslt][honda] += 1
     constant.zyanken_data = data
-    with open('zyanken_record.json', 'w') as f:
+    with open('zyanken/zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
