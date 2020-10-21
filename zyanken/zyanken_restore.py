@@ -25,13 +25,10 @@ def check_reaction(reactions):
 
 
 def check_win(reactions, word):
-    flag, loop = False, True
+    flag = False
     for reaction in reactions:
         if reaction.me and reaction.emoji == "🎉":
             flag = True
-            break
-        else:
-            flag = False
             break
 
     if flag:
