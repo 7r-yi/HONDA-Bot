@@ -17,10 +17,9 @@ def check_hand(message):
 def check_win(reactions, word):
     flag, loop = False, True
     for reaction in reactions:
-        if type(reaction.emoji) != str:
-            if reaction.me and reaction.emoji.id == constant.YOU_WIN:
-                flag = True
-                break
+        if reaction.me and reaction.emoji == "🎉":
+            flag = True
+            break
 
     if flag:
         if "グー" in word:
@@ -51,7 +50,8 @@ def data_restore(messages):
         else:
             my, honda, my_rslt, honda_rslt = check_win(message.reactions, word)
         if str(message.author.id) not in data:
-            data[str(message.author.id)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0}}
+            data[str(message.author.id)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
+                                            "keep": {"flag": 0, "cnt": 0, "max": 0}}
         data[str(message.author.id)][my_rslt][my] += 1
         data[str(constant.Honda)][honda_rslt][honda] += 1
     constant.zyanken_data = data

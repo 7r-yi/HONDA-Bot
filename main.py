@@ -131,8 +131,12 @@ async def on_message(ctx):
         data, user = None, None
         for member in role.members:
             if name.lower() == member.display_name.lower():
-                data = zyanken.stats_output(member.id)
-                user = member.display_name
+                if str(member.id) in constant.zyanken_data:
+                    data = zyanken.stats_output(member.id)
+                    user = member.display_name
+                else:
+                    await ctx.channel.send("データが記録されていません")
+                    return
         if name == "ケイスケホンダ" and data is None:
             data = zyanken.stats_output(constant.Honda)
             user = name
@@ -149,7 +153,7 @@ async def on_message(ctx):
         embed.add_field(name="グー負け", value=f"{data[4][0]}回")
         embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
-        embed.add_field(name="連勝数", value=f"現在{data[5][1]}勝中, (最大{data[5][2]}連勝)")
+        embed.add_field(name="連勝数", value=f"現在{data[5][1]}連勝中 (最大{data[5][2]}連勝)")
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:

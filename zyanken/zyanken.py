@@ -42,14 +42,14 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    if random.randint(1, 1000) % 142 == 0:  # 勝率99.3%
+    if random.randint(1, 1000) % 142 != 0:  # 勝率99.3%
         win = True
         img_pass = './image/YOU WIN.jpg'
-        emoji2 = constant.YOU_WIN
+        emoji2 = "🎉"
     else:
         win = False
         img_pass = './image/YOU LOSE.jpg'
-        emoji2 = constant.YOU_LOSE
+        emoji2 = "👎"
 
     if my_hand == "グー":
         if win:
@@ -80,6 +80,7 @@ def honda_to_zyanken(my_hand, user):
                                "keep": {"flag": 0, "cnt": 0, "max": 0}}
         if win:
             data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+            data[str(user)]["keep"]["flag"] = 1
             data[str(user)]["keep"]["cnt"] += 1
             if data[str(user)]["keep"]["cnt"] > data[str(user)]["keep"]["max"]:
                 data[str(user)]["keep"]["max"] = data[str(user)]["keep"]["cnt"]
@@ -93,6 +94,7 @@ def honda_to_zyanken(my_hand, user):
                 data[str(user)]["keep"]["flag"] = 0
                 data[str(user)]["keep"]["cnt"] = 0
             data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+            data[str(constant.Honda)]["keep"]["flag"] = 1
             data[str(constant.Honda)]["keep"]["cnt"] += 1
             if data[str(constant.Honda)]["keep"]["cnt"] > data[str(constant.Honda)]["keep"]["max"]:
                 data[str(constant.Honda)]["keep"]["max"] = data[str(constant.Honda)]["keep"]["cnt"]
@@ -172,9 +174,10 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
-                    if i == 1:
+                    if i == 0:
                         best = j
-                    worst = j
+                    if i == len(sort_data) - 2:
+                        worst = j
                     break
     elif type == "rateall":
         title = "勝率基準"
@@ -183,9 +186,10 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][1]}勝{users_data[j][2]}敗)\n"
-                    if i == 1:
+                    if i == 0:
                         best = j
-                    worst = j
+                    if i == len(sort_data) - 2:
+                        worst = j
                     break
     else:  # type == "winskeep"
         title = "現在の連勝数基準"
@@ -194,9 +198,10 @@ def ranking_output(type, guild):
                 if sort_data[i][1] == users_data[j][0]:
                     stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
                            f"(現在{users_data[j][5]}連勝, 最大{users_data[j][6]}連勝)\n"
-                    if i == 1:
+                    if i == 0:
                         best = j
-                    worst = j
+                    if i == len(sort_data) - 2:
+                        worst = j
                     break
 
     return title, stc, users_data[best][0], users_data[worst][0]
