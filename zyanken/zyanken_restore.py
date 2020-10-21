@@ -15,11 +15,12 @@ def check_hand(message):
 
 
 def check_win(reactions, word):
-    flag = False
+    flag, loop = False, True
     for reaction in reactions:
-        if reaction.me and reaction.emoji == "👏":
-            flag = True
-            break
+        if type(reaction.emoji) != str:
+            if reaction.me and reaction.emoji.id == constant.YOU_WIN:
+                flag = True
+                break
 
     if flag:
         if "グー" in word:

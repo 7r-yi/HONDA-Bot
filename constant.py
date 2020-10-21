@@ -5,9 +5,8 @@ Joiner = []
 Question = {}
 Answer = {}
 Former_winner_wins = None
-Former_winner_rate = None
+Former_winner_keep = None
 Former_loser_all = None
-Former_loser_rate = None
 
 with open('zyanken/zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)
@@ -31,3 +30,5 @@ Participant = 764991717006639114
 Winner = 765968517161025538
 Loser = 768056812317966337
 Visitor = 765155244161105930
+YOU_WIN = 768477247375147050
+YOU_LOSE = 768477261878788166
