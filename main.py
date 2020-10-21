@@ -18,7 +18,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(minutes=3)
+@tasks.loop(minutes=10)
 async def data_auto_save():
     with open('zyanken/zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
