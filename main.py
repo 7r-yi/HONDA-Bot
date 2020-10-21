@@ -38,13 +38,13 @@ async def on_ready():
     boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
     bot_msgs = await client.get_channel(constant.Test_room).history(limit=30).flatten()
     for msg in bot_msgs:
-        if "Data Restored" in msg.content:
+        if "Data input" in msg.content:
             time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
             msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
                 .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
             zyanken_restore.data_restore(msgs)
             await client.get_channel(constant.Test_room).send(
-                f"{boot_time}\nData Restored", file=discord.File('zyanken/zyanken_record.json'))
+                f"{boot_time}\nBooted", file=discord.File('zyanken/zyanken_record.json'))
             break
 
 
