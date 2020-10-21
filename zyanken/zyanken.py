@@ -161,8 +161,6 @@ def ranking_output(type, guild):
             else:
                 break
         i += 1
-    if type == "wins":
-        sort_data.pop(-1)
 
     stc, best, worst = "", 0, 1
     if type in ["wins", "winsall"]:
