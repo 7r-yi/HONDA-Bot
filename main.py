@@ -203,7 +203,7 @@ async def on_message(ctx):
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_loses = worst
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / WinsKeep / RateAll")
+            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / WinsKeep / Loses")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
