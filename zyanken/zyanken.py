@@ -176,7 +176,7 @@ def ranking_output(type, guild):
                            f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
                     if i == 0:
                         best = j
-                    if i == len(sort_data) - 2:
+                    if i == len(sort_data) - 1:
                         worst = j
                     break
     elif type == "loses":
