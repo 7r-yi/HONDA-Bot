@@ -191,13 +191,14 @@ async def on_message(ctx):
                     constant.Former_winner_keep = best
                 if before_check is not None and before_check != same_check:
                     await guild.get_member(before_check).remove_roles(role1)
-                await guild.get_member(best).add_roles(role1)
+                if best != constant.Former_loser_all and best != constant.Former_loser_loses:
+                    await guild.get_member(best).add_roles(role1)
             elif type == "winsall":
                 if constant.Former_loser_all is not None:
                     await guild.get_member(constant.Former_loser_all).remove_roles(role2)
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_all = worst
-            else:  # type == "loses"
+            else:  # type == "losesall"
                 if constant.Former_loser_all is not None:
                     await guild.get_member(constant.Former_loser_loses).remove_roles(role2)
                 await guild.get_member(worst).add_roles(role2)
