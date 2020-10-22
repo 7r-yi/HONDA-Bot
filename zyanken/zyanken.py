@@ -141,7 +141,7 @@ def ranking_output(type, guild):
 
     if type in ["wins", "winsall"]:
         sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate)), reverse=True)
-    elif type == "loses":
+    elif type == "losesall":
         sort_data = sorted(zip(tuple(user_lose), tuple(user_id), tuple(user_win)), reverse=True)
     else:  # type == "winskeep"
         sort_data = sorted(zip(tuple(user_keepwin), tuple(user_id), tuple(user_maxwin)), reverse=True)
@@ -155,9 +155,9 @@ def ranking_output(type, guild):
                 break
             elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数/敗北数/連勝数が一致していた場合
                 sort_flag = False
-                if type == "loses" and sort_data[i][2] > sort_data[i + j][2]:  # _/勝利数/_でソート
+                if type == "losesall" and sort_data[i][2] > sort_data[i + j][2]:  # _/勝利数/_でソート
                     sort_flag = True
-                elif type != "loses" and sort_data[i][2] < sort_data[i + j][2]:  # 勝率/_/最大連勝数でソート
+                elif type != "losesall" and sort_data[i][2] < sort_data[i + j][2]:  # 勝率/_/最大連勝数でソート
                     sort_flag = True
                 if sort_flag:
                     tmp = sort_data[i]
@@ -182,7 +182,7 @@ def ranking_output(type, guild):
                     if i == len(sort_data) - 1:
                         worst = j
                     break
-    elif type == "loses":
+    elif type == "losesall":
         title = "敗北数基準"
         for i in range(len(sort_data)):
             for j in range(len(users_data)):

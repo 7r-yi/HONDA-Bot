@@ -160,7 +160,7 @@ async def on_message(ctx):
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
-        if type in ["wins", "winsall", "winskeep", "loses"]:
+        if type in ["wins", "winsall", "winskeep", "losesall"]:
             guild = client.get_guild(constant.Server)
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
@@ -203,7 +203,7 @@ async def on_message(ctx):
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_loses = worst
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsAll / WinsKeep / Loses")
+            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
