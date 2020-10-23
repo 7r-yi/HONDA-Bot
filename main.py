@@ -115,10 +115,25 @@ async def on_message(ctx):
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
                 await ctx.add_reaction(emoji1)
                 await ctx.add_reaction(emoji2)
-                msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
-                await asyncio.sleep(5)
-                await msg.delete()
+                if ctx.author.id not in constant.No_reply:
+                    msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
+                    await asyncio.sleep(5)
+                    await msg.delete()
                 return
+
+    if ctx.content.lower() in ["_nr", "_noreply"]:
+        if ctx.author.id in constant.No_reply.append:
+            constant.No_reply.append(ctx.author.id)
+            await ctx.channel.send(f"{ctx.author.mention} 返信を無効にしました")
+        else:
+            await ctx.channel.send(f"{ctx.author.mention} 既に返信が無効になっています")
+
+    if ctx.content.lower() in ["_cnr", "_cancelnoreply"]:
+        if ctx.author.id in constant.No_reply.append:
+            constant.No_reply.pop(ctx.author.id)
+            await ctx.channel.send(f"{ctx.author.mention} 返信を有効にしました")
+        else:
+            await ctx.channel.send(f"{ctx.author.mention} 既に返信は有効になっています")
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
