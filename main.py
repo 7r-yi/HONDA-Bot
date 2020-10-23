@@ -121,14 +121,14 @@ async def on_message(ctx):
                     await msg.delete()
                 return
 
-    if ctx.content.lower() in ["_nr", "_noreply"]:
+    if ctx.content.lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
         if ctx.author.id in constant.No_reply.append:
             constant.No_reply.append(ctx.author.id)
             await ctx.channel.send(f"{ctx.author.mention} 返信を無効にしました")
         else:
             await ctx.channel.send(f"{ctx.author.mention} 既に返信が無効になっています")
 
-    if ctx.content.lower() in ["_cnr", "_cancelnoreply"]:
+    if ctx.content.lower() in ["_cnr", "_cancelnoreply"] and ctx.channel.id == constant.Zyanken_room:
         if ctx.author.id in constant.No_reply.append:
             constant.No_reply.pop(ctx.author.id)
             await ctx.channel.send(f"{ctx.author.mention} 返信を有効にしました")
