@@ -113,9 +113,9 @@ async def on_message(ctx):
         for hand in hands:
             if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
-                await ctx.add_reaction(emoji1)
-                await ctx.add_reaction(emoji2)
                 if ctx.author.id not in constant.No_reply:
+                    await ctx.add_reaction(emoji1)
+                    await ctx.add_reaction(emoji2)
                     msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
                     await asyncio.sleep(5)
                     await msg.delete()
