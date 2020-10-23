@@ -122,7 +122,7 @@ async def on_message(ctx):
                 return
 
     if ctx.content.lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
-        if ctx.author.id in constant.No_reply.append:
+        if ctx.author.id not in constant.No_reply.append:
             constant.No_reply.append(ctx.author.id)
             await ctx.channel.send(f"{ctx.author.mention} 返信を無効にしました")
         else:
