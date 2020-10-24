@@ -219,7 +219,8 @@ async def on_message(ctx):
                 await guild.get_member(worst).add_roles(role2)
                 constant.Former_loser_loses = worst
         else:
-            await ctx.channel.send("Typeを入力してください\n>>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
+            await ctx.channel.send("Typeを入力してください\n"
+                                   ">>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
@@ -335,6 +336,25 @@ async def on_message(ctx):
                     i += 1
         await ctx.channel.send(f"全ての問題の登録が完了しました")
 
+    if ctx.content.lower() in ["_ql", "_quizlineup"] and role_check_admin(ctx):
+        if len(constant.Question) != 0:
+            await ctx.channel.send("クイズの問題を表示します. よろしいですか？(Yes/No)")
+            while True:
+                reply = await client.wait_for('message', check=bot_check)
+                if role_check_admin(reply):
+                    break
+            if reply.content.lower() == "yes":
+                await ctx.channel.send("登録済み問題一覧")
+                stc = ""
+                for i in range(len(constant.Question)):
+                    stc += f"[Q{i + 1}] {constant.Question[f'Q{i + 1}']}\n"
+                    stc += f"→ {constant.Answer[f'A{i + 1}']}\n"
+                await ctx.channel.send(f"```{stc}```")
+            else:
+                await ctx.channel.send("キャンセルしました")
+        else:
+            await ctx.channel.send("クイズは登録されていません")
+
     if ctx.content.lower() in ["_qr", "_quizreset"] and role_check_admin(ctx):
         await ctx.channel.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
         while True:
@@ -417,9 +437,16 @@ async def on_message(ctx):
             i += k
         await ctx.channel.send(embed=embed)
         guild = client.get_guild(constant.Server)
-        role = discord.utils.get(ctx.guild.roles, id=constant.Winner)
-        await guild.get_member(ranker[0]).add_roles(role)
-        await ctx.channel.send(f"クイズを終了しました\n{role.mention} → {guild.get_member(ranker[0]).mention}")
+        role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
+        await guild.get_member(ranker[0]).add_roles(role1)
+        await ctx.channel.send(f"クイズを終了しました\n{role1.mention} → {guild.get_member(ranker[0]).mention}")
+        role2 = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
+        await ctx.channel.send(f"{role2.mention} `!out`で結果を {client.get_channel(constant.Result).mention} に出力")
+        while True:
+            reply = await client.wait_for('message', check=role_check_mode)
+            if reply.content == "!out":
+                await client.get_channel(constant.Result).send(embed=embed)
+                break
 
 
 keep_alive.keep_alive()
