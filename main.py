@@ -91,10 +91,8 @@ async def on_message(ctx):
             await ctx.author.add_roles(role_V)
             await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
         else:
-            msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
-            await asyncio.sleep(5)
-            await msg.delete()
-            await ctx.delete()
+            await ctx.delete(delay=5.0)
+            await ctx.channel.send(f'{ctx.author.mention} コマンドが違います', delete_after=5.0)
 
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
@@ -111,9 +109,8 @@ async def on_message(ctx):
                 if ctx.author.id not in constant.No_reply:
                     await ctx.add_reaction(emoji1)
                     await ctx.add_reaction(emoji2)
-                    msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
-                    await asyncio.sleep(5)
-                    await msg.delete()
+                    await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
+                                           file=discord.File(img), delete_after=5.0)
                 break
 
     if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
@@ -230,20 +227,16 @@ async def on_message(ctx):
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
             constant.Joiner.append(ctx.author.id)
-            msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望者リストに追加しました')
+            await ctx.channel.send(f'{ctx.author.mention} 参加希望者リストに追加しました', delete_after=5.0)
         else:
-            msg = await ctx.channel.send(f'{ctx.author.mention} すでに参加希望が出されています')
-        await asyncio.sleep(5)
-        await msg.delete()
+            await ctx.channel.send(f'{ctx.author.mention} すでに参加希望が出されています', delete_after=5.0)
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_d", "_drop"]:  # 参加希望を取り消す
         if ctx.author.id in constant.Joiner:
             constant.Joiner.remove(ctx.author.id)
-            msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望を取り消しました')
+            await ctx.channel.send(f'{ctx.author.mention} 参加希望を取り消しました', delete_after=5.0)
         else:
-            msg = await ctx.channel.send(f'{ctx.author.mention} 参加希望が出されていません')
-        await asyncio.sleep(5)
-        await msg.delete()
+            await ctx.channel.send(f'{ctx.author.mention} 参加希望が出されていません', delete_after=5.0)
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_l", "_list"]:  # 参加希望者を表示する
         if len(constant.Joiner) >= 1:
@@ -253,9 +246,7 @@ async def on_message(ctx):
             stc += "```"
         else:
             stc = "参加希望者はいません"
-        msg = await ctx.channel.send(stc)
-        await asyncio.sleep(20)
-        await msg.delete()
+        await ctx.channel.send(stc, delete_after=20.0)
 
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
@@ -369,46 +360,43 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:])
+            if not 1 <= num <= len(constant.Question):
+                await ctx.channel.send("登録されている問題数に対して入力が間違っています")
+                return
         except:
             await ctx.channel.send("入力エラー")
             return
-        result, point, mag = {}, [4, 2, 1], []
-        for i in range(num):
-            if i + 1 == num:
-                mag.append(3)
-            elif (i + 1) % 5 != 0:
-                mag.append(1)
-            else:
-                mag.append(2)
-        await ctx.channel.send("クイズを開始します")
 
+        result, point, mag = {}, [4, 2, 1], []
+        mag = [3 if i + 1 == num else 1 if (i + 1) % 5 != 0 else 2 for i in range(num)]
+        await ctx.channel.send("クイズを開始します")
         for i in range(num):
             await asyncio.sleep(5)
             await ctx.channel.send(f"問題**{i + 1}**/{num} **(1位 +{point[0] * mag[i]}点,  "
-                                   f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)**")
+                                   f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)** (制限時間1分)")
             await asyncio.sleep(3)
             await ctx.channel.send(f"{constant.Question[f'Q{i + 1}']}")
-            j, flag, winner = 1, False, []
+            j, flag, winner, start = 1, False, [], datetime.now()
             while 0 <= j <= 3:
                 reply = await client.wait_for('message', check=bot_check)
+                elap = (start - datetime.now()).seconds
                 if reply.content == constant.Answer[f'A{i + 1}'] and reply.channel.id == constant.Quiz_room:
                     if reply.author.id not in winner:
                         winner.append(reply.author.id)
                         j, flag = j + 1, True
-                elif reply.content.lower() == "skip" and role_check_admin(reply):
+                elif (reply.content.lower() == "skip" and role_check_admin(reply)) or elap > 60:
                     await ctx.channel.send(f"問題{i + 1}はスキップされました (正解 : {constant.Answer[f'A{i + 1}']})")
-                    j = -1
+                    j, flag = -1, False
                 elif reply.content.lower() == "cancel" and role_check_admin(reply):
                     await ctx.channel.send(f"クイズを中断しました")
                     return
             if flag:
                 await ctx.channel.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {constant.Answer[f'A{i + 1}']})")
             if len(winner) != 0:
-                stc = f"```問題{i + 1} 結果\n"
+                stc = ""
                 for k in range(len(winner)):
                     stc += f"{k + 1}位 : {client.get_user(winner[k]).display_name} (+{point[k] * mag[i]}点)\n"
-                stc += "```"
-                await ctx.channel.send(stc)
+                await ctx.channel.send(f"**```問題{i + 1} 結果\n{stc}```**")
                 for k in range(len(winner)):
                     if winner[k] not in result:
                         result[winner[k]] = point[k] * mag[i]
