@@ -154,16 +154,14 @@ def ranking_output(type, guild):
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
-        best, worst = 0, len(sort_data) - 1
+        return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
     elif type == "losesall":
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(勝率{round(sort_data[i][3], 2):.02f}%, {sort_data[i][2]}敗{sort_data[i][1]}勝)\n"
-        best, worst = 1, None
+        return title, stc, sort_data[1][0], None
     else:  # type == "winskeep"
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)\n"
-        best, worst = 0, None
-
-    return title, stc, sort_data[best][0], sort_data[worst][0]
+        return title, stc, sort_data[0][0], None

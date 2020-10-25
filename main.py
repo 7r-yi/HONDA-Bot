@@ -216,8 +216,8 @@ async def on_message(ctx):
             else:  # type == "losesall"
                 if constant.Former_loser_all is not None:
                     await guild.get_member(constant.Former_loser_loses).remove_roles(role2)
-                await guild.get_member(worst).add_roles(role2)
-                constant.Former_loser_loses = worst
+                await guild.get_member(best).add_roles(role2)
+                constant.Former_loser_loses = best
         else:
             await ctx.channel.send("Typeを入力してください\n"
                                    ">>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
