@@ -5,10 +5,10 @@ Joiner = []
 Question = {}
 Answer = {}
 No_reply = []
-Former_winner_wins = 767508855365959722
-Former_winner_keep = 587660412212740106
-Former_loser_all = 471146387514458113
-Former_loser_loses = 699612508763193425
+Former_winner_wins = None
+Former_winner_keep = None
+Former_loser_all = None
+Former_loser_loses = None
 
 with open('zyanken/zyanken_record.json', 'r') as f:
     zyanken_data = json.load(f)

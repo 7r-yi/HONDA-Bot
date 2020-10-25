@@ -135,9 +135,12 @@ def ranking_output(type, guild):
 
     if type == "wins":
         sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
-        for i in range(len(sort_data)):
+        i = 0
+        while i < len(sort_data):
             if sort_data[i][3] < 100:  # 勝率100%未満は除外
                 sort_data.remove(sort_data[i])
+                i -= 1
+            i += 1
         title = "勝利数基準, 無敗維持中"
     elif type == "winsall":
         sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
