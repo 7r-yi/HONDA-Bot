@@ -143,23 +143,23 @@ async def on_message(ctx):
             guild = client.get_guild(constant.Server)
             name = guild.get_member(ctx.author.id).display_name
         role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
-        data, user = None, None
+        data, user, id = None, None, None
         for member in role.members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in constant.zyanken_data:
                     data = zyanken.stats_output(member.id)
-                    user = member.display_name
+                    name, id = member.display_name, member.id
                 else:
                     await ctx.channel.send("データが記録されていません")
                     return
         if name == "ケイスケホンダ" and data is None:
             data = zyanken.stats_output(constant.Honda)
-            user = name
+            user, id = name, constant.Honda
         elif data is None:
             await ctx.channel.send("データが見つかりませんでした")
             return
         embed = discord.Embed(title=user, color=0x7CFC00)
-        embed.set_author(name='Stats', icon_url=ctx.author.avatar_url)
+        embed.set_author(name='Stats', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=data[6])
         embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
         embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
@@ -179,22 +179,14 @@ async def on_message(ctx):
             guild = client.get_guild(constant.Server)
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
-            cnt = len(stc) // 1900
-            if cnt >= 1:  # 文字数が多い場合は分割して送信
-                start = 0
-                for i in range(cnt + 1):
-                    j = 0
-                    while True:
-                        if stc[start + 1900 - j] == "\n":  # 1900文字毎を目安、改行で区切る
-                            await ctx.channel.send(f"```{stc[start:(start + 1900 - j)]}```")
-                            start = start + 1900 - j
-                            break
-                        j -= 1
-                    if i == cnt - 1:
-                        await ctx.channel.send(f"```{stc[start:]}```")
-                        break
-            else:
-                await ctx.channel.send(f"```{stc}```")
+            stc_split, i = stc.split("\n").append(""), 0
+            while i < len(stc_split):  # 2000文字以下に分割
+                msg, length = "", len(stc_split[i])
+                while length < 1990:
+                    msg += stc_split[i] + "\n"
+                    length += len(stc_split[i + 1])
+                    i += 1
+                await ctx.channel.send(f"```{msg}```")
             role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
             role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
             if type in ["wins", "winskeep"]:
