@@ -119,7 +119,7 @@ async def on_message(ctx):
                     msg = await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**", file=discord.File(img))
                     await asyncio.sleep(5)
                     await msg.delete()
-                return
+                break
 
     if ctx.content.lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
         if ctx.author.id not in constant.No_reply:
