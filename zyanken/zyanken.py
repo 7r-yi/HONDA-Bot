@@ -124,84 +124,46 @@ def stats_output(id):
 
 def ranking_output(type, guild):
     user = list(constant.zyanken_data.keys())
-    users_data, user_id, user_win, user_rate, user_lose, user_keepwin, user_maxwin = [], [], [], [], [], [], []
+    users_data = []
     for i in range(len(user)):
         cnt_win = sum(constant.zyanken_data[user[i]]["win"].values())
         cnt_lose = sum(constant.zyanken_data[user[i]]["lose"].values())
         cnt_keepwin = constant.zyanken_data[user[i]]["keep"]["cnt"]
         cnt_maxwin = constant.zyanken_data[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
-        users_data.append([int(user[i]), cnt_win, cnt_lose, cnt, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin])
-        user_id.append(int(user[i]))
-        user_win.append(cnt_win)
-        user_lose.append(cnt_lose)
-        user_rate.append((cnt_win / cnt) * 100)
-        user_keepwin.append(cnt_keepwin)
-        user_maxwin.append(cnt_keepwin)
+        users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin])
 
-    if type in ["wins", "winsall"]:
-        sort_data = sorted(zip(tuple(user_win), tuple(user_id), tuple(user_rate)), reverse=True)
-    elif type == "losesall":
-        sort_data = sorted(zip(tuple(user_lose), tuple(user_id), tuple(user_win)), reverse=True)
-    else:  # type == "winskeep"
-        sort_data = sorted(zip(tuple(user_keepwin), tuple(user_id), tuple(user_maxwin)), reverse=True)
-    sort_data = list(map(list, sort_data))  # 勝利数or勝率でソート
-    i = 0
-    while i < len(sort_data):
-        for j in range(1, len(sort_data) - i):
-            if sort_data[i][2] < 100 and type == "wins":  # 勝率100%未満は除外
+    if type == "wins":
+        sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
+        for i in range(len(sort_data)):
+            if sort_data[i][3] < 100:  # 勝率100%未満は除外
                 sort_data.remove(sort_data[i])
-                i -= 1
-                break
-            elif sort_data[i][0] == sort_data[i + j][0]:  # 勝利数/敗北数/連勝数が一致していた場合
-                sort_flag = False
-                if type == "losesall" and sort_data[i][2] > sort_data[i + j][2]:  # _/勝利数/_でソート
-                    sort_flag = True
-                elif type != "losesall" and sort_data[i][2] < sort_data[i + j][2]:  # 勝率/_/最大連勝数でソート
-                    sort_flag = True
-                if sort_flag:
-                    tmp = sort_data[i]
-                    sort_data[i] = sort_data[i + j]
-                    sort_data[i + j] = tmp
-            else:
-                break
-        i += 1
-
-    stc, best, worst = "", 0, 1
-    if type in ["wins", "winsall"]:
+        title = "勝利数基準, 無敗維持中"
+    elif type == "winsall":
+        sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
         title = "勝利数基準"
-        if type == "wins":
-            title += ", 無敗維持中"
-        for i in range(len(sort_data)):
-            for j in range(len(users_data)):
-                if sort_data[i][1] == users_data[j][0]:
-                    stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                           f"({users_data[j][1]}勝{users_data[j][2]}敗, 勝率{round(users_data[j][4], 2):.02f}%)\n"
-                    if i == 0:
-                        best = j
-                    if i == len(sort_data) - 1:
-                        worst = j
-                    break
     elif type == "losesall":
+        sort_data = sorted(users_data, key=lambda x: (x[2], x[1]), reverse=True)  # 敗北数→勝利数でソート
         title = "敗北数基準"
-        for i in range(len(sort_data)):
-            for j in range(len(users_data)):
-                if sort_data[i][1] == users_data[j][0]:
-                    stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                           f"(勝率{round(users_data[j][4], 2):.02f}%, {users_data[j][2]}敗{users_data[j][1]}勝)\n"
-                    if i == 1:
-                        best, worst = 0, j
     else:  # type == "winskeep"
+        sort_data = sorted(users_data, key=lambda x: (x[4], x[5]), reverse=True)  # 連勝数→最大連勝数でソート
         title = "現在の連勝数基準"
-        for i in range(len(sort_data)):
-            for j in range(len(users_data)):
-                if sort_data[i][1] == users_data[j][0]:
-                    stc += f"{i + 1}位 : {guild.get_member(users_data[j][0]).display_name} " \
-                           f"(現在{users_data[j][5]}連勝中, 最大{users_data[j][6]}連勝)\n"
-                    if i == 0:
-                        best = j
-                    if i == len(sort_data) - 2:
-                        worst = j
-                    break
 
-    return title, stc, users_data[best][0], users_data[worst][0]
+    stc = ""
+    if type in ["wins", "winsall"]:
+        for i in range(len(sort_data)):
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
+        best, worst = 0, len(sort_data) - 1
+    elif type == "losesall":
+        for i in range(len(sort_data)):
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"(勝率{round(sort_data[i][3], 2):.02f}%, {sort_data[i][2]}敗{sort_data[i][1]}勝)\n"
+        best, worst = 1, None
+    else:  # type == "winskeep"
+        for i in range(len(sort_data)):
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)\n"
+        best, worst = 0, None
+
+    return title, stc, sort_data[best][0], sort_data[worst][0]
