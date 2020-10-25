@@ -159,7 +159,7 @@ async def on_message(ctx):
             await ctx.channel.send("データが見つかりませんでした")
             return
         embed = discord.Embed(title=user, color=0x7CFC00)
-        embed.set_author(name='Stats', icon_url='https://i.imgur.com/dUXKlUj.png')
+        embed.set_author(name='Stats', icon_url=ctx.author.avatar_url)
         embed.set_thumbnail(url=data[6])
         embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
         embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
