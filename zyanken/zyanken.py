@@ -146,19 +146,34 @@ def ranking_output(type, guild):
         sort_data = sorted(users_data, key=lambda x: (x[4], x[5]), reverse=True)  # 連勝数→最大連勝数でソート
         title = "現在の連勝数基準"
 
-    stc = ""
+    stc, j, k = "", 1, 0
     if type in ["wins", "winsall"]:
         for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
+            if i != len(sort_data) - 1:
+                if sort_data[i][1] == sort_data[i + 1][1]:
+                    k += 1
+                else:
+                    j, k = j + 1 + k, 0
         return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
     elif type == "losesall":
         for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(勝率{round(sort_data[i][3], 2):.02f}%, {sort_data[i][2]}敗{sort_data[i][1]}勝)\n"
+            if i != len(sort_data) - 1:
+                if sort_data[i][2] == sort_data[i + 1][2]:
+                    k += 1
+                else:
+                    j, k = j + 1 + k, 0
         return title, stc, sort_data[1][0], None
     else:  # type == "winskeep"
         for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)\n"
+            if i != len(sort_data) - 1:
+                if sort_data[i][4] == sort_data[i + 1][4]:
+                    k += 1
+                else:
+                    j, k = j + 1 + k, 0
         return title, stc, sort_data[0][0], None
