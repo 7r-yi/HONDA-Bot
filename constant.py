@@ -15,7 +15,6 @@ with open('zyanken/zyanken_record.json', 'r') as f:
 with open('zyanken/no_data_user.json', 'r') as f:
     rm_user_data = json.load(f)
 
-Shichi = 193407417256640512
 Honda = 359330668112642059
 Server = 764419309610598420
 System = 766243950087897109

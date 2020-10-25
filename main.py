@@ -1,6 +1,6 @@
 import discord
 from discord.ext import tasks
-from datetime import datetime, timedelta
+from datetime import datetime
 from pytz import timezone
 import asyncio
 import random
@@ -11,14 +11,14 @@ import sys
 import jaconv
 import keep_alive
 import constant
-from zyanken import zyanken, zyanken_restore
+from zyanken import zyanken
 
 intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=1)
 async def data_auto_save():
     with open('zyanken/zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
@@ -35,17 +35,6 @@ async def data_auto_save():
 @client.event
 async def on_ready():
     data_auto_save.start()
-    boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-    bot_msgs = await client.get_channel(constant.Test_room).history(limit=30).flatten()
-    for msg in bot_msgs:
-        if "Data input" in msg.content:
-            time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
-            msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
-                .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
-            zyanken_restore.data_restore(msgs)
-            await client.get_channel(constant.Test_room).send(
-                f"{boot_time}\nBooted", file=discord.File('zyanken/zyanken_record.json'))
-            break
 
 
 @client.event
@@ -79,6 +68,13 @@ async def on_message(ctx):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
+    guild = client.get_guild(constant.Server)
+    role_A = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
+    role_W = discord.utils.get(ctx.guild.roles, id=constant.Winner)
+    role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
+    role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
+    role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
+
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
@@ -92,8 +88,7 @@ async def on_message(ctx):
         password = f"_join {time.strftime('%Y/%m/%d')}"
         if ctx.content == password:
             await ctx.delete()
-            role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
-            await ctx.author.add_roles(role)
+            await ctx.author.add_roles(role_V)
             await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
         else:
             msg = await ctx.channel.send(f'{ctx.author.mention} コマンドが違います')
@@ -121,30 +116,42 @@ async def on_message(ctx):
                     await msg.delete()
                 break
 
-    if ctx.content.lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
-        if ctx.author.id not in constant.No_reply:
-            constant.No_reply.append(ctx.author.id)
-            await ctx.channel.send(f"{ctx.author.mention} 返信を無効にしました")
-        else:
-            await ctx.channel.send(f"{ctx.author.mention} 既に返信が無効になっています")
+    if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
+        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
+        if " " not in ctx.content.strip():
+            name = guild.get_member(ctx.author.id).display_name
+        for member in role_V.members:
+            if name.lower() == member.display_name.lower():
+                if ctx.author.id not in constant.No_reply:
+                    constant.No_reply.append(member.id)
+                    await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を無効にしました")
+                else:
+                    await ctx.channel.send(f"{ctx.author.mention} {member.display_name}は既に返信が無効になっています")
+                return
+        await ctx.channel.send("ユーザーが見つかりませんでした")
 
-    if ctx.content.lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
-        if ctx.author.id in constant.No_reply:
-            constant.No_reply.remove(ctx.author.id)
-            await ctx.channel.send(f"{ctx.author.mention} 返信を有効にしました")
-        else:
-            await ctx.channel.send(f"{ctx.author.mention} 既に返信は有効になっています")
+    if ctx.content.split(" ")[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
+        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
+        if " " not in ctx.content.strip():
+            name = guild.get_member(ctx.author.id).display_name
+        for member in role_V.members:
+            if name.lower() == member.display_name.lower():
+                if ctx.author.id in constant.No_reply:
+                    constant.No_reply.remove(ctx.author.id)
+                    await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を有効にしました")
+                else:
+                    await ctx.channel.send(f"{ctx.author.mention} {member.display_name}は既に返信は有効になっています")
+                return
+        await ctx.channel.send("ユーザーが見つかりませんでした")
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
-            guild = client.get_guild(constant.Server)
             name = guild.get_member(ctx.author.id).display_name
-        role = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
         data, user, id = None, None, None
-        for member in role.members:
+        for member in role_V.members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in constant.zyanken_data:
                     data = zyanken.stats_output(member.id)
@@ -168,7 +175,7 @@ async def on_message(ctx):
         embed.add_field(name="グー負け", value=f"{data[4][0]}回")
         embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
-        embed.add_field(name="連勝数", value=f"現在{data[5][1]}連勝中 (最大{data[5][2]}連勝)")
+        embed.add_field(name="連勝数", value=f"現在{data[5][0]}連勝中 (最大{data[5][1]}連勝)")
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
@@ -176,19 +183,18 @@ async def on_message(ctx):
             return
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "winskeep", "losesall"]:
-            guild = client.get_guild(constant.Server)
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
-            stc_split, i = stc.split("\n").append(""), 0
-            while i < len(stc_split):  # 2000文字以下に分割
-                msg, length = "", len(stc_split[i])
-                while length < 1990:
+            stc_split, i = stc.split("\n"), 0
+            stc_split.append("")
+            while i < len(stc_split) - 1:  # 2000文字以下に分割
+                msg, length = "", len(stc_split[i]) + 1
+                while all([length < 1990, i < len(stc_split) - 1]):
                     msg += stc_split[i] + "\n"
-                    length += len(stc_split[i + 1])
+                    length += len(stc_split[i + 1]) + 1
                     i += 1
                 await ctx.channel.send(f"```{msg}```")
-            role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
-            role2 = discord.utils.get(ctx.guild.roles, id=constant.Loser)
+
             if type in ["wins", "winskeep"]:
                 if type == "wins":
                     before_check, same_check = constant.Former_winner_wins, constant.Former_winner_keep
@@ -197,18 +203,18 @@ async def on_message(ctx):
                     before_check, same_check = constant.Former_winner_keep, constant.Former_winner_wins
                     constant.Former_winner_keep = best
                 if before_check is not None and before_check != same_check:
-                    await guild.get_member(before_check).remove_roles(role1)
+                    await guild.get_member(before_check).remove_roles(role_W)
                 if best != constant.Former_loser_all and best != constant.Former_loser_loses:
-                    await guild.get_member(best).add_roles(role1)
+                    await guild.get_member(best).add_roles(role_W)
             elif type == "winsall":
                 if constant.Former_loser_all is not None:
-                    await guild.get_member(constant.Former_loser_all).remove_roles(role2)
-                await guild.get_member(worst).add_roles(role2)
+                    await guild.get_member(constant.Former_loser_all).remove_roles(role_L)
+                await guild.get_member(worst).add_roles(role_L)
                 constant.Former_loser_all = worst
             else:  # type == "losesall"
                 if constant.Former_loser_all is not None:
-                    await guild.get_member(constant.Former_loser_loses).remove_roles(role2)
-                await guild.get_member(best).add_roles(role2)
+                    await guild.get_member(constant.Former_loser_loses).remove_roles(role_L)
+                await guild.get_member(best).add_roles(role_L)
                 constant.Former_loser_loses = best
         else:
             await ctx.channel.send("Typeを入力してください\n"
@@ -260,11 +266,9 @@ async def on_message(ctx):
             for i in pick_num:
                 stc += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
             stc += "```"
-            guild = client.get_guild(constant.Server)
-            role = discord.utils.get(ctx.guild.roles, id=constant.Participant)
             for i in pick_num:
-                await guild.get_member(constant.Joiner[i]).add_roles(role)
-            await ctx.channel.send(f"{stc}リストのユーザーにロール {role.mention} を付与しました\n"
+                await guild.get_member(constant.Joiner[i]).add_roles(role_P)
+            await ctx.channel.send(f"{stc}リストのユーザーにロール {role_P.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
             constant.Joiner = []
         except ValueError:
@@ -272,18 +276,20 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
         role_name = ctx.content[ctx.content.find(" ") + 1:].lower()
-        if role_name == "participant":
+        if role_name in ["participant", "p"]:
             id = constant.Participant
             constant.Joiner = []
-        elif role_name == "winner":
+        elif role_name in ["winner", "w"]:
             id = constant.Winner
+        elif role_name in ["loser", "l"]:
+            id = constant.Loser
         else:
-            await ctx.channel.send("RoleNameを入力してください\n>>> **_ReSet RoleName**\nRoleName = Participant / Winner")
+            await ctx.channel.send("RoleNameを入力してください\n"
+                                   ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser")
             return
         role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
-            if member.id != constant.Shichi:
-                await member.remove_roles(role)
+            await member.remove_roles(role)
         await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
@@ -428,12 +434,9 @@ async def on_message(ctx):
                     k += 1
             i += k
         await ctx.channel.send(embed=embed)
-        guild = client.get_guild(constant.Server)
-        role1 = discord.utils.get(ctx.guild.roles, id=constant.Winner)
-        await guild.get_member(ranker[0]).add_roles(role1)
-        await ctx.channel.send(f"クイズを終了しました\n{role1.mention} → {guild.get_member(ranker[0]).mention}")
-        role2 = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
-        await ctx.channel.send(f"{role2.mention} `!out`で結果を {client.get_channel(constant.Result).mention} に出力")
+        await guild.get_member(ranker[0]).add_roles(role_W)
+        await ctx.channel.send(f"クイズを終了しました\n{role_W.mention} → {guild.get_member(ranker[0]).mention}")
+        await ctx.channel.send(f"{role_A.mention} `!out`で結果を {client.get_channel(constant.Result).mention} に出力")
         while True:
             reply = await client.wait_for('message', check=role_check_mode)
             if reply.content == "!out":

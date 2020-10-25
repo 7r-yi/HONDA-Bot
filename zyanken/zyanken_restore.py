@@ -49,7 +49,7 @@ def check_win(reactions, word):
             my, honda = "s", "r"
         else:
             my, honda = "p", "s"
-        return my, honda,  "lose", "win"
+        return my, honda, "lose", "win"
 
 
 def data_restore(messages):
@@ -82,3 +82,18 @@ def data_restore(messages):
     constant.zyanken_data = data
     with open('zyanken/zyanken_record.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+
+
+"""
+    boot_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+    bot_msgs = await client.get_channel(constant.Test_room).history(limit=30).flatten()
+    for msg in bot_msgs:
+        if "Data input" in msg.content:
+            time = datetime.strptime(msg.content.split("\n")[0], '%Y/%m/%d %H:%M:%S') - timedelta(hours=9)
+            msgs = await client.get_channel(constant.Zyanken_room).history(limit=None, after=time) \
+                .filter(lambda m: zyanken_restore.check_hand(m)).flatten()
+            zyanken_restore.data_restore(msgs)
+            await client.get_channel(constant.Test_room).send(
+                f"{boot_time}\nBooted", file=discord.File('zyanken/zyanken_record.json'))
+            break
+    """
