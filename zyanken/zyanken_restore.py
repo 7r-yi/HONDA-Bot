@@ -66,22 +66,16 @@ def data_restore(messages):
                 my, honda, my_rslt, honda_rslt = check_win(message.reactions, word)
             if str(message.author.id) not in data:
                 data[str(message.author.id)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                                                "keep": {"flag": 0, "cnt": 0, "max": 0}}
+                                                "keep": {"cnt": 0, "max": 0}}
             data[str(message.author.id)][my_rslt][my] += 1
             data[str(constant.Honda)][honda_rslt][honda] += 1
             if key == 1:
-                data[str(message.author.id)]["keep"]["flag"] = 1
                 data[str(message.author.id)]["keep"]["cnt"] += 1
                 if data[str(message.author.id)]["keep"]["cnt"] > data[str(message.author.id)]["keep"]["max"]:
                     data[str(message.author.id)]["keep"]["max"] = data[str(message.author.id)]["keep"]["cnt"]
-                if data[str(constant.Honda)]["keep"]["flag"] == 1:
-                    data[str(constant.Honda)]["keep"]["flag"] = 0
-                    data[str(constant.Honda)]["keep"]["cnt"] = 0
+                data[str(constant.Honda)]["keep"]["cnt"] = 0
             else:
-                if data[str(message.author.id)]["keep"]["flag"] == 1:
-                    data[str(message.author.id)]["keep"]["flag"] = 0
-                    data[str(message.author.id)]["keep"]["cnt"] = 0
-                data[str(constant.Honda)]["keep"]["flag"] = 1
+                data[str(message.author.id)]["keep"]["cnt"] = 0
                 data[str(constant.Honda)]["keep"]["cnt"] += 1
                 if data[str(constant.Honda)]["keep"]["cnt"] > data[str(constant.Honda)]["keep"]["max"]:
                     data[str(constant.Honda)]["keep"]["max"] = data[str(constant.Honda)]["keep"]["cnt"]
