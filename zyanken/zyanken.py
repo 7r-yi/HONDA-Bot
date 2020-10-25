@@ -77,24 +77,18 @@ def honda_to_zyanken(my_hand, user):
     if str(user) not in constant.rm_user_data:  # 過去に退出したことがあるユーザーは記録しない
         if str(user) not in data:
             data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                               "keep": {"flag": 0, "cnt": 0, "max": 0}}
+                               "keep": {"cnt": 0, "max": 0}}
         if win:
             data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
-            data[str(user)]["keep"]["flag"] = 1
             data[str(user)]["keep"]["cnt"] += 1
             if data[str(user)]["keep"]["cnt"] > data[str(user)]["keep"]["max"]:
                 data[str(user)]["keep"]["max"] = data[str(user)]["keep"]["cnt"]
             data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
-            if data[str(constant.Honda)]["keep"]["flag"] == 1:
-                data[str(constant.Honda)]["keep"]["flag"] = 0
-                data[str(constant.Honda)]["keep"]["cnt"] = 0
+            data[str(constant.Honda)]["keep"]["cnt"] = 0
         else:
             data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
-            if data[str(user)]["keep"]["flag"] == 1:
-                data[str(user)]["keep"]["flag"] = 0
-                data[str(user)]["keep"]["cnt"] = 0
+            data[str(user)]["keep"]["cnt"] = 0
             data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-            data[str(constant.Honda)]["keep"]["flag"] = 1
             data[str(constant.Honda)]["keep"]["cnt"] += 1
             if data[str(constant.Honda)]["keep"]["cnt"] > data[str(constant.Honda)]["keep"]["max"]:
                 data[str(constant.Honda)]["keep"]["max"] = data[str(constant.Honda)]["keep"]["cnt"]

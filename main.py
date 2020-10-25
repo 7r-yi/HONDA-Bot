@@ -105,7 +105,7 @@ async def on_message(ctx):
         return
 
     if ctx.content.count("\n") > 5 or len(ctx.content) > 200:
-        if ctx.channel.id == constant.General and not ctx.author.bot:  # 長文を削除
+        if ctx.channel.id == constant.General and not role_check_mode(ctx) and not ctx.author.bot:  # 長文を削除
             await ctx.delete()
 
     if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
