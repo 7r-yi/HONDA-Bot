@@ -1,4 +1,5 @@
 import random
+from operator import itemgetter
 import constant
 
 
@@ -128,7 +129,7 @@ def ranking_output(type, guild):
         users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin])
 
     if type == "wins":
-        sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
+        sort_data = sorted(users_data, key=itemgetter(1, 3), reverse=True)  # 勝利数→勝率でソート
         i = 0
         while i < len(sort_data):
             if sort_data[i][3] < 100:  # 勝率100%未満は除外
@@ -137,13 +138,13 @@ def ranking_output(type, guild):
             i += 1
         title = "勝利数基準, 無敗維持中"
     elif type == "winsall":
-        sort_data = sorted(users_data, key=lambda x: (x[1], x[3]), reverse=True)  # 勝利数→勝率でソート
+        sort_data = sorted(users_data, key=itemgetter(1, 3), reverse=True)  # 勝利数→勝率でソート
         title = "勝利数基準"
     elif type == "losesall":
-        sort_data = sorted(users_data, key=lambda x: (x[2], x[1]), reverse=True)  # 敗北数→勝利数でソート
+        sort_data = sorted(users_data, key=itemgetter(2, 1), reverse=True)  # 敗北数→勝利数でソート
         title = "敗北数基準"
     else:  # type == "winskeep"
-        sort_data = sorted(users_data, key=lambda x: (x[4], x[5]), reverse=True)  # 連勝数→最大連勝数でソート
+        sort_data = sorted(users_data, key=itemgetter(4, 5), reverse=True)  # 連勝数→最大連勝数でソート
         title = "現在の連勝数基準"
 
     stc, j, k = "", 1, 0
@@ -160,7 +161,7 @@ def ranking_output(type, guild):
     elif type == "losesall":
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"(勝率{round(sort_data[i][3], 2):.02f}%, {sort_data[i][2]}敗{sort_data[i][1]}勝)\n"
+                   f"({sort_data[i][2]}敗{sort_data[i][1]}勝, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][2] == sort_data[i + 1][2]:
                     k += 1

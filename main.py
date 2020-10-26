@@ -181,6 +181,9 @@ async def on_message(ctx):
         type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "winskeep", "losesall"]:
             title, stc, best, worst = zyanken.ranking_output(type, guild)
+            if len(stc) == 0:
+                await ctx.channel.send("現在、対象者はいません")
+                return
             await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
             stc_split, i = stc.split("\n"), 0
             stc_split.append("")
