@@ -184,7 +184,7 @@ async def on_message(ctx):
             if len(stc) == 0:
                 await ctx.channel.send("現在、対象者はいません")
                 return
-            await ctx.channel.send(f"じゃんけん戦績ランキング({title})")
+            await ctx.channel.send(f"じゃんけん戦績ランキング【{title}】")
             stc_split, i = stc.split("\n"), 0
             stc_split.append("")
             while i < len(stc_split) - 1:  # 2000文字以下に分割

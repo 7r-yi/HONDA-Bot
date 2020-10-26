@@ -136,45 +136,55 @@ def ranking_output(type, guild):
                 sort_data.remove(sort_data[i])
                 i -= 1
             i += 1
-        title = "勝利数基準, 無敗維持中"
+        title = "勝利数(>登録順)基準, 無敗維持中"
     elif type == "winsall":
         sort_data = sorted(users_data, key=itemgetter(1, 3), reverse=True)  # 勝利数→勝率でソート
-        title = "勝利数基準"
+        title = "勝利数(>登録順)基準"
     elif type == "losesall":
+        for i in range(len(users_data)):
+            users_data[i][1] *= -1
         sort_data = sorted(users_data, key=itemgetter(2, 1), reverse=True)  # 敗北数→勝利数でソート
-        title = "敗北数基準"
+        for i in range(len(sort_data)):
+            sort_data[i][1] *= -1
+        title = "敗北数(>勝利数>登録順)基準"
     else:  # type == "winskeep"
         sort_data = sorted(users_data, key=itemgetter(4, 5), reverse=True)  # 連勝数→最大連勝数でソート
         title = "現在の連勝数基準"
 
-    stc, j, k = "", 1, 0
-    if type in ["wins", "winsall"]:
+    stc = ""
+    if type == "wins":
         for i in range(len(sort_data)):
-            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
-            if i != len(sort_data) - 1:
-                if sort_data[i][1] == sort_data[i + 1][1]:
-                    k += 1
-                else:
-                    j, k = j + 1 + k, 0
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)"
+            stc += f" [Winner]\n{'-' * 50}\n" if i == 0 else "\n"
         return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
+
+    elif type == "winsall":
+        for i in range(len(sort_data)):
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)"
+            stc += " [Loser]\n" if i == len(sort_data) - 1 else "\n"
+        return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
+
     elif type == "losesall":
         for i in range(len(sort_data)):
-            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][2]}敗{sort_data[i][1]}勝, 勝率{round(sort_data[i][3], 2):.02f}%)\n"
-            if i != len(sort_data) - 1:
-                if sort_data[i][2] == sort_data[i + 1][2]:
-                    k += 1
-                else:
-                    j, k = j + 1 + k, 0
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"({sort_data[i][2]}敗{sort_data[i][1]}勝, 勝率{round(sort_data[i][3], 2):.02f}%)"
+            stc += " [Loser]\n" if i <= 1 else "\n"
         return title, stc, sort_data[1][0], None
+
     else:  # type == "winskeep"
+        j, k, flag = 1, 0, True
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)\n"
+                   f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)"
+            stc += f" [Winner]\n" if j == 1 else "\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][4] == sort_data[i + 1][4]:
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
+            if j > 1 and flag:
+                stc += f"{'-' * 50}\n"
+                flag = False
         return title, stc, sort_data[0][0], None
