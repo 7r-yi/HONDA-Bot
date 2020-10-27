@@ -74,6 +74,7 @@ async def on_message(ctx):
     role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
     role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
     role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
+    role_R = discord.utils.get(ctx.guild.roles, id=constant.RSPer)
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
@@ -111,6 +112,8 @@ async def on_message(ctx):
                     await ctx.add_reaction(emoji2)
                     await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
                                            file=discord.File(img), delete_after=5.0)
+                if 'RSPer' not in [roles.name for roles in ctx.author.roles]:
+                    await guild.get_member(ctx.author.id).add_roles(role_R)
                 break
 
     if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
@@ -123,9 +126,9 @@ async def on_message(ctx):
                     constant.No_reply.append(member.id)
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を無効にしました")
                 else:
-                    await ctx.channel.send(f"{ctx.author.mention} {member.display_name}は既に返信が無効になっています")
+                    await ctx.channel.send(f"{ctx.author.mention} 既に返信が無効になっています")
                 return
-        await ctx.channel.send("ユーザーが見つかりませんでした")
+        await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
     if ctx.content.split(" ")[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
@@ -137,9 +140,9 @@ async def on_message(ctx):
                     constant.No_reply.remove(ctx.author.id)
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を有効にしました")
                 else:
-                    await ctx.channel.send(f"{ctx.author.mention} {member.display_name}は既に返信は有効になっています")
+                    await ctx.channel.send(f"{ctx.author.mention} 既に返信は有効になっています")
                 return
-        await ctx.channel.send("ユーザーが見つかりませんでした")
+        await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
@@ -154,13 +157,13 @@ async def on_message(ctx):
                     data = zyanken.stats_output(member.id)
                     name, id = member.display_name, member.id
                 else:
-                    await ctx.channel.send("データが記録されていません")
+                    await ctx.channel.send(f"{ctx.author.mention} データが記録されていません")
                     return
         if name == "ケイスケホンダ" and data is None:
             data = zyanken.stats_output(constant.Honda)
             user, id = name, constant.Honda
         elif data is None:
-            await ctx.channel.send("データが見つかりませんでした")
+            await ctx.channel.send(f"{ctx.author.mention} データが見つかりませんでした")
             return
         embed = discord.Embed(title=user, color=0x7CFC00)
         embed.set_author(name='Stats', icon_url=client.get_user(id).avatar_url)
@@ -217,7 +220,7 @@ async def on_message(ctx):
                 await guild.get_member(best).add_roles(role_L)
                 constant.Former_loser_loses = best
         else:
-            await ctx.channel.send("Typeを入力してください\n"
+            await ctx.channel.send(f"{ctx.author.mention} Typeを入力してください\n"
                                    ">>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
@@ -278,7 +281,7 @@ async def on_message(ctx):
         elif role_name in ["loser", "l"]:
             id = constant.Loser
         else:
-            await ctx.channel.send("RoleNameを入力してください\n"
+            await ctx.channel.send(f"{ctx.author.mention} RoleNameを入力してください\n"
                                    ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser")
             return
         role = discord.utils.get(ctx.guild.roles, id=id)
