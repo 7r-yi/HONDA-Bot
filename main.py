@@ -122,7 +122,7 @@ async def on_message(ctx):
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
-                if ctx.author.id not in constant.No_reply:
+                if member.id not in constant.No_reply:
                     constant.No_reply.append(member.id)
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を無効にしました")
                 else:
@@ -136,8 +136,8 @@ async def on_message(ctx):
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
-                if ctx.author.id in constant.No_reply:
-                    constant.No_reply.remove(ctx.author.id)
+                if member.id in constant.No_reply:
+                    constant.No_reply.remove(member.id)
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を有効にしました")
                 else:
                     await ctx.channel.send(f"{ctx.author.mention} 既に返信は有効になっています")
