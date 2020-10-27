@@ -215,7 +215,7 @@ async def on_message(ctx):
                 await guild.get_member(worst).add_roles(role_L)
                 constant.Former_loser_all = worst
             else:  # type == "losesall"
-                if constant.Former_loser_all is not None:
+                if constant.Former_loser_loses is not None:
                     await guild.get_member(constant.Former_loser_loses).remove_roles(role_L)
                 await guild.get_member(best).add_roles(role_L)
                 constant.Former_loser_loses = best
