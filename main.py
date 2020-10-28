@@ -86,6 +86,9 @@ async def on_message(ctx):
     role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
     role_R = discord.utils.get(ctx.guild.roles, id=constant.RSPer)
 
+    if ctx.content.lower() in ["_sw"]:
+        await client.get_user(193407417256640512).send("aa")
+
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
@@ -165,7 +168,7 @@ async def on_message(ctx):
             if name.lower() == member.display_name.lower():
                 if str(member.id) in constant.zyanken_data:
                     data = zyanken.stats_output(member.id)
-                    name, id = member.display_name, member.id
+                    user, id = member.display_name, member.id
                 else:
                     await ctx.channel.send(f"{ctx.author.mention} データが記録されていません")
                     return
