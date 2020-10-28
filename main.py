@@ -117,7 +117,7 @@ async def on_message(ctx):
                 break
 
     if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
-        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
@@ -131,7 +131,7 @@ async def on_message(ctx):
         await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
     if ctx.content.split(" ")[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
-        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
@@ -147,7 +147,7 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
-        name = ctx.content[ctx.content.find(" ") + 1:]  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         data, user, id = None, None, None
@@ -181,7 +181,7 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
-        type = ctx.content[ctx.content.find(" ") + 1:].lower()  # プレイヤーのじゃんけん戦績を表示
+        type = ctx.content[ctx.content.find(" ") + 1:].strip().lower()  # プレイヤーのじゃんけん戦績を表示
         if type in ["wins", "winsall", "winskeep", "losesall"]:
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             if len(stc) == 0:
@@ -256,7 +256,7 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
-            num = int(ctx.content[ctx.content.find(" ") + 1:])
+            num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
             num_list = list(range(len(constant.Joiner)))
             pick_num = sorted(random.sample(num_list, num))
             stc = "参加者リスト 抽選結果\n```"
@@ -272,7 +272,7 @@ async def on_message(ctx):
             await ctx.channel.send("入力エラー")
 
     if ctx.content.split(" ")[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
-        role_name = ctx.content[ctx.content.find(" ") + 1:].lower()
+        role_name = ctx.content[ctx.content.find(" ") + 1:].strip().lower()
         if role_name in ["participant", "p"]:
             id = constant.Participant
             constant.Joiner = []
@@ -293,7 +293,7 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
-            num = int(ctx.content[ctx.content.find(" ") + 1:])
+            num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
         except:
             await ctx.channel.send("入力エラー")
             return
@@ -367,7 +367,7 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
-            num = int(ctx.content[ctx.content.find(" ") + 1:])
+            num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
             if not 1 <= num <= len(constant.Question):
                 await ctx.channel.send("登録されている問題数に対して入力が間違っています")
                 return
