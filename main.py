@@ -35,6 +35,16 @@ async def data_auto_save():
 @client.event
 async def on_ready():
     data_auto_save.start()
+    for type in ["wins", "winsall", "winskeep", "losesall"]:
+        _, _, best, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
+        if type == "wins":
+            constant.Former_winner_wins = best
+        elif type == "winskeep":
+            constant.Former_winner_keep = best
+        elif type == "winsall":
+            constant.Former_loser_all = worst
+        else:  # type == "losesall"
+            constant.Former_loser_loses = best
 
 
 @client.event
@@ -72,8 +82,8 @@ async def on_message(ctx):
     role_A = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
     role_W = discord.utils.get(ctx.guild.roles, id=constant.Winner)
     role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
-    role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
     role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
+    role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
     role_R = discord.utils.get(ctx.guild.roles, id=constant.RSPer)
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
