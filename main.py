@@ -86,9 +86,6 @@ async def on_message(ctx):
     role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
     role_R = discord.utils.get(ctx.guild.roles, id=constant.RSPer)
 
-    if ctx.content.lower() in ["_sw"]:
-        await client.get_user(193407417256640512).send("aa")
-
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
