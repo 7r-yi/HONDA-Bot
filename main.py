@@ -369,8 +369,7 @@ async def on_message(ctx):
             if role_check_admin(reply):
                 break
         if reply.content.lower() == "yes":
-            constant.Question = {}
-            constant.Answer = {}
+            constant.Question, constant.Answer = {}, {}
             await ctx.channel.send("消去しました")
         else:
             await ctx.channel.send("キャンセルしました")
@@ -427,10 +426,8 @@ async def on_message(ctx):
         embed = discord.Embed(color=0xFF0000)
         embed.set_author(name='Ranking', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/jrl3EDv.png')
-        i, n = 0, 5
-        if len(all_user) < 5:
-            n = len(all_user)
-        while i < n:
+        i = 0
+        while i < (len(all_user) if len(all_user) < 5 else 5):
             k = 0
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
