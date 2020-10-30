@@ -84,7 +84,7 @@ async def on_message(ctx):
     role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
     role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
     role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
-    role_R = discord.utils.get(ctx.guild.roles, id=constant.RSPer)
+    role_C = discord.utils.get(ctx.guild.roles, id=constant.Challenger)
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
@@ -108,7 +108,7 @@ async def on_message(ctx):
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
 
-    if ctx.content.count("\n") > 5 or len(ctx.content) > 200:
+    if ctx.content.count("\n") > 5 or len(ctx.content) > 300:
         if ctx.channel.id == constant.General and not role_check_mode(ctx) and not ctx.author.bot:  # 長文を削除
             await ctx.delete()
 
@@ -122,8 +122,8 @@ async def on_message(ctx):
                     await ctx.add_reaction(emoji2)
                     await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
                                            file=discord.File(img), delete_after=5.0)
-                if 'RSPer' not in [roles.name for roles in ctx.author.roles]:
-                    await guild.get_member(ctx.author.id).add_roles(role_R)
+                if 'Challenger' not in [roles.name for roles in ctx.author.roles]:
+                    await guild.get_member(ctx.author.id).add_roles(role_C)
                 break
 
     if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
@@ -175,7 +175,7 @@ async def on_message(ctx):
         elif data is None:
             await ctx.channel.send(f"{ctx.author.mention} データが見つかりませんでした")
             return
-        embed = discord.Embed(title=user, color=0x7CFC00)
+        embed = discord.Embed(title=user, color=0x0000FF)
         embed.set_author(name='Stats', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=data[6])
         embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
@@ -266,15 +266,20 @@ async def on_message(ctx):
 
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
+            lottery = []
+            for i in range(len(constant.Joiner)):
+                roles = [roles.name for roles in client.get_user(constant.Joiner[i]).roles]
+                adv = 4 if 'Star' in roles else 2 if 'Challenger' in roles else 1  # Star 4倍, Challenger 2倍
+                for _ in range(adv):
+                    lottery.append(constant.Joiner[i])
             num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
-            num_list = list(range(len(constant.Joiner)))
-            pick_num = sorted(random.sample(num_list, num))
+            pick_num = sorted(random.sample(list(range(len(lottery))), num))
             stc = "参加者リスト 抽選結果\n```"
             for i in pick_num:
-                stc += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
+                stc += f"{i + 1}. {client.get_user(lottery[i]).display_name}\n"
             stc += "```"
             for i in pick_num:
-                await guild.get_member(constant.Joiner[i]).add_roles(role_P)
+                await guild.get_member(lottery[i]).add_roles(role_P)
             await ctx.channel.send(f"{stc}リストのユーザーにロール {role_P.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
             constant.Joiner = []
@@ -290,11 +295,11 @@ async def on_message(ctx):
             id = constant.Winner
         elif role_name in ["loser", "l"]:
             id = constant.Loser
-        elif role_name in ["rsper", "r"]:
-            id = constant.RSPer
+        elif role_name in ["challenger", "c"]:
+            id = constant.Challenger
         else:
             await ctx.channel.send(f"{ctx.author.mention} RoleNameを入力してください\n"
-                                   ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser / RSPer")
+                                   ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser / Challenger")
             return
         role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
