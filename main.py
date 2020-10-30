@@ -240,7 +240,7 @@ async def on_message(ctx):
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         await ctx.channel.send(f"全戦績データを出力＆セーブしました ({time})")
 
-    if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
+    if ctx.content.lower() in ["_c", "_can"]:  # 参加希望を出す
         if ctx.author.id not in constant.Joiner:
             constant.Joiner.append(ctx.author.id)
             await ctx.channel.send(f'{ctx.author.mention} 参加希望者リストに追加しました', delete_after=5.0)
@@ -268,15 +268,15 @@ async def on_message(ctx):
         try:
             lottery = []
             for i in range(len(constant.Joiner)):
-                roles = [roles.name for roles in client.get_user(constant.Joiner[i]).roles]
+                roles = [roles.name for roles in guild.get_member(constant.Joiner[i]).roles]
                 adv = 4 if 'Star' in roles else 2 if 'Challenger' in roles else 1  # Star 4倍, Challenger 2倍
                 for _ in range(adv):
                     lottery.append(constant.Joiner[i])
             num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
             pick_num = sorted(random.sample(list(range(len(lottery))), num))
             stc = "参加者リスト 抽選結果\n```"
-            for i in pick_num:
-                stc += f"{i + 1}. {client.get_user(lottery[i]).display_name}\n"
+            for i in range(len(pick_num)):
+                stc += f"{i + 1}. {guild.get_member(lottery[pick_num[i]]).display_name}\n"
             stc += "```"
             for i in pick_num:
                 await guild.get_member(lottery[i]).add_roles(role_P)
