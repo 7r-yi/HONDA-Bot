@@ -145,7 +145,7 @@ def ranking_output(type, guild):
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)"
-            if j <= 7:  # 7位以上の場合Winner
+            if j <= 5:  # 5位以上の場合Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
             if i >= len(sort_data) - 2:  # ワースト2場合Loser
@@ -156,7 +156,7 @@ def ranking_output(type, guild):
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-            if j >= 8 and flag:  # 7位と8位の境目に区切り線を表示
+            if j >= 6 and flag:  # 5位と6位の境目に区切り線を表示
                 stc += f"{'-' * 50}\n"
                 flag = False
         if len(sort_data) < 2:
