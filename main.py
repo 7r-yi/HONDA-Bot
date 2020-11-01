@@ -209,8 +209,7 @@ async def on_message(ctx):
                 for member in role_W.members:
                     await member.remove_roles(role_W)
                 for user in best:
-                    if 'Loser' not in [roles.name for roles in guild.get_member(user).roles]:
-                        await guild.get_member(user).add_roles(role_W)
+                    await guild.get_member(user).add_roles(role_W)
                 if constant.Former_loser_point != worst:
                     await guild.get_member(worst).add_roles(role_L)
                     await guild.get_member(constant.Former_loser_point).remove_roles(role_L)

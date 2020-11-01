@@ -128,7 +128,7 @@ def ranking_output(type, guild):
         cnt_keepwin = constant.zyanken_data[user[i]]["keep"]["cnt"]
         cnt_maxwin = constant.zyanken_data[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
-        pts = cnt_keepwin * 3 + cnt_maxwin * 2 - cnt_lose
+        pts = cnt_keepwin * 3 + cnt_maxwin - cnt_lose
         users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin, pts])
 
     stc = ""
@@ -144,12 +144,13 @@ def ranking_output(type, guild):
         j, k, flag, winner = 1, 0, True, []
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]}%, {sort_data[i][5]}連勝中)"
-            if j >= 7:  # 7位以上の場合Winner
-                stc += f" [Winner]\n"
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)"
+            if j <= 7:  # 7位以上の場合Winner
+                stc += " [Winner]"
                 winner.append(sort_data[i][0])
-            else:
-                stc += "\n"
+            if i >= len(sort_data) - 2:  # ワースト2場合Loser
+                stc += " [Loser]"
+            stc += "\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
                     k += 1
@@ -170,7 +171,10 @@ def ranking_output(type, guild):
         j, k, = 1, 0
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)\n"
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)"
+            if i >= len(sort_data) - 2:  # ワースト2場合Loser
+                stc += " [Loser]"
+            stc += "\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
                     k += 1
