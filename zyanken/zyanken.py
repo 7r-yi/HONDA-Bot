@@ -180,4 +180,4 @@ def ranking_output(type, guild):
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-        return "ポイント基準", stc, None, sort_data[len(sort_data) - 2][0]
+        return "ポイント(>勝率)基準", stc, None, sort_data[len(sort_data) - 2][0]
