@@ -295,7 +295,7 @@ async def on_message(ctx):
         role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
             await member.remove_roles(role)
-        await ctx.channel.send(f"ロール {role.mention} をリセットしました")
+        await ctx.channel.send(f"ロール {role_name.capitalize()} をリセットしました")
 
     if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
