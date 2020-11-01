@@ -144,7 +144,7 @@ def ranking_output(type, guild):
         j, k, flag, winner = 1, 0, True, []
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)"
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][4]}連勝中)"
             if j <= 5:  # 5位以上の場合Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
