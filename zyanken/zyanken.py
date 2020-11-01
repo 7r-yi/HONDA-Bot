@@ -128,7 +128,7 @@ def ranking_output(type, guild):
         cnt_keepwin = constant.zyanken_data[user[i]]["keep"]["cnt"]
         cnt_maxwin = constant.zyanken_data[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
-        pts = cnt_keepwin * 3 + cnt_maxwin - cnt_lose
+        pts = cnt_keepwin * 3 + cnt_maxwin * 2 - cnt_lose
         users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin, pts])
 
     stc = ""
