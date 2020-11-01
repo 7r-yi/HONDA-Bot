@@ -35,16 +35,12 @@ async def data_auto_save():
 @client.event
 async def on_ready():
     data_auto_save.start()
-    for type in ["wins", "winsall", "winskeep", "losesall"]:
-        _, _, best, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
-        if type == "wins":
-            constant.Former_winner_wins = best
-        elif type == "winskeep":
-            constant.Former_winner_keep = best
-        elif type == "winsall":
-            constant.Former_loser_all = worst
-        else:  # type == "losesall"
-            constant.Former_loser_loses = best
+    for type in ["point", "pointall"]:
+        _, _, _, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
+        if type == "point":
+            constant.Former_loser_point = worst
+        else:  # type == "pointall"
+            constant.Former_loser_pointall = worst
 
 
 @client.event
@@ -177,7 +173,7 @@ async def on_message(ctx):
             return
         embed = discord.Embed(title=user, color=0x0000FF)
         embed.set_author(name='Stats', icon_url=client.get_user(id).avatar_url)
-        embed.set_thumbnail(url=data[6])
+        embed.set_thumbnail(url=data[7])
         embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
         embed.add_field(name="グー勝ち", value=f"{data[3][0]}回")
         embed.add_field(name="チョキ勝ち", value=f"{data[3][1]}回")
@@ -186,13 +182,14 @@ async def on_message(ctx):
         embed.add_field(name="チョキ負け", value=f"{data[4][1]}回")
         embed.add_field(name="パー負け", value=f"{data[4][2]}回")
         embed.add_field(name="連勝数", value=f"現在{data[5][0]}連勝中 (最大{data[5][1]}連勝)")
+        embed.add_field(name="得点", value=f"{data[6]}点")
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         type = ctx.content[ctx.content.find(" ") + 1:].strip().lower()  # プレイヤーのじゃんけん戦績を表示
-        if type in ["wins", "winsall", "winskeep", "losesall"]:
+        if type in ["point", "pointall"]:
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             if len(stc) == 0:
                 await ctx.channel.send("現在、対象者はいません")
@@ -208,30 +205,24 @@ async def on_message(ctx):
                     i += 1
                 await ctx.channel.send(f"```{msg}```")
 
-            if type in ["wins", "winskeep"]:
-                if type == "wins":
-                    before_check, same_check = constant.Former_winner_wins, constant.Former_winner_keep
-                    constant.Former_winner_wins = best
-                else:  # type == "winskeep":
-                    before_check, same_check = constant.Former_winner_keep, constant.Former_winner_wins
-                    constant.Former_winner_keep = best
-                if before_check is not None and before_check != same_check:
-                    await guild.get_member(before_check).remove_roles(role_W)
-                if best != constant.Former_loser_all and best != constant.Former_loser_loses:
-                    await guild.get_member(best).add_roles(role_W)
-            elif type == "winsall":
-                if constant.Former_loser_all is not None:
-                    await guild.get_member(constant.Former_loser_all).remove_roles(role_L)
-                await guild.get_member(worst).add_roles(role_L)
-                constant.Former_loser_all = worst
-            else:  # type == "losesall"
-                if constant.Former_loser_loses is not None:
-                    await guild.get_member(constant.Former_loser_loses).remove_roles(role_L)
-                await guild.get_member(best).add_roles(role_L)
-                constant.Former_loser_loses = best
+            if type == "point":
+                for member in role_W.members:
+                    await member.remove_roles(role_W)
+                for user in best:
+                    if 'Loser' not in [roles.name for roles in guild.get_member(user).roles]:
+                        await guild.get_member(user).add_roles(role_W)
+                if constant.Former_loser_point != worst:
+                    await guild.get_member(worst).add_roles(role_L)
+                    await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
+                constant.Former_loser_point = worst
+            else:  # type == "pointall"
+                if constant.Former_loser_pointall != worst:
+                    await guild.get_member(worst).add_roles(role_L)
+                    await guild.get_member(constant.Former_loser_pointall).remove_roles(role_L)
+                constant.Former_loser_pointall = worst
         else:
             await ctx.channel.send(f"{ctx.author.mention} Typeを入力してください\n"
-                                   ">>> **_RanKing Type**\nType = Wins / WinsKeep / WinsAll / LosesAll")
+                                   ">>> **_RanKing Type**\nType = Point / PointAll")
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:

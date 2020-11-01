@@ -43,7 +43,7 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    if random.randint(1, 1000) % 142 != 0:  # 勝率99.3%
+    if random.randint(1, 100) >= 6:  # 勝率95%
         win = True
         img_pass = './zyanken/image/YOU WIN.jpg'
         emoji2 = "🎉"
@@ -108,13 +108,15 @@ def stats_output(id):
     for i in range(3):
         cnt_lose += lose_data[i]
 
+    pts = keepwin_data[0] * 3 + keepwin_data[1] - cnt_lose
+
     win_rate = cnt_win / (cnt_win + cnt_lose) * 100
-    if win_rate < 99.3:
+    if win_rate < 95:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
-    return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, keepwin_data, url]
+    return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, keepwin_data, pts, url]
 
 
 def ranking_output(type, guild):
@@ -126,65 +128,48 @@ def ranking_output(type, guild):
         cnt_keepwin = constant.zyanken_data[user[i]]["keep"]["cnt"]
         cnt_maxwin = constant.zyanken_data[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
-        users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin])
+        pts = cnt_keepwin * 3 + cnt_maxwin - cnt_lose
+        users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin, pts])
 
-    if type == "wins":
-        sort_data = sorted(users_data, key=itemgetter(1, 3), reverse=True)  # 勝利数→勝率でソート
+    stc = ""
+    if type == "point":
+        sort_data = sorted(users_data, key=itemgetter(6, 4), reverse=True)  # ポイント→連勝数でソート
         i = 0
         while i < len(sort_data):
-            if sort_data[i][3] < 100:  # 勝率100%未満は除外
+            if sort_data[i][1] + sort_data[i][2] < 100:  # 100戦以上
                 sort_data.remove(sort_data[i])
                 i -= 1
             i += 1
-        title = "勝利数(>登録順)基準, 無敗維持中"
-    elif type == "winsall":
-        sort_data = sorted(users_data, key=itemgetter(1, 3), reverse=True)  # 勝利数→勝率でソート
-        title = "勝利数(>登録順)基準"
-    elif type == "losesall":
-        for i in range(len(users_data)):
-            users_data[i][1] *= -1
-        sort_data = sorted(users_data, key=itemgetter(2, 1), reverse=True)  # 敗北数→勝利数でソート
-        for i in range(len(sort_data)):
-            sort_data[i][1] *= -1
-        title = "敗北数(>勝利数>登録順)基準"
-    else:  # type == "winskeep"
-        sort_data = sorted(users_data, key=itemgetter(4, 5), reverse=True)  # 連勝数→最大連勝数でソート
-        title = "現在の連勝数基準"
 
-    stc = ""
-    if type == "wins":
-        for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)"
-            stc += f" [Winner]\n{'-' * 50}\n" if i == 0 else "\n"
-        return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
-
-    elif type == "winsall":
-        for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][1]}勝{sort_data[i][2]}敗, 勝率{round(sort_data[i][3], 2):.02f}%)"
-            stc += " [Loser]\n" if i == len(sort_data) - 1 else "\n"
-        return title, stc, sort_data[0][0], sort_data[len(sort_data) - 1][0]
-
-    elif type == "losesall":
-        for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][2]}敗{sort_data[i][1]}勝, 勝率{round(sort_data[i][3], 2):.02f}%)"
-            stc += " [Loser]\n" if i <= 1 else "\n"
-        return title, stc, sort_data[1][0], None
-
-    else:  # type == "winskeep"
-        j, k, flag = 1, 0, True
+        j, k, flag, winner = 1, 0, True, []
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"(現在{sort_data[i][4]}連勝中, 最大{sort_data[i][5]}連勝)"
-            stc += f" [Winner]\n" if j == 1 else "\n"
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]}%, {sort_data[i][5]}連勝中)"
+            if j >= 6:  # 6位以上の場合Winner
+                stc += f" [Winner]\n"
+                winner.append(sort_data[i][0])
+            else:
+                stc += "\n"
             if i != len(sort_data) - 1:
-                if sort_data[i][4] == sort_data[i + 1][4]:
+                if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-            if j > 1 and flag:
+            if j > 6 and flag:  # 7位以下に区切り線を表示
                 stc += f"{'-' * 50}\n"
                 flag = False
-        return title, stc, sort_data[0][0], None
+        return "ポイント基準, 100戦以上", stc, winner, sort_data[len(sort_data) - 2][0]
+
+    else:  # if type == "pointall":
+        sort_data = sorted(users_data, key=itemgetter(6, 4), reverse=True)  # ポイント→連勝数でソート
+
+        j, k, = 1, 0
+        for i in range(len(sort_data)):
+            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]}%, {sort_data[i][5]}連勝中)\n"
+            if i != len(sort_data) - 1:
+                if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
+                    k += 1
+                else:
+                    j, k = j + 1 + k, 0
+        return "ポイント基準", stc, None, sort_data[len(sort_data) - 2][0]
