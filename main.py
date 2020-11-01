@@ -171,7 +171,7 @@ async def on_message(ctx):
         elif data is None:
             await ctx.channel.send(f"{ctx.author.mention} データが見つかりませんでした")
             return
-        embed = discord.Embed(title=user, color=0x0000FF)
+        embed = discord.Embed(title=user, color=0x9932CC)
         embed.set_author(name='Stats', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=data[7])
         embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)

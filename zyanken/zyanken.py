@@ -145,7 +145,7 @@ def ranking_output(type, guild):
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][6]}点, 勝率{sort_data[i][3]}%, {sort_data[i][5]}連勝中)"
-            if j >= 6:  # 6位以上の場合Winner
+            if j >= 7:  # 7位以上の場合Winner
                 stc += f" [Winner]\n"
                 winner.append(sort_data[i][0])
             else:
@@ -155,10 +155,14 @@ def ranking_output(type, guild):
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-            if j > 6 and flag:  # 7位以下に区切り線を表示
+            if j >= 8 and flag:  # 7位と8位の境目に区切り線を表示
                 stc += f"{'-' * 50}\n"
                 flag = False
-        return "ポイント基準, 100戦以上", stc, winner, sort_data[len(sort_data) - 2][0]
+        if len(sort_data) < 2:
+            loser = None
+        else:
+            loser = sort_data[len(sort_data) - 2][0]
+        return "ポイント基準, 100戦以上", stc, winner, loser
 
     else:  # if type == "pointall":
         sort_data = sorted(users_data, key=itemgetter(6, 4), reverse=True)  # ポイント→連勝数でソート
@@ -166,7 +170,7 @@ def ranking_output(type, guild):
         j, k, = 1, 0
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]}%, {sort_data[i][5]}連勝中)\n"
+                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][5]}連勝中)\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
                     k += 1
