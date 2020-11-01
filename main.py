@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 import json
 import sys
 import jaconv
-import keep_alive
 import constant
 from zyanken import zyanken
 
@@ -109,8 +108,7 @@ async def on_message(ctx):
             await ctx.delete()
 
     if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
-        hands = ["グー", "チョキ", "パー"]
-        for hand in hands:
+        for hand in ["グー", "チョキ", "パー"]:
             if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
                 if ctx.author.id not in constant.No_reply:
@@ -442,6 +440,5 @@ async def on_message(ctx):
                 break
 
 
-keep_alive.keep_alive()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client.run(os.environ.get('TOKEN'))
