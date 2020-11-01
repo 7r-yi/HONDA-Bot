@@ -133,7 +133,7 @@ def ranking_output(type, guild):
 
     stc = ""
     if type == "point":
-        sort_data = sorted(users_data, key=itemgetter(6, 4), reverse=True)  # ポイント→連勝数でソート
+        sort_data = sorted(users_data, key=itemgetter(6, 3), reverse=True)  # ポイント→勝率でソート
         i = 0
         while i < len(sort_data):
             if sort_data[i][1] + sort_data[i][2] < 100:  # 100戦以上
