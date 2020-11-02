@@ -141,15 +141,16 @@ def ranking_output(type, guild):
                 i -= 1
             i += 1
 
-        j, k, flag, winner = 1, 0, True, []
+        j, k, flag, winner, loser = 1, 0, True, [], None
         for i in range(len(sort_data)):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][4]}連勝中)"
             if j <= 5:  # 5位以上の場合Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
-            if i >= len(sort_data) - 2:  # ワースト2場合Loser
+            elif j == 6:  # 6位の場合Loser
                 stc += " [Loser]"
+                loser = sort_data[i][0]
             stc += "\n"
             if i != len(sort_data) - 1:
                 if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
@@ -159,10 +160,6 @@ def ranking_output(type, guild):
             if j >= 6 and flag:  # 5位と6位の境目に区切り線を表示
                 stc += f"{'-' * 50}\n"
                 flag = False
-        if len(sort_data) < 2:
-            loser = None
-        else:
-            loser = sort_data[len(sort_data) - 2][0]
         return "ポイント基準, 100戦以上", stc, winner, loser
 
     else:  # if type == "pointall":
@@ -175,9 +172,4 @@ def ranking_output(type, guild):
             if i >= len(sort_data) - 2:  # ワースト2場合Loser
                 stc += " [Loser]"
             stc += "\n"
-            if i != len(sort_data) - 1:
-                if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
-                    k += 1
-                else:
-                    j, k = j + 1 + k, 0
-        return "ポイント(>勝率)基準", stc, None, sort_data[len(sort_data) - 2][0]
+        return "ポイント(>勝率>登録順)基準", stc, None, sort_data[len(sort_data) - 2][0]
