@@ -163,11 +163,10 @@ def ranking_output(type, guild):
         return "ポイント基準, 100戦以上", stc, winner, loser
 
     else:  # if type == "pointall":
-        sort_data = sorted(users_data, key=itemgetter(6, 4), reverse=True)  # ポイント→連勝数でソート
+        sort_data = sorted(users_data, key=itemgetter(6, 3), reverse=True)  # ポイント→連勝数でソート
 
-        j, k, = 1, 0
         for i in range(len(sort_data)):
-            stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][4]}連勝中)"
             if i >= len(sort_data) - 2:  # ワースト2場合Loser
                 stc += " [Loser]"
