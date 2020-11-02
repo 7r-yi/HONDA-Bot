@@ -103,9 +103,10 @@ async def on_message(ctx):
     if not role_check_visit(ctx):  # 以下、@everyoneは実行不可
         return
 
-    if ctx.content.count("\n") > 5 or len(ctx.content) > 300:
+    if ctx.content.count("\n") > 7 or len(ctx.content) > 400:
         if ctx.channel.id == constant.General and not role_check_mode(ctx) and not ctx.author.bot:  # 長文を削除
             await ctx.delete()
+            await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=3.0)
 
     if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
         for hand in ["グー", "チョキ", "パー"]:
