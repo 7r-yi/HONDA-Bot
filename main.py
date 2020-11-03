@@ -108,7 +108,7 @@ async def on_message(ctx):
             await ctx.delete()
             await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=3.0)
 
-    if ctx.channel.id == constant.Zyanken_room and not ctx.author.bot:
+    if (ctx.channel.id == constant.Zyanken_room or ctx.channel.id == constant.Test_room) and not ctx.author.bot:
         for hand in ["グー", "チョキ", "パー"]:
             if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
