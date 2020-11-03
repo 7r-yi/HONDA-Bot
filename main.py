@@ -188,7 +188,8 @@ async def on_message(ctx):
         if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
             return
         type = ctx.content[ctx.content.find(" ") + 1:].strip().lower()  # プレイヤーのじゃんけん戦績を表示
-        if type in ["point", "pointall"]:
+        if type in ["p", "point", "pa", "pointall"]:
+            type = "point" if type in ["p", "point"] else "pointall"
             title, stc, best, worst = zyanken.ranking_output(type, guild)
             if len(stc) == 0:
                 await ctx.channel.send("現在、対象者はいません")
