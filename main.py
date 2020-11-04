@@ -71,7 +71,7 @@ async def on_message(ctx):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
-    if ctx.author.bot:  # Botのメッセージには反応させない
+    if ctx.author.bot or ctx.content == "":  # Botのメッセージと無入力には反応させない
         return
 
     guild = client.get_guild(constant.Server)
