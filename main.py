@@ -59,9 +59,6 @@ async def on_member_remove(member):
 
 @client.event
 async def on_message(ctx):
-    def bot_check(ctx_wait):
-        return not ctx_wait.author.bot
-
     def role_check_admin(ctx_role):
         return 'Administrator' in [roles.name for roles in ctx_role.author.roles]
 
@@ -72,6 +69,9 @@ async def on_message(ctx):
     def role_check_visit(ctx_role):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
+
+    if ctx.author.bot:  # Botのメッセージには反応させない
+        return
 
     guild = client.get_guild(constant.Server)
     role_A = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
@@ -89,7 +89,7 @@ async def on_message(ctx):
         await client.logout()
         await sys.exit()
 
-    if ctx.channel.id == constant.Gate and not ctx.author.bot:  # Gateでの入力チェック
+    if ctx.channel.id == constant.Gate:  # Gateでの入力チェック
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
         password = f"_join {time.strftime('%Y/%m/%d')}"
         if ctx.content == password:
@@ -104,11 +104,11 @@ async def on_message(ctx):
         return
 
     if ctx.content.count("\n") > 7 or len(ctx.content) > 400:
-        if ctx.channel.id == constant.General and not role_check_mode(ctx) and not ctx.author.bot:  # 長文を削除
+        if ctx.channel.id == constant.General and not role_check_mode(ctx):  # 長文を削除
             await ctx.delete()
             await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=3.0)
 
-    if (ctx.channel.id == constant.Zyanken_room or ctx.channel.id == constant.Test_room) and not ctx.author.bot:
+    if ctx.channel.id == constant.Zyanken_room or ctx.channel.id == constant.Test_room:
         for hand in ["グー", "チョキ", "パー"]:
             if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
@@ -121,7 +121,7 @@ async def on_message(ctx):
                     await guild.get_member(ctx.author.id).add_roles(role_C)
                 break
 
-    if ctx.content.split(" ")[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
+    if ctx.content.split()[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
@@ -135,7 +135,7 @@ async def on_message(ctx):
                 return
         await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
-    if ctx.content.split(" ")[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
+    if ctx.content.split()[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
         name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
@@ -149,10 +149,10 @@ async def on_message(ctx):
                 return
         await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
-    if ctx.content.split(" ")[0].lower() in ["_st", "_stats"]:
-        if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
+    if ctx.content.split()[0].lower() in ["_st", "_stats"]:  # プレイヤーのじゃんけん戦績を表示
+        if ctx.channel.id != constant.Zyanken_room and not role_check_mode(ctx):  # じゃんけん会場のみ反応(モデレーター以外)
             return
-        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         data, user, id = None, None, None
@@ -184,44 +184,50 @@ async def on_message(ctx):
         embed.add_field(name="得点", value=f"{data[6]}点")
         await ctx.channel.send(embed=embed)
 
-    if ctx.content.split(" ")[0].lower() in ["_rk", "_ranking"]:
-        if ctx.channel.id != constant.Zyanken_room and ctx.channel.id != constant.Test_room:
+    if ctx.content.split()[0].lower() in ["_rk", "_ranking"]:  # ランキングを表示
+        if ctx.channel.id != constant.Zyanken_room and not role_check_mode(ctx):  # じゃんけん会場のみ反応(モデレーター以外)
             return
-        type = ctx.content[ctx.content.find(" ") + 1:].strip().lower()  # プレイヤーのじゃんけん戦績を表示
-        if type in ["p", "point", "pa", "pointall"]:
-            type = "point" if type in ["p", "point"] else "pointall"
-            title, stc, best, worst = zyanken.ranking_output(type, guild)
-            if len(stc) == 0:
-                await ctx.channel.send("現在、対象者はいません")
-                return
-            await ctx.channel.send(f"じゃんけん戦績ランキング【{title}】")
-            stc_split, i = stc.split("\n"), 0
-            stc_split.append("")
-            while i < len(stc_split) - 1:  # 2000文字以下に分割して送信
-                msg, length = "", len(stc_split[i]) + 1
-                while all([length < 1990, i < len(stc_split) - 1]):
-                    msg += stc_split[i] + "\n"
-                    length += len(stc_split[i + 1]) + 1
-                    i += 1
-                await ctx.channel.send(f"```{msg}```")
-
-            if type == "point":
-                for member in role_W.members:
-                    await member.remove_roles(role_W)
-                for user in best:
-                    await guild.get_member(user).add_roles(role_W)
-                if constant.Former_loser_point != worst:
-                    await guild.get_member(worst).add_roles(role_L)
-                    await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
-                constant.Former_loser_point = worst
-            else:  # type == "pointall"
-                if constant.Former_loser_pointall != worst:
-                    await guild.get_member(worst).add_roles(role_L)
-                    await guild.get_member(constant.Former_loser_pointall).remove_roles(role_L)
-                constant.Former_loser_pointall = worst
+        type = ctx.content[ctx.content.find(" ") + 1: ctx.content.rfind(" ")].strip()
+        if type in ["p", "point", "pa", "pointall"] or " " not in type:
+            type = "pointall" if type in ["pa", "pointall"] else "point"
+            try:
+                num = int(ctx.content[ctx.content.rfind(" ") + 1:].strip())
+            except ValueError:
+                num = 999
         else:
-            await ctx.channel.send(f"{ctx.author.mention} Typeを入力してください\n"
-                                   ">>> **_RanKing Type**\nType = Point / PointAll")
+            await ctx.channel.send(f"{ctx.author.mention} 入力形式が間違っています\n"
+                                   ">>> **_RanKing Type N**\nType = Point / PointAll (未入力の場合 : Point)\n"
+                                   "N : 上位N名を表示 (未入力/範囲外の場合 : 対象者全員)")
+            return
+        title, stc, best, worst = zyanken.ranking_output(type, guild)
+        if len(stc) == 0:
+            await ctx.channel.send("現在、対象者はいません")
+            return
+        await ctx.channel.send(f"じゃんけん戦績ランキング【{title}】")
+        stc_split, i = stc.split("\n"), 0
+        stc_split.append("")
+        send_times = num if 1 <= num <= 5 else num + 1 if 6 <= num < len(stc_split) else len(stc_split) - 1
+        while i < send_times:  # 2000文字以下に分割して送信
+            msg, length = "", len(stc_split[i]) + 1
+            while all([length < 1990, i < send_times]):
+                msg += stc_split[i] + "\n"
+                length += len(stc_split[i + 1]) + 1
+                i += 1
+            await ctx.channel.send(f"```{msg}```")
+        if type == "point":
+            for member in role_W.members:
+                await member.remove_roles(role_W)
+            for user in best:
+                await guild.get_member(user).add_roles(role_W)
+            if constant.Former_loser_point != worst:
+                await guild.get_member(worst).add_roles(role_L)
+                await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
+            constant.Former_loser_point = worst
+        else:  # type == "pointall"
+            if constant.Former_loser_pointall != worst:
+                await guild.get_member(worst).add_roles(role_L)
+                await guild.get_member(constant.Former_loser_pointall).remove_roles(role_L)
+            constant.Former_loser_pointall = worst
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
@@ -254,7 +260,7 @@ async def on_message(ctx):
             stc = "参加希望者はいません"
         await ctx.channel.send(stc, delete_after=20.0)
 
-    if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
+    if ctx.content.split()[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
             lottery = []
             for i in range(len(constant.Joiner)):  # 当選確率 Star 10倍, Challenger 5倍
@@ -276,7 +282,7 @@ async def on_message(ctx):
         except ValueError:
             await ctx.channel.send("入力エラー")
 
-    if ctx.content.split(" ")[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
+    if ctx.content.split()[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
         role_name = ctx.content[ctx.content.find(" ") + 1:].strip().lower()
         if role_name in ["participant", "p"]:
             id = constant.Participant
@@ -296,7 +302,7 @@ async def on_message(ctx):
             await member.remove_roles(role)
         await ctx.channel.send(f"ロール {role_name.capitalize()} をリセットしました")
 
-    if ctx.content.split(" ")[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
+    if ctx.content.split()[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
         except:
@@ -307,7 +313,7 @@ async def on_message(ctx):
         while i < num:
             await ctx.channel.send(f"**{i + 1}**/{num}問目の問題文を入力してください")
             while True:
-                reply = await client.wait_for('message', check=bot_check)
+                reply = await client.wait_for('message')
                 if role_check_admin(reply):
                     break
             if reply.content.lower() == "back" and i >= 1:
@@ -323,7 +329,7 @@ async def on_message(ctx):
                 constant.Question[f"Q{i + 1}"] = reply.content
                 await ctx.channel.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
                 while True:
-                    reply = await client.wait_for('message', check=bot_check)
+                    reply = await client.wait_for('message')
                     if role_check_admin(reply):
                         break
                 if reply.content.lower() == "back" and i >= 1:
@@ -342,7 +348,7 @@ async def on_message(ctx):
         if len(constant.Question) != 0:
             await ctx.channel.send("クイズの問題を表示します. よろしいですか？(Yes/No)")
             while True:
-                reply = await client.wait_for('message', check=bot_check)
+                reply = await client.wait_for('message')
                 if role_check_admin(reply):
                     break
             if reply.content.lower() == "yes":
@@ -360,7 +366,7 @@ async def on_message(ctx):
     if ctx.content.lower() in ["_qr", "_quizreset"] and role_check_admin(ctx):
         await ctx.channel.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
         while True:
-            reply = await client.wait_for('message', check=bot_check)
+            reply = await client.wait_for('message')
             if role_check_admin(reply):
                 break
         if reply.content.lower() == "yes":
@@ -369,7 +375,7 @@ async def on_message(ctx):
         else:
             await ctx.channel.send("キャンセルしました")
 
-    if ctx.content.split(" ")[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
+    if ctx.content.split()[0].lower() in ["_qs", "_quizstart"] and role_check_admin(ctx):
         try:
             num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
             if not 1 <= num <= len(constant.Question):
@@ -390,7 +396,7 @@ async def on_message(ctx):
             await ctx.channel.send(f"{constant.Question[f'Q{i + 1}']}")
             j, flag, winner, start = 1, False, [], datetime.now()
             while 0 <= j <= 3:
-                reply = await client.wait_for('message', check=bot_check)
+                reply = await client.wait_for('message')
                 elap = (start - datetime.now()).seconds
                 if reply.content == constant.Answer[f'A{i + 1}'] and reply.channel.id == constant.Quiz_room:
                     if reply.author.id not in winner:
