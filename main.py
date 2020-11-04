@@ -4,6 +4,7 @@ from datetime import datetime
 from pytz import timezone
 import asyncio
 import random
+import re
 import os
 from dotenv import load_dotenv
 import json
@@ -187,11 +188,16 @@ async def on_message(ctx):
     if ctx.content.split()[0].lower() in ["_rk", "_ranking"]:  # ランキングを表示
         if ctx.channel.id != constant.Zyanken_room and not role_check_mode(ctx):  # じゃんけん会場のみ反応(モデレーター以外)
             return
-        type = ctx.content[ctx.content.find(" ") + 1: ctx.content.rfind(" ")].strip()
-        if type in ["p", "point", "pa", "pointall"] or " " not in type:
-            type = "pointall" if type in ["pa", "pointall"] else "point"
+        if len(ctx.content.split()) == 1:
+            type = "point"
+        else:
+            type = ctx.content.replace(ctx.content.split()[0], "").strip()
+        if type.split()[0].lower() in ["p", "point", "pa", "pointall"]:
+            type = "point" if type.split()[0].lower() in ["p", "point"] else "pointall"
             try:
-                num = int(ctx.content[ctx.content.rfind(" ") + 1:].strip())
+                num = int(re.sub(r'[^0-9]', "", ctx.content))
+                if type == "point" and num >= 6:
+                    num += 1
             except ValueError:
                 num = 999
         else:
@@ -206,7 +212,7 @@ async def on_message(ctx):
         await ctx.channel.send(f"じゃんけん戦績ランキング【{title}】")
         stc_split, i = stc.split("\n"), 0
         stc_split.append("")
-        send_times = num if 1 <= num <= 5 else num + 1 if 6 <= num < len(stc_split) else len(stc_split) - 1
+        send_times = num if 1 <= num < len(stc_split) else len(stc_split) - 1
         while i < send_times:  # 2000文字以下に分割して送信
             msg, length = "", len(stc_split[i]) + 1
             while all([length < 1990, i < send_times]):
