@@ -197,7 +197,7 @@ async def on_message(ctx):
             await ctx.channel.send(f"じゃんけん戦績ランキング【{title}】")
             stc_split, i = stc.split("\n"), 0
             stc_split.append("")
-            while i < len(stc_split) - 1:  # 2000文字以下に分割
+            while i < len(stc_split) - 1:  # 2000文字以下に分割して送信
                 msg, length = "", len(stc_split[i]) + 1
                 while all([length < 1990, i < len(stc_split) - 1]):
                     msg += stc_split[i] + "\n"
@@ -257,13 +257,13 @@ async def on_message(ctx):
     if ctx.content.split(" ")[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
             lottery = []
-            for i in range(len(constant.Joiner)):
+            for i in range(len(constant.Joiner)):  # 当選確率 Star 10倍, Challenger 5倍
                 roles = [roles.name for roles in guild.get_member(constant.Joiner[i]).roles]
-                adv = 4 if 'Star' in roles else 2 if 'Challenger' in roles else 1  # Star 4倍, Challenger 2倍
+                adv = 10 if 'Star' in roles else 5 if 'Challenger' in roles else 1
                 for _ in range(adv):
                     lottery.append(constant.Joiner[i])
             num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
-            pick_num = sorted(random.sample(list(range(len(lottery))), num))
+            pick_num = sorted(random.sample(list(range(len(lottery))), num))  # 抽選を行う
             stc = "参加者リスト 抽選結果\n```"
             for i in range(len(pick_num)):
                 stc += f"{i + 1}. {guild.get_member(lottery[pick_num[i]]).display_name}\n"
