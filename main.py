@@ -188,21 +188,18 @@ async def on_message(ctx):
     if ctx.content.split()[0].lower() in ["_rk", "_ranking"]:  # ランキングを表示
         if ctx.channel.id != constant.Zyanken_room and not role_check_mode(ctx):  # じゃんけん会場のみ反応(モデレーター以外)
             return
-        if len(ctx.content.split()) == 1:
-            type = "point"
-        else:
-            type = ctx.content.replace(ctx.content.split()[0], "").strip()
-        if type.split()[0].lower() in ["p", "point", "pa", "pointall"]:
-            type = "point" if type.split()[0].lower() in ["p", "point"] else "pointall"
+        input = ctx.content[ctx.content.find(" ") + 1:].strip()
+        if input.split()[0].lower() in ["p", "point", "pa", "pointall"]:
+            type = "point" if input.split()[0].lower() in ["p", "point"] else "pointall"
             try:
-                num = int(re.sub(r'[^0-9]', "", ctx.content))
+                num = int(re.sub(r'[^0-9]', "", input))
                 if type == "point" and num >= 6:
                     num += 1
             except ValueError:
                 num = 999
         else:
             await ctx.channel.send(f"{ctx.author.mention} 入力形式が間違っています\n"
-                                   ">>> **_RanKing Type N**\nType = Point / PointAll (未入力の場合 : Point)\n"
+                                   ">>> **_RanKing Type N**\nType = Point / PointAll\n"
                                    "N : 上位N名を表示 (未入力/範囲外の場合 : 対象者全員)")
             return
         title, stc, best, worst = zyanken.ranking_output(type, guild)
