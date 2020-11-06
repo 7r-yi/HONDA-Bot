@@ -223,8 +223,10 @@ async def on_message(ctx):
             for user in best:
                 await guild.get_member(user).add_roles(role_W)
             if constant.Former_loser_point != worst:
-                await guild.get_member(worst).add_roles(role_L)
-                await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
+                if worst is not None:
+                    await guild.get_member(worst).add_roles(role_L)
+                if constant.Former_loser_point is not None:
+                    await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
             constant.Former_loser_point = worst
         else:  # type == "pointall"
             if constant.Former_loser_pointall != worst:
@@ -252,6 +254,18 @@ async def on_message(ctx):
             await ctx.channel.send(f'{ctx.author.mention} 参加希望を取り消しました', delete_after=5.0)
         else:
             await ctx.channel.send(f'{ctx.author.mention} 参加希望が出されていません', delete_after=5.0)
+
+    if ctx.content.split()[0].lower() in ["_r", "_remove"] and role_check_admin(ctx):  # 参加者を削除する
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()
+        for member in role_V.members:
+            if name.lower() == member.display_name.lower():
+                if str(member.id) in constant.Joiner:
+                    constant.Joiner.remove(member.id)
+                    await ctx.channel.send(f"{member.display_name}を削除しました")
+                else:
+                    await ctx.channel.send(f"{member.display_name}は参加していません")
+                return
+        await ctx.channel.send("ユーザーが見つかりませんでした")
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_l", "_list"]:  # 参加希望者を表示する
         if len(constant.Joiner) >= 1:
