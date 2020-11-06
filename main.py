@@ -279,20 +279,14 @@ async def on_message(ctx):
 
     if ctx.content.split()[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
-            lottery = []
-            for i in range(len(constant.Joiner)):  # 当選確率 Star 10倍, Challenger 5倍
-                roles = [roles.name for roles in guild.get_member(constant.Joiner[i]).roles]
-                adv = 10 if 'Star' in roles else 5 if 'Challenger' in roles else 1
-                for _ in range(adv):
-                    lottery.append(constant.Joiner[i])
-            num = int(ctx.content[ctx.content.find(" ") + 1:].strip())
-            pick_num = sorted(random.sample(list(range(len(lottery))), num))  # 抽選を行う
+            num = int(re.sub(r'[^0-9]', "", ctx.content))
+            pick_num = sorted(random.sample(list(range(len(constant.Joiner))), num))  # 抽選を行う
             stc = "参加者リスト 抽選結果\n```"
             for i in range(len(pick_num)):
-                stc += f"{i + 1}. {guild.get_member(lottery[pick_num[i]]).display_name}\n"
+                stc += f"{i + 1}. {guild.get_member(constant.Joiner[pick_num[i]]).display_name}\n"
             stc += "```"
             for i in pick_num:
-                await guild.get_member(lottery[i]).add_roles(role_P)
+                await guild.get_member(constant.Joiner[i]).add_roles(role_P)
             await ctx.channel.send(f"{stc}リストのユーザーにロール {role_P.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
             constant.Joiner = []
