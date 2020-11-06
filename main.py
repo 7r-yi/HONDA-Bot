@@ -255,7 +255,7 @@ async def on_message(ctx):
         else:
             await ctx.channel.send(f'{ctx.author.mention} 参加希望が出されていません', delete_after=5.0)
 
-    if ctx.content.split()[0].lower() in ["_r", "_remove"] and role_check_admin(ctx):  # 参加者を削除する
+    if ctx.content.split()[0].lower() in ["_rm", "_remove"] and role_check_admin(ctx):  # 参加者を削除する
         name = ctx.content[ctx.content.find(" ") + 1:].strip()
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
@@ -317,7 +317,7 @@ async def on_message(ctx):
         role = discord.utils.get(ctx.guild.roles, id=id)
         for member in role.members:
             await member.remove_roles(role)
-        await ctx.channel.send(f"ロール {role_name.capitalize()} をリセットしました")
+        await ctx.channel.send(f"ロール {role.mention} をリセットしました")
 
     if ctx.content.split()[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
