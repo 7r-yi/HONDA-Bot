@@ -1,17 +1,6 @@
-import json
-
-file_backup = None
 Joiner = []
 Question = {}
 Answer = {}
-No_reply = []
-Former_loser_point = None
-Former_loser_pointall = None
-
-with open('zyanken/zyanken_record.json', 'r') as f:
-    zyanken_data = json.load(f)
-with open('zyanken/no_data_user.json', 'r') as f:
-    rm_user_data = json.load(f)
 
 Shichi = 193407417256640512
 Honda = 359330668112642059

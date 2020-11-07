@@ -1,6 +1,18 @@
 import random
+import json
 from operator import itemgetter
 import constant
+
+File_backup = None
+Former_loser_point = None
+Former_loser_pointall = None
+
+with open('zyanken/zyanken_record.json', 'r') as f:
+    Zyanken_data = json.load(f)
+with open('zyanken/no_reply_user.txt', 'r') as f:
+    No_reply = f.readlines()
+with open('zyanken/no_data_user.json', 'r') as f:
+    Rm_user = json.load(f)
 
 
 def honda_word(win):
@@ -74,35 +86,33 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "チョキ"
             emoji1 = "✌"
 
-    data = constant.zyanken_data
-    if str(user) not in constant.rm_user_data:  # 過去に退出したことがあるユーザーは記録しない
-        if str(user) not in data:
-            data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                               "keep": {"cnt": 0, "max": 0}}
+    if str(user) not in Rm_user:  # 過去に退出したことがあるユーザーは記録しない
+        if str(user) not in Zyanken_data:
+            Zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
+                                       "keep": {"cnt": 0, "max": 0}}
         if win:
-            data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
-            data[str(user)]["keep"]["cnt"] += 1
-            if data[str(user)]["keep"]["cnt"] > data[str(user)]["keep"]["max"]:
-                data[str(user)]["keep"]["max"] = data[str(user)]["keep"]["cnt"]
-            data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
-            data[str(constant.Honda)]["keep"]["cnt"] = 0
+            Zyanken_data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+            Zyanken_data[str(user)]["keep"]["cnt"] += 1
+            if Zyanken_data[str(user)]["keep"]["cnt"] > Zyanken_data[str(user)]["keep"]["max"]:
+                Zyanken_data[str(user)]["keep"]["max"] = Zyanken_data[str(user)]["keep"]["cnt"]
+            Zyanken_data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+            Zyanken_data[str(constant.Honda)]["keep"]["cnt"] = 0
         else:
-            data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
-            data[str(user)]["keep"]["cnt"] = 0
-            data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-            data[str(constant.Honda)]["keep"]["cnt"] += 1
-            if data[str(constant.Honda)]["keep"]["cnt"] > data[str(constant.Honda)]["keep"]["max"]:
-                data[str(constant.Honda)]["keep"]["max"] = data[str(constant.Honda)]["keep"]["cnt"]
-    constant.zyanken_data = data
+            Zyanken_data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+            Zyanken_data[str(user)]["keep"]["cnt"] = 0
+            Zyanken_data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+            Zyanken_data[str(constant.Honda)]["keep"]["cnt"] += 1
+            if Zyanken_data[str(constant.Honda)]["keep"]["cnt"] > Zyanken_data[str(constant.Honda)]["keep"]["max"]:
+                Zyanken_data[str(constant.Honda)]["keep"]["max"] = Zyanken_data[str(constant.Honda)]["keep"]["cnt"]
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 
 
 def stats_output(id):
     cnt_win, cnt_lose = 0, 0
-    win_data = list(constant.zyanken_data[str(id)]["win"].values())
-    lose_data = list(constant.zyanken_data[str(id)]["lose"].values())
-    keepwin_data = list(constant.zyanken_data[str(id)]["keep"].values())
+    win_data = list(Zyanken_data[str(id)]["win"].values())
+    lose_data = list(Zyanken_data[str(id)]["lose"].values())
+    keepwin_data = list(Zyanken_data[str(id)]["keep"].values())
     for i in range(3):
         cnt_win += win_data[i]
     for i in range(3):
@@ -120,13 +130,13 @@ def stats_output(id):
 
 
 def ranking_output(type, guild):
-    user = list(constant.zyanken_data.keys())
+    user = list(Zyanken_data.keys())
     users_data = []
     for i in range(len(user)):
-        cnt_win = sum(constant.zyanken_data[user[i]]["win"].values())
-        cnt_lose = sum(constant.zyanken_data[user[i]]["lose"].values())
-        cnt_keepwin = constant.zyanken_data[user[i]]["keep"]["cnt"]
-        cnt_maxwin = constant.zyanken_data[user[i]]["keep"]["max"]
+        cnt_win = sum(Zyanken_data[user[i]]["win"].values())
+        cnt_lose = sum(Zyanken_data[user[i]]["lose"].values())
+        cnt_keepwin = Zyanken_data[user[i]]["keep"]["cnt"]
+        cnt_maxwin = Zyanken_data[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
         pts = cnt_keepwin * 3 + cnt_maxwin - cnt_lose
         users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin, pts])

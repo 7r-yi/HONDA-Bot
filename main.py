@@ -3,6 +3,7 @@ from discord.ext import tasks
 from datetime import datetime
 from pytz import timezone
 import asyncio
+import asyncio.exceptions
 import random
 import re
 import os
@@ -12,6 +13,7 @@ import sys
 import jaconv
 import constant
 from zyanken import zyanken
+from uno import uno
 
 intents = discord.Intents.default()
 intents.members = True
@@ -22,14 +24,16 @@ client = discord.Client(intents=intents)
 async def data_auto_save():
     with open('zyanken/zyanken_record.json', 'r') as f:
         before_zyanken_data = json.load(f)
-    if constant.zyanken_data != before_zyanken_data:
-        if constant.file_backup is not None:
-            await constant.file_backup.delete()
+    if zyanken.Zyanken_data != before_zyanken_data:
+        if zyanken.File_backup is not None:
+            await zyanken.File_backup.delete()
         with open('zyanken/zyanken_record.json', 'w') as f:
-            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+            json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        constant.file_backup = await client.get_channel(constant.Test_room).send(
+        zyanken.File_backup = await client.get_channel(constant.Test_room).send(
             f"{time}\nData Auto Saved", file=discord.File('zyanken/zyanken_record.json'))
+    with open('zyanken/no_reply_user.txt', 'w') as f:
+        f.writelines(zyanken.No_reply)
 
 
 @client.event
@@ -38,9 +42,9 @@ async def on_ready():
     for type in ["point", "pointall"]:
         _, _, _, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
         if type == "point":
-            constant.Former_loser_point = worst
+            zyanken.Former_loser_point = worst
         else:  # type == "pointall"
-            constant.Former_loser_pointall = worst
+            zyanken.Former_loser_pointall = worst
 
 
 @client.event
@@ -51,11 +55,11 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_remove(member):
-    if str(member.id) in constant.zyanken_data:
-        constant.zyanken_data.pop(member.id)
-        if str(member.id) not in constant.rm_user_data:
+    if str(member.id) in zyanken.Zyanken_data:
+        zyanken.Zyanken_data.pop(member.id)
+        if str(member.id) not in zyanken.Rm_user:
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
-            constant.rm_user_data[str(member.id)] = {str(member.id): time}
+            zyanken.Rm_user[str(member.id)] = {str(member.id): time}
 
 
 @client.event
@@ -84,7 +88,7 @@ async def on_message(ctx):
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
-            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+            json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         await ctx.channel.send("Botをシャットダウンします")
         await client.logout()
@@ -113,7 +117,7 @@ async def on_message(ctx):
         for hand in ["グー", "チョキ", "パー"]:
             if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):  # グー,チョキ,パーの順に文字が含まれているか検索
                 img, hand, msg, emoji1, emoji2 = zyanken.honda_to_zyanken(hand, ctx.author.id)
-                if ctx.author.id not in constant.No_reply:
+                if str(ctx.author.id) not in zyanken.No_reply:
                     await ctx.add_reaction(emoji1)
                     await ctx.add_reaction(emoji2)
                     await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
@@ -128,8 +132,8 @@ async def on_message(ctx):
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
-                if member.id not in constant.No_reply:
-                    constant.No_reply.append(member.id)
+                if str(member.id) not in zyanken.No_reply:
+                    zyanken.No_reply.append(str(member.id))
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を無効にしました")
                 else:
                     await ctx.channel.send(f"{ctx.author.mention} 既に返信が無効になっています")
@@ -142,8 +146,8 @@ async def on_message(ctx):
             name = guild.get_member(ctx.author.id).display_name
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
-                if member.id in constant.No_reply:
-                    constant.No_reply.remove(member.id)
+                if str(member.id) in zyanken.No_reply:
+                    zyanken.No_reply.remove(str(member.id))
                     await ctx.channel.send(f"{guild.get_member(member.id).mention} 返信を有効にしました")
                 else:
                     await ctx.channel.send(f"{ctx.author.mention} 既に返信は有効になっています")
@@ -159,7 +163,7 @@ async def on_message(ctx):
         data, user, id = None, None, None
         for member in role_V.members:
             if name.lower() == member.display_name.lower():
-                if str(member.id) in constant.zyanken_data:
+                if str(member.id) in zyanken.Zyanken_data:
                     data = zyanken.stats_output(member.id)
                     user, id = member.display_name, member.id
                 else:
@@ -222,21 +226,23 @@ async def on_message(ctx):
                 await member.remove_roles(role_W)
             for user in best:
                 await guild.get_member(user).add_roles(role_W)
-            if constant.Former_loser_point != worst:
+            if zyanken.Former_loser_point != worst:
                 if worst is not None:
                     await guild.get_member(worst).add_roles(role_L)
-                if constant.Former_loser_point is not None:
-                    await guild.get_member(constant.Former_loser_point).remove_roles(role_L)
-            constant.Former_loser_point = worst
+                if zyanken.Former_loser_point is not None:
+                    await guild.get_member(zyanken.Former_loser_point).remove_roles(role_L)
+            zyanken.Former_loser_point = worst
         else:  # type == "pointall"
-            if constant.Former_loser_pointall != worst:
+            if zyanken.Former_loser_pointall != worst:
                 await guild.get_member(worst).add_roles(role_L)
-                await guild.get_member(constant.Former_loser_pointall).remove_roles(role_L)
-            constant.Former_loser_pointall = worst
+                await guild.get_member(zyanken.Former_loser_pointall).remove_roles(role_L)
+            zyanken.Former_loser_pointall = worst
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
-            json.dump(constant.zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+            json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        with open('zyanken/no_reply_user.txt', 'w') as f:
+            f.writelines(zyanken.No_reply)
         await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         await ctx.channel.send(f"全戦績データを出力＆セーブしました ({time})")
@@ -413,10 +419,10 @@ async def on_message(ctx):
                     if reply.author.id not in winner:
                         winner.append(reply.author.id)
                         j, flag = j + 1, True
-                elif (reply.content.lower() == "skip" and role_check_admin(reply)) or elap > 60:
+                elif (reply.content.lower() == "!skip" and role_check_admin(reply)) or elap > 60:
                     await ctx.channel.send(f"問題{i + 1}はスキップされました (正解 : {constant.Answer[f'A{i + 1}']})")
                     j, flag = -1, False
-                elif reply.content.lower() == "cancel" and role_check_admin(reply):
+                elif reply.content.lower() == "!cancel" and role_check_admin(reply):
                     await ctx.channel.send(f"クイズを中断しました")
                     return
             if flag:
@@ -457,6 +463,151 @@ async def on_message(ctx):
             if reply.content == "!out":
                 await client.get_channel(constant.Result).send(embed=embed)
                 break
+
+    async def send_card(n, times):
+        if all_data[n][2] is not None:  # 前に送ったDMの削除
+            await all_data[n][2].delete()
+        all_data[n][1] = uno.sort_card([n][1] + uno.deal_card(times))  # カードの追加
+        all_data[n][2] = await client.get_user(all_data[n][0]).send(f"現在の手札```{uno.card_to_string(all_data[n][1])}```")
+
+    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno.UNO_start:
+        constant.UNO_start = True
+        await ctx.channel.send("UNOを開始します\n参加する方は`!Join`と入力してください (!Endで締め切り)")
+        player = []
+        while True:
+            reply = await client.wait_for('message')
+            if reply.content.lower() == "!join":
+                player.append(ctx.author.id)
+                await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
+            elif reply.content.lower() == "!end":
+                break
+        stc = ""
+        for i in range(len(player)):
+            stc += f"{i + 1}. {client.get_user(player[i]).display_name}\n"
+        await ctx.channel.send(f"プレイヤーリスト```{stc}```\n締め切りました\n次に初期手札の枚数を入力してください")
+        while True:
+            reply = await client.wait_for('message')
+            try:
+                num = int(re.sub(r'[^0-9]', "", reply.content))
+                await reply.channel.send(f"初期手札を{num}枚で設定しました")
+                await asyncio.sleep(2)
+                break
+            except ValueError:
+                await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
+
+        random.shuffle(player)
+        all_data = [[id, None, None, [False, None]] for id in player]  # [id, 手札リスト, DM変数, [UNOフラグ, 立った時間]] × 人数分
+        for i in range(len(player)):
+            all_data[i][1] = uno.sort_card(uno.deal_card(num))
+            await client.get_user(player[i]).send(f"あなたの初期手札です↓```{uno.card_to_string(all_data[i][1])}```")
+        await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
+        await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno.Rule}```")
+        stc = ""
+        for _ in player:
+            stc += f"{client.get_user(player).display_name} → "
+        await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
+        game_flag, cnt, card, penalty, winner = True, 0, [uno.deal_card(1)], 0, None
+        await asyncio.sleep(7)
+
+        while game_flag:
+            while True:
+                flag, stc, i = False, "", cnt % len(player)
+                for j in range(len(all_data)):
+                    stc += f"{client.get_user(player[j]).display_name} : {len(all_data[j][1])}枚\n"
+                await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
+                await ctx.channel.send(f"**現在の場のカード : {card[-1]}**")
+                await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
+                while True:  # 記号しか無いかチェック
+                    if all([uno.card_to_id(j) % 100 >= 10 for j in range(len(all_data[i][1]))]):
+                        await reply.channel.send(f"{client.get_user(player[i]).mention} 記号残りなので山札から2枚引きます")
+                        await send_card(i, 2)
+                    else:
+                        break
+                while True:  # カード入力処理
+                    try:
+                        reply = await client.wait_for('message', timeout=50.0)
+                    except asyncio.exceptions.TimeoutError:
+                        await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
+                        break
+                    if reply.author.id == player[i]:
+                        if reply.content.lower() == "!get":
+                            await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
+                            await send_card(i, 2)
+                        elif reply.content.lower() == "!pass":
+                            await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
+                            break
+                        else:  # 出せるカードかチェック
+                            check, msg = uno.check_card(card[-1], uno.string_to_card(reply.content), all_data[i][1])
+                            if check:  # OK
+                                bet_card = uno.string_to_card(reply.content)
+                                card += bet_card  # 出したカードを山場に追加
+                                for j in bet_card:  # 出したカードを手札から削除
+                                    all_data[i][1].remove(j)
+                                flag = True
+                                break
+                            else:  # NG
+                                await ctx.channel.send(f"{client.get_user(player[i]).mention} {msg}")
+                    elif reply.content.lower == "!cancel" and role_check_mode(ctx):  # ゲームを強制中止する
+                        await ctx.channel.send("ゲームを中止しました")
+                        return
+                    elif "!uno" in reply.content.lower():  # UNOの指摘/宣言
+                        if len(reply.raw_mentions) == 1:
+                            j = uno.search_player(reply.raw_mentions[0], all_data)
+                            # UNOフラグが立ってから5秒以上経過
+                            if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 5:
+                                all_data[j][3] = [False, None]
+                                await reply.channel.send(f"{client.get_user(all_data[j][0]).mention} "
+                                                         f"UNOと言っていないのでペナルティーで2枚追加されます")
+                                await send_card(j, 2)
+                        else:
+                            j = uno.search_player(reply.author.id, all_data)
+                            if all_data[j][3][0]:  # 自分のUNOフラグが立っている場合
+                                all_data[j][3] = [False, None]
+                                await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
+                if card[-1] in ["ワイルド", "ドロー4"] and flag:  # ワイルドカードを出した後の色指定
+                    penalty += uno.calculate_penalty(uno.string_to_card(reply.content))
+                    await ctx.channel.send(f"{client.get_user(player[i]).mention} カラーを指定してください (20秒以内)")
+                    while True:
+                        try:
+                            reply = await client.wait_for('message', timeout=20.0)
+                        except asyncio.exceptions.TimeoutError:
+                            await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
+                            card[-1] = f"{uno.Color[random.randint(0, 3)]}{card[-1]}"
+                            break
+                        if reply.author.id == player[i] and reply in uno.Color:
+                            card[-1] = f"{reply.content}{card[-1]}"
+                            break
+                        elif reply.author.id == player[i]:
+                            await ctx.channel.send(f"{client.get_user(player[i]).mention} 赤/青/緑/黄 と入力してください")
+                elif penalty != 0 and not flag:  # ドロー2/4のペナルティーを受ける
+                    await reply.channel.send(f"{client.get_user(player[i]).mention} ペナルティーで{penalty}枚追加されました")
+                    await send_card(i, penalty)
+                    penalty, cnt = 0, cnt - 1
+                elif card[-1][1:] == "スキップ" and flag:  # スキップ処理
+                    await ctx.channel.send(f"{len(uno.string_to_card(reply.content)) * 2 - 1}人スキップされました")
+                    cnt += len(uno.string_to_card(reply.content)) * 2 - 1
+                elif card[-1][1:] == "リバース" and flag:  # リバース処理
+                    await ctx.channel.send(f"{len(uno.string_to_card(reply.content)) * 2 - 1}回リバースされました")
+                    if len(uno.string_to_card(reply.content)) % 2 == 1:
+                        all_data.reverse()
+                if not all_data[i][1]:  # 上がり
+                    await ctx.channel.send(f"{client.get_user(player[i]).mention} YOU WIN!")
+                    await guild.get_member(player[i]).add_roles(role_W)
+                    game_flag, winner = False, i
+                    break
+                elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:  # 残り1枚になった時
+                    all_data[i][3] = [True, datetime.now()]
+                cnt += 1
+
+        for i in range(len(all_data)):  # 点数計算
+            all_data[i].append(uno.calculate_point(all_data[i][1]))
+        all_data[winner][4] = -sum(all_data[i][4] for i in all_data)  # 1位には他ユーザーの合計得点をプラス
+        sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
+        for i in range(len(sort_data)):
+            stc += f"{i + 1}位 : {client.get_user(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
+        await ctx.channel.send(f"ゲーム結果```{stc}```")
+        uno.data_output(all_data)
+        uno.UNO_start = False
 
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
