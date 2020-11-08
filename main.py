@@ -529,7 +529,7 @@ async def on_message(ctx):
                 stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
             await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area_tmp.png'))
-            await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
+            await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (制限時間40秒)")
             # 記号しか無いかチェック
             while True:
                 if all([uno_func.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
@@ -541,12 +541,12 @@ async def on_message(ctx):
             start = datetime.now()
             while True:
                 try:
-                    reply = await client.wait_for('message', timeout=50.0 - (datetime.now() - start).seconds)
+                    reply = await client.wait_for('message', timeout=40.0 - (datetime.now() - start).seconds)
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                     break
                 # 山札から1枚引く
-                if reply.content.lower() == "!get" and reply.author.id == player[i]:
+                if reply.content.lower() == ["!g", "!get"] and reply.author.id == player[i]:
                     if get_flag:
                         await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
                         await send_card(i, 1)
@@ -554,7 +554,7 @@ async def on_message(ctx):
                     else:
                         await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から引けるのは1度のみです")
                 # カードを出さない
-                elif reply.content.lower() == "!pass" and reply.author.id == player[i]:
+                elif reply.content.lower() == ["!p", "!pass"] and reply.author.id == player[i]:
                     await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
                     break
                 # UNOの指摘/宣言
@@ -598,11 +598,11 @@ async def on_message(ctx):
             penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
-                await ctx.channel.send(f"{client.get_user(player[i]).mention} カラーを指定してください (20秒以内)")
+                await ctx.channel.send(f"{client.get_user(player[i]).mention} カラーを指定してください (制限時間15秒)")
                 start = datetime.now()
                 while True:
                     try:
-                        color = await client.wait_for('message', timeout=20.0 - (datetime.now() - start).seconds)
+                        color = await client.wait_for('message', timeout=15.0 - (datetime.now() - start).seconds)
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
