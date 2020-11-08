@@ -563,7 +563,7 @@ async def on_message(ctx):
                         # 出したカードを山場に追加
                         bet_card = uno_func.string_to_card(reply.content)
                         card += bet_card
-                        # 出したカードを手札から削除
+                        # 出したカードを手札から削除し送信
                         for j in bet_card:
                             all_data[i][1].remove(j)
                         flag = True
@@ -634,6 +634,7 @@ async def on_message(ctx):
             # 残り1枚になった時
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
+            await send_card(i, 0)
             cnt += 1
 
         # 点数計算
