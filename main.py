@@ -573,9 +573,6 @@ async def on_message(ctx):
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
-                # 強制スキップさせる
-                elif reply.content.lower() == "!skip" and role_check_mode(ctx):
-                    break
                 # ゲームを強制中止する
                 elif reply.content.lower() == "!cancel" and role_check_mode(ctx):
                     await ctx.channel.send("ゲームを中止しました")
@@ -627,10 +624,8 @@ async def on_message(ctx):
             elif card[-1][1:] == "リバース" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
-                    j1 = uno_func.search_player(player[i], all_data)
                     all_data.reverse()
-                    j2 = uno_func.search_player(player[i], all_data)
-                    i -= j1 - j2
+                    i = uno_func.search_player(player[i], all_data)
                     player.reverse()
             # 上がり
             if not all_data[i][1]:
@@ -648,7 +643,7 @@ async def on_message(ctx):
             cnt += 1
 
         # 点数計算
-        all_pts = []
+        all_pts, stc = [], ""
         for i in range(len(all_data)):
             pts = uno_func.calculate_point(all_data[i][1])
             all_data[i].append(pts)
@@ -658,7 +653,7 @@ async def on_message(ctx):
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
-        await ctx.channel.send(f"ゲーム結果```{stc}```")
+        await ctx.channel.send(f"```ゲーム結果\n{stc}```")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
         uno_func.UNO_start = False
