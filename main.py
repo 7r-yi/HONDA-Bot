@@ -476,7 +476,7 @@ async def on_message(ctx):
                          f"現在の手札```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
         os.remove('uno/hand.png')
 
-    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno_func.UNO_start:
+    if ctx.content.lower() in ["_us", "_unostart"] and not uno_func.UNO_start:
         constant.UNO_start = True
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
         await ctx.channel.send("UNOを開始します\n参加する方は`!Join`と入力してください (!Endで締め切り)")
