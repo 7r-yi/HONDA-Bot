@@ -14,6 +14,7 @@ import jaconv
 import constant
 from zyanken import zyanken
 from uno import uno
+from uno import make_image
 
 intents = discord.Intents.default()
 intents.members = True
@@ -469,7 +470,10 @@ async def on_message(ctx):
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
         all_data[n][1] = uno.sort_card([n][1] + uno.deal_card(times))
-        all_data[n][2] = await client.get_user(all_data[n][0]).send(f"現在の手札```{uno.card_to_string(all_data[n][1])}```")
+        make_image.make_hand(all_data[n][1])
+        all_data[n][2] = await client.get_user(all_data[n][0]).send(
+                         f"現在の手札```{uno.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
+        os.remove('hand.png')
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno.UNO_start:
         constant.UNO_start = True
@@ -516,7 +520,7 @@ async def on_message(ctx):
             for j in range(len(all_data)):
                 stc += f"{client.get_user(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            await ctx.channel.send(f"**現在の場札の先頭カード : {card[-1]}**")
+            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('Area.png'))
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
             while True:
