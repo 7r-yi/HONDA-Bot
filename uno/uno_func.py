@@ -82,7 +82,7 @@ def id_to_card(id):
 def deal_card(num):
     hand, stc = [], ""
     for _ in range(num):
-        hand.append(Card[random.randint(0, len(Card))])
+        hand.append(Card[random.randint(0, len(Card) - 1)])
 
     return hand
 
@@ -130,7 +130,7 @@ def check_card(before, after, hand):
     if error is None:
         return True, ""
     else:
-        return False, ""
+        return False, error
 
 
 def search_player(player, all_data):

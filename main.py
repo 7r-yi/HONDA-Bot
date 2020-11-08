@@ -471,7 +471,6 @@ async def on_message(ctx):
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
         all_data[n][1] = uno_func.sort_card(all_data[n][1] + uno_func.deal_card(times))
-        print(all_data[n][1])
         make_image.make_hand(all_data[n][1])
         all_data[n][2] = await client.get_user(all_data[n][0]).send(
                          f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
@@ -514,7 +513,7 @@ async def on_message(ctx):
         for i in player:
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
-        cnt, card, penalty, winner = 0, [uno_func.deal_card(1)], 0, None
+        cnt, card, penalty, winner = 0, uno_func.deal_card(1), 0, None
         await asyncio.sleep(7)
 
         while True:
@@ -522,11 +521,12 @@ async def on_message(ctx):
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area.png'))
+            make_image.make_area(card[-1])
+            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area_tmp.png'))
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
             while True:
-                if all([uno_func.card_to_id(j) % 100 >= 10 for j in range(len(all_data[i][1]))]):
+                if all([uno_func.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
                     await reply.channel.send(f"{client.get_user(player[i]).mention} 記号残りなので山札から2枚引きます")
                     await send_card(i, 2)
                 else:
