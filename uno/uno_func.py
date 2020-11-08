@@ -54,8 +54,11 @@ def card_to_string(card):
 
 def string_to_card(stc):
     if stc.count(",") >= 1:  # 出すカードをリスト化
-        stc = stc.split(",")
-        return [stc[i].strip() for i in range(len(stc))]
+        stc, ls = stc.split(","), []
+        for i in range(len(stc)):
+            if stc[i].strip() != "":
+                ls.append(stc[i].strip())
+        return ls
     else:
         return [stc.strip()]
 

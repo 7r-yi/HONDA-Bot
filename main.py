@@ -489,7 +489,7 @@ async def on_message(ctx):
             if reply.content.lower() in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
-            elif reply.content.lower() in ["!e", "!end"]:
+            elif reply.content.lower() in ["!e", "!end"] and player:
                 break
         stc = ""
         for i in range(len(player)):
