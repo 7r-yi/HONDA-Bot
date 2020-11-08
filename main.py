@@ -34,8 +34,9 @@ async def data_auto_save():
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         zyanken.File_backup = await client.get_channel(constant.Test_room).send(
             f"{time}\nData Auto Saved", file=discord.File('zyanken/zyanken_record.json'))
+    data = "\n".join(zyanken.No_reply)
     with open('zyanken/no_reply_user.txt', 'w') as f:
-        f.writelines(zyanken.No_reply)
+        f.write(data)
 
 
 @client.event
@@ -243,8 +244,9 @@ async def on_message(ctx):
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        data = "\n".join(zyanken.No_reply)
         with open('zyanken/no_reply_user.txt', 'w') as f:
-            f.writelines(zyanken.No_reply)
+            f.write(data)
         await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         await ctx.channel.send(f"全戦績データを出力＆セーブしました ({time})")
@@ -473,7 +475,7 @@ async def on_message(ctx):
         all_data[n][1] = uno_func.sort_card(all_data[n][1] + uno_func.deal_card(times))
         make_image.make_hand(all_data[n][1])
         all_data[n][2] = await client.get_user(all_data[n][0]).send(
-                         f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
+            f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
         os.remove('uno/hand.png')
 
     if ctx.content.lower() in ["_us", "_unostart"] and not uno_func.UNO_start:
@@ -514,7 +516,7 @@ async def on_message(ctx):
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, flag, penalty, winner = 0, uno_func.deal_card(1), True, 0, None
-        await asyncio.sleep(7)
+        await asyncio.sleep(5)
 
         while True:
             stc, i, get_flag = "", cnt % len(player), True
@@ -538,7 +540,7 @@ async def on_message(ctx):
             start = datetime.now()
             while True:
                 try:
-                    reply = await client.wait_for('message', timeout=50.0-(datetime.now()-start).seconds)
+                    reply = await client.wait_for('message', timeout=50.0 - (datetime.now() - start).seconds)
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                     break
@@ -591,14 +593,15 @@ async def on_message(ctx):
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
+            # ドロー2/4のペナルティー枚数計算
+            penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
-                penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
                 await ctx.channel.send(f"{client.get_user(player[i]).mention} カラーを指定してください (20秒以内)")
                 start = datetime.now()
                 while True:
                     try:
-                        reply = await client.wait_for('message', timeout=20.0-(datetime.now()-start).seconds)
+                        reply = await client.wait_for('message', timeout=20.0 - (datetime.now() - start).seconds)
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"

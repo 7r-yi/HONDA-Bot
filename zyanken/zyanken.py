@@ -10,7 +10,7 @@ Former_loser_pointall = None
 with open('zyanken/zyanken_record.json', 'r') as f:
     Zyanken_data = json.load(f)
 with open('zyanken/no_reply_user.txt', 'r') as f:
-    No_reply = f.readlines()
+    No_reply = f.read().splitlines()
 with open('zyanken/no_data_user.json', 'r') as f:
     Rm_user = json.load(f)
 
