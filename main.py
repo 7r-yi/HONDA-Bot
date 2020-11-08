@@ -7,13 +7,14 @@ import asyncio.exceptions
 import random
 import re
 import os
+import shutil
 from dotenv import load_dotenv
 import json
 import sys
 import jaconv
 import constant
 from zyanken import zyanken
-from uno import uno
+from uno import uno_func
 from uno import make_image
 
 intents = discord.Intents.default()
@@ -469,14 +470,15 @@ async def on_message(ctx):
         # 前に送ったDMがあるなら削除
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
-        all_data[n][1] = uno.sort_card([n][1] + uno.deal_card(times))
+        all_data[n][1] = uno_func.sort_card([n][1] + uno_func.deal_card(times))
         make_image.make_hand(all_data[n][1])
         all_data[n][2] = await client.get_user(all_data[n][0]).send(
-                         f"現在の手札```{uno.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
+                         f"現在の手札```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
         os.remove('hand.png')
 
-    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno.UNO_start:
+    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno_func.UNO_start:
         constant.UNO_start = True
+        shutil.copy('./uno/Area.png', './uno/Area_tmp.png')
         await ctx.channel.send("UNOを開始します\n参加する方は`!Join`と入力してください (!Endで締め切り)")
         player = []
         while True:
@@ -504,15 +506,15 @@ async def on_message(ctx):
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
         all_data = [[id, None, None, [False, None]] for id in player]
         for i in range(len(player)):
-            all_data[i][1] = uno.sort_card(uno.deal_card(num))
-            await client.get_user(player[i]).send(f"あなたの初期手札です↓```{uno.card_to_string(all_data[i][1])}```")
+            all_data[i][1] = uno_func.sort_card(uno_func.deal_card(num))
+            await client.get_user(player[i]).send(f"あなたの初期手札です↓```{uno_func.card_to_string(all_data[i][1])}```")
         await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
-        await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno.Rule}```")
+        await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno_func.Rule}```")
         stc = ""
         for _ in player:
             stc += f"{client.get_user(player).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
-        cnt, card, penalty, winner = 0, [uno.deal_card(1)], 0, None
+        cnt, card, penalty, winner = 0, [uno_func.deal_card(1)], 0, None
         await asyncio.sleep(7)
 
         while True:
@@ -524,7 +526,7 @@ async def on_message(ctx):
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
             while True:
-                if all([uno.card_to_id(j) % 100 >= 10 for j in range(len(all_data[i][1]))]):
+                if all([uno_func.card_to_id(j) % 100 >= 10 for j in range(len(all_data[i][1]))]):
                     await reply.channel.send(f"{client.get_user(player[i]).mention} 記号残りなので山札から2枚引きます")
                     await send_card(i, 2)
                 else:
@@ -548,10 +550,10 @@ async def on_message(ctx):
                         break
                     # 出せるカードかチェック
                     else:
-                        check, msg = uno.check_card(card[-1], uno.string_to_card(reply.content), all_data[i][1])
+                        check, msg = uno_func.check_card(card[-1], uno_func.string_to_card(reply.content), all_data[i][1])
                         if check:
                             # 出したカードを山場に追加
-                            bet_card = uno.string_to_card(reply.content)
+                            bet_card = uno_func.string_to_card(reply.content)
                             card += bet_card
                             # 出したカードを手札から削除
                             for j in bet_card:
@@ -570,7 +572,7 @@ async def on_message(ctx):
                 # UNOの指摘/宣言
                 elif "!uno" in reply.content.lower():
                     if len(reply.raw_mentions) == 1:
-                        j = uno.search_player(reply.raw_mentions[0], all_data)
+                        j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         # UNOフラグが立ってから5秒以上経過
                         if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 5:
                             all_data[j][3] = [False, None]
@@ -578,14 +580,14 @@ async def on_message(ctx):
                                                      f"UNOと言っていないのでペナルティーで2枚追加されます")
                             await send_card(j, 2)
                     else:
-                        j = uno.search_player(reply.author.id, all_data)
+                        j = uno_func.search_player(reply.author.id, all_data)
                         # 自分のUNOフラグが立っている場合
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
-                penalty += uno.calculate_penalty(uno.string_to_card(reply.content))
+                penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
                 await ctx.channel.send(f"{client.get_user(player[i]).mention} カラーを指定してください (20秒以内)")
                 start = datetime.now()
                 while True:
@@ -593,9 +595,9 @@ async def on_message(ctx):
                         reply = await client.wait_for('message', timeout=20.0-(datetime.now()-start).seconds)
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
-                        card[-1] = f"{uno.Color[random.randint(0, 3)]}{card[-1]}"
+                        card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
-                    if reply.author.id == player[i] and reply in uno.Color:
+                    if reply.author.id == player[i] and reply in uno_func.Color:
                         card[-1] = f"{reply.content}{card[-1]}"
                         break
                     elif reply.author.id == player[i]:
@@ -607,12 +609,12 @@ async def on_message(ctx):
                 penalty, cnt = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
-                await ctx.channel.send(f"{len(uno.string_to_card(reply.content)) * 2 - 1}人スキップされました")
-                cnt += len(uno.string_to_card(reply.content)) * 2 - 1
+                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content)) * 2 - 1}人スキップされました")
+                cnt += len(uno_func.string_to_card(reply.content)) * 2 - 1
             # リバース処理
             elif card[-1][1:] == "リバース" and flag:
-                await ctx.channel.send(f"{len(uno.string_to_card(reply.content)) * 2 - 1}回リバースされました")
-                if len(uno.string_to_card(reply.content)) % 2 == 1:
+                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content)) * 2 - 1}回リバースされました")
+                if len(uno_func.string_to_card(reply.content)) % 2 == 1:
                     all_data.reverse()
             # 上がり
             if not all_data[i][1]:
@@ -627,15 +629,15 @@ async def on_message(ctx):
 
         # 点数計算
         for i in range(len(all_data)):
-            all_data[i].append(uno.calculate_point(all_data[i][1]))
+            all_data[i].append(uno_func.calculate_point(all_data[i][1]))
         # 1位には他ユーザーの合計得点をプラス
         all_data[winner][4] = -sum(all_data[i][4] for i in all_data)
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {client.get_user(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
         await ctx.channel.send(f"ゲーム結果```{stc}```")
-        uno.data_output(all_data)
-        uno.UNO_start = False
+        uno_func.data_output(all_data)
+        uno_func.UNO_start = False
 
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
