@@ -1,5 +1,7 @@
 import random
 import json
+import copy
+
 
 UNO_start = False
 Rule = "★ハウスルール(基本的なものは除く)\n" \
@@ -28,7 +30,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "4. カードを出さない場合は !Pass と入力する\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
        "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
-       "5-3. 残り1枚となる人のターンが終了してから5秒間は指摘出来ない"
+       "5-3. 残り1枚となる人のターンが終了してから15秒間は指摘出来ない"
 
 Card = []
 Color = ["赤", "青", "緑", "黄"]
@@ -64,7 +66,7 @@ def card_to_id(card):
             for j in range(len(Number)):
                 if card[1:] == Number[j]:
                     return (i + 1) * 100 + j
-    if card == "ワイルド":
+    if "ワイルド" in card:
         return 510
     else:  # ドロー4
         return 511
@@ -79,8 +81,12 @@ def id_to_card(id):
         return "ドロー4"
 
 
+def first_card():
+    return [Card[random.randint(0, len(Card) - 9)]]
+
+
 def deal_card(num):
-    hand, stc = [], ""
+    hand = []
     for _ in range(num):
         hand.append(Card[random.randint(0, len(Card) - 1)])
 
@@ -121,9 +127,12 @@ def check_card(before, after, hand, penalty):
         else:  # ドロー4の場合
             if not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
                 error = "その複数枚の出し方は出来ません(ドロー2/4しか出せない)"
-    for i in after:
-        if i not in hand:
-            error = "持っていないカードが含まれています"
+    hand_tmp = copy.copy(hand)
+    try:
+        for i in after:
+            hand_tmp.remove(i)
+    except ValueError:
+        error = "持っていないカードが含まれています"
     if after == hand and len(hand) >= 2:
         error = "複数枚出しで一気に上がることが出来ません"
 

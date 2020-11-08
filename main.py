@@ -519,7 +519,8 @@ async def on_message(ctx):
         for i in player:
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
-        cnt, card, flag, penalty, winner = 0, uno_func.deal_card(1), True, 0, None
+        cnt, card, flag, penalty, winner = 0, uno_func.first_card(), False, 0, None
+        make_image.make_area(card[-1])
         await asyncio.sleep(10)
 
         while True:
@@ -527,10 +528,6 @@ async def on_message(ctx):
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            # カードが出されたら画像を更新
-            if flag:
-                make_image.make_area(card[-1])
-                flag = False
             await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area_tmp.png'))
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
@@ -560,34 +557,12 @@ async def on_message(ctx):
                 elif reply.content.lower() == "!pass" and reply.author.id == player[i]:
                     await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
                     break
-                # 出せるカードかチェック
-                elif reply.author.id == player[i]:
-                    check, msg = uno_func.check_card(
-                                 card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
-                    if check:
-                        # 出したカードを山場に追加
-                        bet_card = uno_func.string_to_card(reply.content)
-                        card += bet_card
-                        # 出したカードを手札から削除し送信
-                        for j in bet_card:
-                            all_data[i][1].remove(j)
-                        flag = True
-                        break
-                    else:
-                        await ctx.channel.send(f"{client.get_user(player[i]).mention} {msg}")
-                # 強制スキップさせる
-                elif reply.content.lower == "!skip" and role_check_mode(ctx):
-                    break
-                # ゲームを強制中止する
-                elif reply.content.lower == "!cancel" and role_check_mode(ctx):
-                    await ctx.channel.send("ゲームを中止しました")
-                    return
                 # UNOの指摘/宣言
                 elif "!uno" in reply.content.lower():
                     if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
-                        # UNOフラグが立ってから5秒以上経過
-                        if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 5:
+                        # UNOフラグが立ってから15秒以上経過
+                        if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 15:
                             all_data[j][3] = [False, None]
                             await reply.channel.send(f"{client.get_user(all_data[j][0]).mention} "
                                                      f"UNOと言っていないのでペナルティーで2枚追加されます")
@@ -598,6 +573,29 @@ async def on_message(ctx):
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
+                # 強制スキップさせる
+                elif reply.content.lower() == "!skip" and role_check_mode(ctx):
+                    break
+                # ゲームを強制中止する
+                elif reply.content.lower() == "!cancel" and role_check_mode(ctx):
+                    await ctx.channel.send("ゲームを中止しました")
+                    return
+                # 出せるカードかチェック
+                elif reply.author.id == player[i]:
+                    check, msg = uno_func.check_card(
+                                 card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                    if check:
+                        # 出したカードを山場に追加
+                        bet_card = uno_func.string_to_card(reply.content)
+                        card += bet_card
+                        # 出したカードを手札から削除 & 場札更新
+                        for j in bet_card:
+                            all_data[i][1].remove(j)
+                            make_image.make_area(j)
+                        flag = True
+                        break
+                    else:
+                        await ctx.channel.send(f"{client.get_user(player[i]).mention} {msg}")
             # ドロー2/4のペナルティー枚数計算
             penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
@@ -606,15 +604,15 @@ async def on_message(ctx):
                 start = datetime.now()
                 while True:
                     try:
-                        reply = await client.wait_for('message', timeout=20.0 - (datetime.now() - start).seconds)
+                        color = await client.wait_for('message', timeout=20.0 - (datetime.now() - start).seconds)
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
-                    if reply.author.id == player[i] and reply.content in uno_func.Color:
-                        card[-1] = f"{reply.content}{card[-1]}"
+                    if color.author.id == player[i] and color.content in uno_func.Color:
+                        card[-1] = f"{color.content}{card[-1]}"
                         break
-                    elif reply.author.id == player[i]:
+                    elif color.author.id == player[i]:
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 赤/青/緑/黄 と入力してください")
             # ドロー2/4のペナルティーを受ける
             elif penalty != 0 and not flag:
@@ -627,9 +625,12 @@ async def on_message(ctx):
                 cnt += len(uno_func.string_to_card(reply.content)) * 2 - 1
             # リバース処理
             elif card[-1][1:] == "リバース" and flag:
-                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content)) * 2 - 1}回リバースされました")
+                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
+                    j1 = uno_func.search_player(player[i], all_data)
                     all_data.reverse()
+                    j2 = uno_func.search_player(player[i], all_data)
+                    i -= j1 - j2
                     player.reverse()
             # 上がり
             if not all_data[i][1]:
@@ -643,13 +644,17 @@ async def on_message(ctx):
             # 手持ちが更新されたら手札を再送信
             if flag:
                 await send_card(i, 0)
+                flag = False
             cnt += 1
 
         # 点数計算
+        all_pts = []
         for i in range(len(all_data)):
-            all_data[i].append(uno_func.calculate_point(all_data[i][1]))
+            pts = uno_func.calculate_point(all_data[i][1])
+            all_data[i].append(pts)
+            all_pts.append(pts)
         # 1位には他ユーザーの合計得点をプラス
-        all_data[winner][4] = -sum(all_data[i][4] for i in all_data)
+        all_data[winner][4] = sum(all_pts) * -1
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
