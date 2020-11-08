@@ -83,7 +83,7 @@ def make_area(card):
     cv2.imwrite('uno/card.png', card_img)
 
     # 貼り付ける位置をランダムで指定
-    gap_h, gap_w = random.randint(-100, 50), random.randint(-300, 100)
+    gap_h, gap_w = random.randint(-150, 50), random.randint(-300, 100)
     # カードを場に重ねる
     area_img = Image.open('uno/Area_tmp.png')
     card_img = Image.open('uno/card.png')

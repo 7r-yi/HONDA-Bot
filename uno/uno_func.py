@@ -116,7 +116,7 @@ def check_card(before, after, hand):
             elif not all([after[0][1:] == after[i][1:] for i in range(len(after))]):  # 複数枚出しの時、数字が異なっている
                 error = "その複数枚の出し方は出来ません(数字/記号が異なっているカードがある)"
         elif after[0] == "ワイルド":  # ワイルドカードの場合
-            if all([i == "ワイルド" for i in after]):  # ワイルドカードでないものがある
+            if not all([i == "ワイルド" for i in after]):  # ワイルドカードでないものがある
                 error = "その複数枚の出し方は出来ません(ワイルドカードしか出せない)"
         else:  # ドロー4の場合
             if not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある

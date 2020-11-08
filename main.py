@@ -483,10 +483,10 @@ async def on_message(ctx):
         player = []
         while True:
             reply = await client.wait_for('message')
-            if reply.content.lower() == "!join":
+            if reply.content.lower() in ["!j", "!join"]:
                 player.append(ctx.author.id)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
-            elif reply.content.lower() == "!end":
+            elif reply.content.lower() in ["!e", "!end"]:
                 break
         stc = ""
         for i in range(len(player)):
@@ -513,15 +513,18 @@ async def on_message(ctx):
         for i in player:
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
-        cnt, card, penalty, winner = 0, uno_func.deal_card(1), 0, None
+        cnt, card, flag, penalty, winner = 0, uno_func.deal_card(1), True, 0, None
         await asyncio.sleep(7)
 
         while True:
-            flag, stc, i = False, "", cnt % len(player)
+            stc, i, get_flag = "", cnt % len(player), True
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            make_image.make_area(card[-1])
+            # カードが出されたら画像を更新
+            if flag:
+                make_image.make_area(card[-1])
+                flag = False
             await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area_tmp.png'))
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
@@ -541,8 +544,12 @@ async def on_message(ctx):
                     break
                 # 山札から1枚引く
                 if reply.content.lower() == "!get" and reply.author.id == player[i]:
-                    await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
-                    await send_card(i, 2)
+                    if get_flag:
+                        await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
+                        await send_card(i, 1)
+                        get_flag = False
+                    else:
+                        await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から引けるのは1度のみです")
                 # カードを出さない
                 elif reply.content.lower() == "!pass" and reply.author.id == player[i]:
                     await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
@@ -596,7 +603,7 @@ async def on_message(ctx):
                         await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
-                    if reply.author.id == player[i] and reply in uno_func.Color:
+                    if reply.author.id == player[i] and reply.content in uno_func.Color:
                         card[-1] = f"{reply.content}{card[-1]}"
                         break
                     elif reply.author.id == player[i]:
