@@ -42,10 +42,10 @@ with open('uno/uno_record.json', 'r') as f:
     Player_data = json.load(f)
 
 
-def card_to_string(ls):
+def card_to_string(card):
     stc = ""
-    for _ in ls:
-        stc += f"{ls}, "
+    for _ in card:
+        stc += f"{card}, "
 
     return stc[:-2]
 
