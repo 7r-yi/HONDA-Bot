@@ -84,15 +84,9 @@ def make_area(card):
 
     # 貼り付ける位置をランダムで指定
     gap_h, gap_w = random.randint(-100, 50), random.randint(-300, 100)
-    print(gap_h, gap_w)
     # カードを場に重ねる
     area_img = Image.open('Area_tmp.png')
     card_img = Image.open('card.png')
     area_img.paste(card_img, (190 + gap_w, 85 + gap_h), card_img)
     area_img.save('Area_tmp.png')
     os.remove('card.png')
-
-a = ["青5","赤スキップ","緑0","黄9","ワイルド","青5","赤スキップ","緑0","黄9","ワイルド","ドロー4","青リバース","青5","赤スキップ","緑0","黄9"]
-for i in a:
-    make_area(i)
-# make_hand()

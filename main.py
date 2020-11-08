@@ -474,11 +474,11 @@ async def on_message(ctx):
         make_image.make_hand(all_data[n][1])
         all_data[n][2] = await client.get_user(all_data[n][0]).send(
                          f"現在の手札```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
-        os.remove('hand.png')
+        os.remove('uno/hand.png')
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel == constant.Recruit and not uno_func.UNO_start:
         constant.UNO_start = True
-        shutil.copy('./uno/Area.png', './uno/Area_tmp.png')
+        shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
         await ctx.channel.send("UNOを開始します\n参加する方は`!Join`と入力してください (!Endで締め切り)")
         player = []
         while True:
@@ -539,29 +539,28 @@ async def on_message(ctx):
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(player[i]).mention} 時間切れとなったので強制スキップします")
                     break
-                if reply.author.id == player[i]:
-                    # 山札から1枚引く
-                    if reply.content.lower() == "!get":
-                        await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
-                        await send_card(i, 2)
-                    # カードを出さない
-                    elif reply.content.lower() == "!pass":
-                        await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
+                # 山札から1枚引く
+                if reply.content.lower() == "!get" and reply.author.id == player[i]:
+                    await reply.channel.send(f"{client.get_user(player[i]).mention} 山札から1枚引きます")
+                    await send_card(i, 2)
+                # カードを出さない
+                elif reply.content.lower() == "!pass" and reply.author.id == player[i]:
+                    await reply.channel.send(f"{client.get_user(player[i]).mention} パスしました")
+                    break
+                # 出せるカードかチェック
+                elif reply.author.id == player[i]:
+                    check, msg = uno_func.check_card(card[-1], uno_func.string_to_card(reply.content), all_data[i][1])
+                    if check:
+                        # 出したカードを山場に追加
+                        bet_card = uno_func.string_to_card(reply.content)
+                        card += bet_card
+                        # 出したカードを手札から削除
+                        for j in bet_card:
+                            all_data[i][1].remove(j)
+                        flag = True
                         break
-                    # 出せるカードかチェック
                     else:
-                        check, msg = uno_func.check_card(card[-1], uno_func.string_to_card(reply.content), all_data[i][1])
-                        if check:
-                            # 出したカードを山場に追加
-                            bet_card = uno_func.string_to_card(reply.content)
-                            card += bet_card
-                            # 出したカードを手札から削除
-                            for j in bet_card:
-                                all_data[i][1].remove(j)
-                            flag = True
-                            break
-                        else:
-                            await ctx.channel.send(f"{client.get_user(player[i]).mention} {msg}")
+                        await ctx.channel.send(f"{client.get_user(player[i]).mention} {msg}")
                 # 強制スキップさせる
                 elif reply.content.lower == "!skip" and role_check_mode(ctx):
                     break
@@ -637,6 +636,7 @@ async def on_message(ctx):
             stc += f"{i + 1}位 : {client.get_user(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
         await ctx.channel.send(f"ゲーム結果```{stc}```")
         uno_func.data_output(all_data)
+        os.remove('uno/Area_tmp.png')
         uno_func.UNO_start = False
 
 

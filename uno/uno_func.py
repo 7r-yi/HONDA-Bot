@@ -38,7 +38,7 @@ for n1 in Color:
         Card.append(f"{n1}{n2}")
 Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4  # 0は各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
 
-with open('uno_record.json', 'r') as f:
+with open('uno/uno_record.json', 'r') as f:
     Player_data = json.load(f)
 
 

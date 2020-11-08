@@ -57,11 +57,11 @@ def hiragana_to_alpha(hand):
 def honda_to_zyanken(my_hand, user):
     if random.randint(1, 100) >= 6:  # 勝率95%
         win = True
-        img_pass = './zyanken/card_image/YOU WIN.jpg'
+        img_pass = './zyanken/image/YOU WIN.jpg'
         emoji2 = "🎉"
     else:
         win = False
-        img_pass = './zyanken/card_image/YOU LOSE.jpg'
+        img_pass = './zyanken/image/YOU LOSE.jpg'
         emoji2 = "👎"
 
     if my_hand == "グー":
