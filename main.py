@@ -498,6 +498,7 @@ async def on_message(ctx):
             reply = await client.wait_for('message')
             try:
                 num = int(re.sub(r'[^0-9]', "", reply.content))
+                num = 30 if num > 30 else num
                 await reply.channel.send(f"初期手札を{num}枚で設定しました")
                 await asyncio.sleep(1)
                 break
