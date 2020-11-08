@@ -499,12 +499,12 @@ async def on_message(ctx):
             reply = await client.wait_for('message')
             try:
                 num = int(re.sub(r'[^0-9]', "", reply.content))
-                if 1 <= num <= 30:
+                if 1 <= num <= 100:
                     await reply.channel.send(f"初期手札を{num}枚で設定しました")
                     await asyncio.sleep(1)
                     break
                 else:
-                    await reply.channel.send(f"1～30枚以内で指定してください")
+                    await reply.channel.send(f"1～100枚以内で指定してください")
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
@@ -576,6 +576,7 @@ async def on_message(ctx):
                 # ゲームを強制中止する
                 elif reply.content.lower() == "!cancel" and role_check_mode(ctx):
                     await ctx.channel.send("ゲームを中止しました")
+                    uno_func.UNO_start = False
                     return
                 # 出せるカードかチェック
                 elif reply.author.id == player[i]:
