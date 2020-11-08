@@ -27,7 +27,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "3. 山札からカードを1枚引く場合は !Get と入力する" \
        "4. カードを出さない場合は !Pass と入力する\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
-       "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)" \
+       "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
        "5-3. 残り1枚となる人のターンが終了してから5秒間は指摘出来ない"
 
 Card = []
@@ -44,8 +44,8 @@ with open('uno/uno_record.json', 'r') as f:
 
 def card_to_string(card):
     stc = ""
-    for _ in card:
-        stc += f"{card}, "
+    for i in card:
+        stc += f"{i}, "
 
     return stc[:-2]
 

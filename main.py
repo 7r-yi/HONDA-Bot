@@ -451,7 +451,7 @@ async def on_message(ctx):
             k = 0
             for j in range(len(all_user)):
                 if result[all_user[j]] == all_result[i]:
-                    name = client.get_user(all_user[j]).display_name
+                    name = guild.get_member(all_user[j]).display_name
                     embed.add_field(name=f"{i + 1}位", value=f"{name} ({all_result[i]}pts)")
                     ranker.append(all_user[j])
                     k += 1
@@ -470,16 +470,17 @@ async def on_message(ctx):
         # 前に送ったDMがあるなら削除
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
-        all_data[n][1] = uno_func.sort_card([n][1] + uno_func.deal_card(times))
+        all_data[n][1] = uno_func.sort_card(all_data[n][1] + uno_func.deal_card(times))
+        print(all_data[n][1])
         make_image.make_hand(all_data[n][1])
         all_data[n][2] = await client.get_user(all_data[n][0]).send(
-                         f"現在の手札```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('hand.png'))
+                         f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
         os.remove('uno/hand.png')
 
     if ctx.content.lower() in ["_us", "_unostart"] and not uno_func.UNO_start:
         constant.UNO_start = True
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
-        await ctx.channel.send("UNOを開始します\n参加する方は`!Join`と入力してください (!Endで締め切り)")
+        await ctx.channel.send("UNOを開始します\n参加する方は `!Join` と入力してください ( `!End` で締め切り)")
         player = []
         while True:
             reply = await client.wait_for('message')
@@ -490,29 +491,28 @@ async def on_message(ctx):
                 break
         stc = ""
         for i in range(len(player)):
-            stc += f"{i + 1}. {client.get_user(player[i]).display_name}\n"
+            stc += f"{i + 1}. {guild.get_member(player[i]).display_name}\n"
         await ctx.channel.send(f"プレイヤーリスト```{stc}```\n締め切りました\n次に初期手札の枚数を入力してください")
         while True:
             reply = await client.wait_for('message')
             try:
                 num = int(re.sub(r'[^0-9]', "", reply.content))
                 await reply.channel.send(f"初期手札を{num}枚で設定しました")
-                await asyncio.sleep(2)
+                await asyncio.sleep(1)
                 break
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
         random.shuffle(player)
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
-        all_data = [[id, None, None, [False, None]] for id in player]
+        all_data = [[id, [], None, [False, None]] for id in player]
         for i in range(len(player)):
-            all_data[i][1] = uno_func.sort_card(uno_func.deal_card(num))
-            await client.get_user(player[i]).send(f"あなたの初期手札です↓```{uno_func.card_to_string(all_data[i][1])}```")
+            await send_card(i, num)
         await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno_func.Rule}```")
         stc = ""
-        for _ in player:
-            stc += f"{client.get_user(player).display_name} → "
+        for i in player:
+            stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, penalty, winner = 0, [uno_func.deal_card(1)], 0, None
         await asyncio.sleep(7)
@@ -520,9 +520,9 @@ async def on_message(ctx):
         while True:
             flag, stc, i = False, "", cnt % len(player)
             for j in range(len(all_data)):
-                stc += f"{client.get_user(player[j]).display_name} : {len(all_data[j][1])}枚\n"
+                stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('Area.png'))
+            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area.png'))
             await ctx.channel.send(f"{client.get_user(player[i]).mention} の番です (50秒以内)")
             # 記号しか無いかチェック
             while True:
@@ -633,7 +633,7 @@ async def on_message(ctx):
         all_data[winner][4] = -sum(all_data[i][4] for i in all_data)
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {client.get_user(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
+            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
         await ctx.channel.send(f"ゲーム結果```{stc}```")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
