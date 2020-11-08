@@ -481,7 +481,8 @@ async def on_message(ctx):
     if ctx.content.lower() in ["_us", "_unostart"] and not uno_func.UNO_start:
         constant.UNO_start = True
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
-        await ctx.channel.send("UNOを開始します\n参加する方は `!Join` と入力してください ( `!End` で締め切り)")
+        await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可にしてください\n"
+                               "参加する方は `!Join` と入力してください ( `!End` で締め切り)")
         player = []
         while True:
             reply = await client.wait_for('message')
@@ -507,8 +508,6 @@ async def on_message(ctx):
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
-
-
         random.shuffle(player)
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
         all_data = [[id, [], None, [False, None]] for id in player]
@@ -521,10 +520,10 @@ async def on_message(ctx):
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, flag, penalty, winner = 0, uno_func.deal_card(1), True, 0, None
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
         while True:
-            stc, i, get_flag = "", cnt % len(player), True
+            stc, i, get_flag = "", abs(cnt % len(player)), True
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(player[j]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
@@ -563,7 +562,8 @@ async def on_message(ctx):
                     break
                 # 出せるカードかチェック
                 elif reply.author.id == player[i]:
-                    check, msg = uno_func.check_card(card[-1], uno_func.string_to_card(reply.content), all_data[i][1])
+                    check, msg = uno_func.check_card(
+                                 card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                     if check:
                         # 出したカードを山場に追加
                         bet_card = uno_func.string_to_card(reply.content)
@@ -630,6 +630,7 @@ async def on_message(ctx):
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content)) * 2 - 1}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
                     all_data.reverse()
+                    player.reverse()
             # 上がり
             if not all_data[i][1]:
                 await ctx.channel.send(f"{client.get_user(player[i]).mention} YOU WIN!")

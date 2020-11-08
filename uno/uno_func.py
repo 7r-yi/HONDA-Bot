@@ -24,7 +24,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "1. 複数枚出し時はカンマで区切る (例 : 赤0, 青0, 赤0, 緑0)\n" \
        "2. ワイルドカードを出す時は ワイルド or ドロー4 と入力する\n" \
        "2-2. その後色指定の時間があるので、赤　or　青　or　緑　or　黄 と入力する\n" \
-       "3. 山札からカードを1枚引く場合は !Get と入力する" \
+       "3. 山札からカードを1枚引く場合は !Get と入力する\n" \
        "4. カードを出さない場合は !Pass と入力する\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
        "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
@@ -99,12 +99,12 @@ def sort_card(card):
     return card
 
 
-def check_card(before, after, hand):
+def check_card(before, after, hand, penalty):
     error = None
-    if "ドロー2" in before:  # 場のカードがドロー2の場合
+    if "ドロー2" in before and penalty > 0:  # 場のカードがドロー2の場合
         if not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
             error = "ドロー2にはドロー2/4でしか返せません"
-    elif "ドロー4" in before:  # 場のカードがドロー4の場合
+    elif "ドロー4" in before and penalty > 0:  # 場のカードがドロー4の場合
         if not ((before[0] == after[0][0] and after[0][1:] == "ドロー2") or after[0] == "ドロー4"):  # 返さないカードとなっている
             error = "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
         elif not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
