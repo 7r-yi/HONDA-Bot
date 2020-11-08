@@ -615,7 +615,7 @@ async def on_message(ctx):
             elif penalty != 0 and not flag:
                 await reply.channel.send(f"{client.get_user(player[i]).mention} ペナルティーで{penalty}枚追加されました")
                 await send_card(i, penalty)
-                penalty, cnt = 0, cnt - 1
+                penalty, cnt, flag = 0, cnt - 1, True
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content)) * 2 - 1}人スキップされました")
@@ -634,7 +634,9 @@ async def on_message(ctx):
             # 残り1枚になった時
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
-            await send_card(i, 0)
+            # 手持ちが更新されたら手札を再送信
+            if flag:
+                await send_card(i, 0)
             cnt += 1
 
         # 点数計算
