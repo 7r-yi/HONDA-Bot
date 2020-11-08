@@ -478,8 +478,8 @@ async def on_message(ctx):
             f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
         os.remove('uno/hand.png')
 
-    if ctx.content.lower() in ["_us", "_unostart"] and not uno_func.UNO_start:
-        constant.UNO_start = True
+    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
+        uno_func.UNO_start = True
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
         await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可にしてください\n"
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り)")
