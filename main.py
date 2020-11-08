@@ -485,8 +485,8 @@ async def on_message(ctx):
         player = []
         while True:
             reply = await client.wait_for('message')
-            if reply.content.lower() in ["!j", "!join"]:
-                player.append(ctx.author.id)
+            if reply.content.lower() in ["!j", "!join"] and reply.author.id not in player:
+                player.append(reply.author.id)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
             elif reply.content.lower() in ["!e", "!end"]:
                 break
@@ -498,12 +498,16 @@ async def on_message(ctx):
             reply = await client.wait_for('message')
             try:
                 num = int(re.sub(r'[^0-9]', "", reply.content))
-                num = 30 if num > 30 else num
-                await reply.channel.send(f"初期手札を{num}枚で設定しました")
-                await asyncio.sleep(1)
-                break
+                if 1 <= num <= 30:
+                    await reply.channel.send(f"初期手札を{num}枚で設定しました")
+                    await asyncio.sleep(1)
+                    break
+                else:
+                    await reply.channel.send(f"1～30枚以内で指定してください")
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
+
+
 
         random.shuffle(player)
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
