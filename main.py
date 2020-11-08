@@ -653,7 +653,7 @@ async def on_message(ctx):
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
-        await ctx.channel.send(f"```ゲーム結果\n{stc}```")
+        await ctx.channel.send(f"```ゲーム結果\n{stc}```\nゲームを終了しました")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
         uno_func.UNO_start = False
