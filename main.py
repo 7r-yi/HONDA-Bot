@@ -594,14 +594,14 @@ async def on_message(ctx):
                         # 自分のUNOフラグが立っている場合
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
-                            await ctx.channel.send(f"{role_U.mention} 【{reply.author.mention}】がUNOを宣言しました")
+                            await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
                 # ゲームから棄権する
                 elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop":
                     if len(all_data) > 2:
                         await guild.get_member(all_data[i][0]).remove_roles(role_U)
                         all_data.pop(i)
                         cnt -= 1
-                        await ctx.channel.send(f"{role_A.mention} 【{reply.author.mention}】が棄権しました")
+                        await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
                         break
                     else:
                         await ctx.channel.send(f"{reply.author.mention} "
