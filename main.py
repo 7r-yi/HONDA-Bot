@@ -68,6 +68,9 @@ async def on_member_remove(member):
 
 @client.event
 async def on_message(ctx):
+    def ng_check(ctx_wait):
+        return not (ctx_wait.author.bot or ctx_wait.content == "")
+
     def role_check_admin(ctx_role):
         return 'Administrator' in [roles.name for roles in ctx_role.author.roles]
 
@@ -335,7 +338,7 @@ async def on_message(ctx):
         while i < num:
             await ctx.channel.send(f"**{i + 1}**/{num}問目の問題文を入力してください")
             while True:
-                reply = await client.wait_for('message')
+                reply = await client.wait_for('message', check=ng_check)
                 if role_check_admin(reply):
                     break
             if reply.content.lower() == "back" and i >= 1:
@@ -351,7 +354,7 @@ async def on_message(ctx):
                 constant.Question[f"Q{i + 1}"] = reply.content
                 await ctx.channel.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
                 while True:
-                    reply = await client.wait_for('message')
+                    reply = await client.wait_for('message', check=ng_check)
                     if role_check_admin(reply):
                         break
                 if reply.content.lower() == "back" and i >= 1:
@@ -486,7 +489,7 @@ async def on_message(ctx):
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
         player = []
         while True:
-            reply = await client.wait_for('message')
+            reply = await client.wait_for('message', check=ng_check)
             if jaconv.z2h(reply.content, ascii=True).lower() in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
@@ -501,7 +504,7 @@ async def on_message(ctx):
             stc += f"{i + 1}. {guild.get_member(player[i]).display_name}\n"
         await ctx.channel.send(f"```プレイヤーリスト\n\n{stc}```\n締め切りました\n次に初期手札の枚数を入力してください")
         while True:
-            reply = await client.wait_for('message')
+            reply = await client.wait_for('message', check=ng_check)
             if jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
                 await reply.channel.send("中止しました")
                 uno_func.UNO_start = False
@@ -531,7 +534,7 @@ async def on_message(ctx):
         await ctx.channel.send("ゲームを始めてもよろしいですか？(全員がYesを入力したら開始)")
         cnt_yes, cnt_player = 0, []
         while True:
-            reply = await client.wait_for('message')
+            reply = await client.wait_for('message', check=ng_check)
             if reply.author.id in player:
                 if jaconv.z2h(reply.content, ascii=True).lower() == "yes" and reply.author.id not in cnt_player:
                     cnt_yes += 1
@@ -563,7 +566,8 @@ async def on_message(ctx):
             start = datetime.now()
             while True:
                 try:
-                    reply = await client.wait_for('message', timeout=float(time) - (datetime.now() - start).seconds)
+                    reply = await client.wait_for('message', check=ng_check,
+                                                  timeout=float(time) - (datetime.now() - start).seconds)
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                     break
@@ -610,7 +614,7 @@ async def on_message(ctx):
                                                    f"山札から1枚引いてパスしました", delete_after=5.0)
                             await send_card(i, 1)
                         break
-                    elif reply.content != "":
+                    else:
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
                                      card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
@@ -636,7 +640,8 @@ async def on_message(ctx):
                 start = datetime.now()
                 while True:
                     try:
-                        color = await client.wait_for('message', timeout=20.0 - (datetime.now() - start).seconds)
+                        color = await client.wait_for('message', check=ng_check,
+                                                      timeout=20.0 - (datetime.now() - start).seconds)
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
