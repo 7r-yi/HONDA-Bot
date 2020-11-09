@@ -523,10 +523,14 @@ async def on_message(ctx):
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, flag, penalty, winner = 0, uno_func.first_card(), False, 0, None
-        await ctx.channel.send("ゲームを始めてもよろしいですか？(Yesで開始)")
+        await ctx.channel.send("ゲームを始めてもよろしいですか？(全員がYesを入力したら開始)")
+        cnt_yes, cnt_player = 0, []
         while True:
             reply = await client.wait_for('message')
-            if reply.content.lower() == "yes":
+            if jaconv.z2h(reply.content, ascii=True).lower() == "yes" and reply.author.id not in cnt_player:
+                cnt_yes += 1
+                cnt_player.append(reply.author.id)
+            if cnt_yes == len(player):
                 shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
                 make_image.make_area(card[-1])
                 break
@@ -675,7 +679,7 @@ async def on_message(ctx):
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
-            stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n"
+            stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n\n"
         await ctx.channel.send(f"```ゲーム結果\n{stc}```\nゲームを終了しました")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
