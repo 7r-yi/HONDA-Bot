@@ -485,12 +485,12 @@ async def on_message(ctx):
         player = []
         while True:
             reply = await client.wait_for('message')
-            if reply.content.lower() in ["!j", "!join"] and reply.author.id not in player:
+            if jaconv.z2h(reply.content, ascii=True).lower() in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
-            elif reply.content.lower() in ["!e", "!end"] and player:
+            elif jaconv.z2h(reply.content, ascii=True).lower() in ["!e", "!end"] and player:
                 break
-            elif reply.content.lower() == "!cancel":
+            elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
                 await reply.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
@@ -501,7 +501,7 @@ async def on_message(ctx):
         while True:
             reply = await client.wait_for('message')
             try:
-                num = int(re.sub(r'[^0-9]', "", reply.content))
+                num = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
                 if 2 <= num <= 100:
                     await reply.channel.send(f"初期手札を{num}枚で設定しました")
                     break
@@ -552,24 +552,8 @@ async def on_message(ctx):
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                     break
-                # 山札から1枚引く
-                if reply.content.lower() in ["!g", "!get"] and reply.author.id == all_data[i][0]:
-                    if get_flag:
-                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引きます")
-                        await send_card(i, 1)
-                        get_flag = False
-                    else:
-                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです")
-                # カードを出さない
-                elif reply.content.lower() in ["!p", "!pass"] and reply.author.id == all_data[i][0]:
-                    if penalty > 0 or not get_flag:
-                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
-                        break
-                    else:
-                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
-                        await send_card(i, 1)
                 # UNOの指摘/宣言
-                elif "!uno" in reply.content.lower():
+                if "!uno" in jaconv.z2h(reply.content, ascii=True).lower():
                     if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         # UNOフラグが立ってから15秒以上経過
@@ -585,27 +569,44 @@ async def on_message(ctx):
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
                 # ゲームを強制中止する
-                elif reply.content.lower() == "!cancel" and role_check_mode(ctx):
+                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel" and role_check_mode(ctx):
                     await ctx.channel.send("ゲームを中止しました")
                     os.remove('uno/Area_tmp.png')
                     uno_func.UNO_start = False
                     return
-                # 出せるカードかチェック
                 elif reply.author.id == all_data[i][0]:
-                    check, msg = uno_func.check_card(
-                                 card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
-                    if check:
-                        # 出したカードを山場に追加
-                        bet_card = uno_func.string_to_card(reply.content)
-                        card += bet_card
-                        # 出したカードを手札から削除 & 場札更新
-                        for j in bet_card:
-                            all_data[i][1].remove(j)
-                            make_image.make_area(j)
-                        flag = True
-                        break
+                    # 山札から1枚引く
+                    if jaconv.z2h(reply.content, ascii=True).lower() in ["!g", "!get"]:
+                        if get_flag:
+                            await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引きます")
+                            await send_card(i, 1)
+                            get_flag = False
+                        else:
+                            await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです")
+                    # カードを出さない
+                    elif jaconv.z2h(reply.content, ascii=True).lower() in ["!p", "!pass"]:
+                        if penalty > 0 or not get_flag:
+                            await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
+                            break
+                        else:
+                            await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
+                            await send_card(i, 1)
                     else:
-                        await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}")
+                        # 出せるカードかチェック
+                        check, msg = uno_func.check_card(
+                                     card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                        if check:
+                            # 出したカードを山場に追加
+                            bet_card = uno_func.string_to_card(reply.content)
+                            card += bet_card
+                            # 出したカードを手札から削除 & 場札更新
+                            for j in bet_card:
+                                all_data[i][1].remove(j)
+                                make_image.make_area(j)
+                            flag = True
+                            break
+                        else:
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}")
             # ドロー2/4のペナルティー枚数計算
             penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
