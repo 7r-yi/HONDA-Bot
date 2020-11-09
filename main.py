@@ -620,7 +620,7 @@ async def on_message(ctx):
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
                     if color.author.id == all_data[i][0] and uno_func.translate_input(color.content) in uno_func.Color:
-                        card[-1] = f"{color.content}{card[-1]}"
+                        card[-1] = f"{uno_func.translate_input(color.content)}{card[-1]}"
                         break
                     elif color.author.id == all_data[i][0]:
                         await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 赤/青/緑/黄 と入力してください")
