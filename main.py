@@ -613,7 +613,7 @@ async def on_message(ctx):
                             flag = True
                             break
                         else:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}")
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}", delete_after=5.0)
             # ドロー2/4のペナルティー枚数計算
             if flag:
                 penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
