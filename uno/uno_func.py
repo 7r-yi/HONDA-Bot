@@ -1,5 +1,6 @@
 import random
 import json
+import jaconv
 import copy
 
 
@@ -8,17 +9,19 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "1. 同じ数字/記号なら1ターンで何枚でも出せる (例 : 赤0 → 青0 + 緑0 + 黄0)\n" \
        "1-2. 最後に出すカードの色が、次の場のカードの色となる\n" \
        "2. リバースを出しても再度自分の番にはならない(3人以上)\n" \
-       "3. ドロー4は他に出せるカードがあって手も出せる\n" \
+       "3. ドロー4は他に出せるカードがあっても出せる\n" \
        "3-2. ドロー2の後にドロー4で返すことが可能\n" \
        "3-3. ドロー4の後は、ドロー4もしくは指定された色のドロー2のみ返すことが可能\n" \
        "3-4. 一度にドロー2とドロー4を組み合わせて出すことは出来る\n" \
-       "4. 山札から引いた後でもすぐ出すことができ、手持ちと組み合わせても良い\n" \
+       "4. 山札から引いた後にすぐ出すことができる、そこから手札とコンボを組んでも良い\n" \
        "4-2. ドロー2/4を受けた後でもカードを出すことが出来る\n" \
-       "5. 記号で上がることは出来ない (記号しか残っていない時点で2枚追加)\n" \
-       "5-2. 手札が2枚以上の状態から、複数枚出しで一気に上がることは出来ない\n" \
-       "6. 誰か1人が上がったらその時点でゲームセット\n" \
-       "6-2. 数字カードは-その数字点、記号カードは-20点、ワイルドカードは-50点で計算\n" \
-       "6-3. 1位は全員のマイナスポイント分をプラスで受け取れる\n\n" \
+       "5. 山札から引けるのは1ターンで1枚まで\n" \
+       "5-2. 山札から1枚も引かずにパスすることは出来ない(ドロー2/4を受ける場合は除く)\n" \
+       "6. 記号で上がることは出来ない(記号しか残っていない時点で2枚追加)\n" \
+       "6-2. 手札が2枚以上の状態から、複数枚出しで一気に上がることは出来ない\n" \
+       "7. 誰か1人が上がったらその時点でゲームセット\n" \
+       "7-2. 数字カードは-その数字点、記号カードは-20点、ワイルドカードは-50点で計算\n" \
+       "7-3. 1位は全員のマイナスポイント分をプラスで受け取れる\n\n\n" \
        "★カードの出し方\n" \
        "・数字カード → 赤0 or 青1 or 緑2 or 黄3 など\n" \
        "・記号カード → 赤スキップ or 青リバース or 緑ドロー2 など\n" \
@@ -30,7 +33,8 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "4. カードを出さない場合は !Pass と入力する\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
        "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
-       "5-3. 残り1枚となる人のターンが終了してから15秒間は指摘出来ない"
+       "5-3. 残り1枚となる人のターンが終了してから15秒間は指摘出来ない\n" \
+       "5-4. UNOと宣言せずに上がると2枚ペナルティー"
 
 Card = []
 Color = ["赤", "青", "緑", "黄"]
@@ -44,6 +48,30 @@ with open('uno/uno_record.json', 'r') as f:
     Player_data = json.load(f)
 
 
+def translate_input(word):
+    if jaconv.z2h(word, ascii=True).lower() in ["w", "wild"]:
+        return "ワイルド"
+    elif jaconv.z2h(word, ascii=True, digit=True).lower() in ["+4", "d4"]:
+        return "ドロー4"
+    else:
+        trans1, trans2 = word[0], word[1:]
+        if jaconv.z2h(word[0], ascii=True).lower() == "r":
+            trans1 = "赤"
+        elif jaconv.z2h(word[0], ascii=True).lower() == "b":
+            trans1 = "青"
+        elif jaconv.z2h(word[0], ascii=True).lower() == "g":
+            trans1 = "緑"
+        elif jaconv.z2h(word[0], ascii=True).lower() == "y":
+            trans1 = "黄"
+        if jaconv.z2h(word[1:], ascii=True).lower() == "s":
+            trans2 = "スキップ"
+        elif jaconv.z2h(word[1:], ascii=True).lower() == "r":
+            trans2 = "リバース"
+        elif jaconv.z2h(word[1:], ascii=True, digit=True).lower() in ["+2", "d2"]:
+            trans2 = "ドロー2"
+        return f"{trans1}{trans2}"
+
+
 def card_to_string(card):
     stc = ""
     for i in card:
@@ -54,13 +82,14 @@ def card_to_string(card):
 
 def string_to_card(stc):
     if stc.count(",") >= 1:  # 出すカードをリスト化
-        stc, ls = stc.split(","), []
+        stc, card = stc.split(","), []
         for i in range(len(stc)):
             if stc[i].strip() != "":
-                ls.append(stc[i].strip())
-        return ls
+                card.append(translate_input(stc[i].strip()))
+        return card
+
     else:
-        return [stc.strip()]
+        return [translate_input(stc.strip())]
 
 
 def card_to_id(card):

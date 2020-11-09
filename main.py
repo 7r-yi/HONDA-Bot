@@ -562,8 +562,12 @@ async def on_message(ctx):
                         await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです")
                 # カードを出さない
                 elif reply.content.lower() == ["!p", "!pass"] and reply.author.id == all_data[i][0]:
-                    await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
-                    break
+                    if penalty > 0 or not get_flag:
+                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
+                        break
+                    else:
+                        await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
+                        await send_card(i, 1)
                 # UNOの指摘/宣言
                 elif "!uno" in reply.content.lower():
                     if len(reply.raw_mentions) == 1:
