@@ -619,7 +619,7 @@ async def on_message(ctx):
                         await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
-                    if color.author.id == all_data[i][0] and color.content in uno_func.Color:
+                    if color.author.id == all_data[i][0] and uno_func.translate_input(color.content) in uno_func.Color:
                         card[-1] = f"{color.content}{card[-1]}"
                         break
                     elif color.author.id == all_data[i][0]:
