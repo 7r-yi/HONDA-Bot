@@ -27,19 +27,21 @@ def make_hand(card):
     bg_img = cv2.imread('uno/Background.png')
 
     bg_h, bg_w, _ = bg_img.shape
-    num = len(card_img)
+    h, w, _ = card_img[0].shape
+    num, mag = len(card_img), 1.0
     # 枚数に応じて横に並べる枚数を4～12枚に調整
     MAX = 4 if np.ceil(num / 2) < 4 else 10 if np.ceil(num / 3) > 10 else int(np.ceil(num / 3))
     # 並べた時に見切れないように、枚数に応じてカードの画像サイズを縮小
     while True:
-        h, w, _ = card_img[0].shape
-        # 画像同士の余白は最低 縦[70/枚数+1]px、横[100/枚数+1]px 空ける
-        if bg_h - h * (num // MAX + 1) - 70 < 0 or bg_w - w * MAX - 100 < 0:
-            for i in range(num):
-                card_img[i] = cv2.resize(card_img[i], None, fx=0.9, fy=0.9)
+        # 画像同士の余白は最低 縦[40/枚数+1]px、横[70/枚数+1]px 空ける
+        if bg_h - int(h * mag) * (num // MAX + 1) - 40 < 0 or bg_w - int(w * mag) * MAX - 70 < 0:
+            mag -= 0.01
         else:
+            for i in range(num):
+                card_img[i] = cv2.resize(card_img[i], None, fx=mag, fy=mag)
             break
 
+    h, w, _ = card_img[0].shape
     space_h = (bg_h - h * (num // MAX + 1)) // (num // MAX + 2)
     space_w = (bg_w - w * MAX) // (MAX + 1)
     start_h, start_w = space_h, space_w
@@ -58,7 +60,7 @@ def make_hand(card):
 
 def make_area(card):
     area_img = Image.open('uno/Area_tmp.png')
-    card_img = Image.open(id_to_pass(uno_func.card_to_id(card))).resize(size=(384, 512))
+    card_img = Image.open(id_to_pass(uno_func.card_to_id(card))).resize((384, 512))
     # カード画像の回転角をランダムで指定
     card_img = card_img.rotate(random.randint(-70, 70), fillcolor=(255, 204, 51), expand=True)
     # カード画像と同じサイズの透過画像を作成
