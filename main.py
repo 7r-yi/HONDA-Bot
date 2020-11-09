@@ -527,16 +527,17 @@ async def on_message(ctx):
         cnt_yes, cnt_player = 0, []
         while True:
             reply = await client.wait_for('message')
-            if jaconv.z2h(reply.content, ascii=True).lower() == "yes" and reply.author.id not in cnt_player:
-                cnt_yes += 1
-                cnt_player.append(reply.author.id)
-            if cnt_yes == len(player):
-                shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
-                make_image.make_area(card[-1])
-                break
+            if reply.author.id in player:
+                if jaconv.z2h(reply.content, ascii=True).lower() == "yes" and reply.author.id not in cnt_player:
+                    cnt_yes += 1
+                    cnt_player.append(reply.author.id)
+                if cnt_yes == len(player):
+                    shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
+                    make_image.make_area(card[-1])
+                    break
 
         while True:
-            stc, i, get_flag = "", abs(cnt % len(all_data)), True
+            stc, i, flag, get_flag = "", abs(cnt % len(all_data)), False, True
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
             await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```**現在の場札のカード : {card[-1]}**",
@@ -592,15 +593,14 @@ async def on_message(ctx):
                     elif jaconv.z2h(reply.content, ascii=True).lower() in ["!p", "!pass"]:
                         if penalty > 0 or not get_flag:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
-                            break
                         else:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
                             await send_card(i, 1)
-                            break
+                        break
                     else:
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
-                            card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                                     card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
                             bet_card = uno_func.string_to_card(reply.content)
@@ -609,6 +609,7 @@ async def on_message(ctx):
                             for j in bet_card:
                                 all_data[i][1].remove(j)
                                 make_image.make_area(j)
+                            await send_card(i, 0)
                             flag = True
                             break
                         else:
@@ -633,10 +634,10 @@ async def on_message(ctx):
                     elif color.author.id == all_data[i][0]:
                         await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 赤/青/緑/黄 と入力してください")
             # ドロー2/4のペナルティーを受ける
-            elif penalty != 0 and not flag:
+            elif penalty > 0 and not flag:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました")
                 await send_card(i, penalty)
-                penalty, cnt, flag = 0, cnt - 1, True
+                penalty, cnt, = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}人スキップされました")
@@ -647,7 +648,7 @@ async def on_message(ctx):
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
                     tmp = copy.copy(all_data[i][0])
                     all_data.reverse()
-                    i = uno_func.search_player(tmp, all_data)
+                    cnt = uno_func.search_player(tmp, all_data)
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -662,10 +663,6 @@ async def on_message(ctx):
             # 残り1枚になったらUNOフラグを立てる
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
-            # 手持ちが更新されたら手札を再送信
-            if flag:
-                await send_card(i, 0)
-                flag = False
             cnt += 1
 
         # 点数計算
