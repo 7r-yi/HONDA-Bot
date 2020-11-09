@@ -640,13 +640,13 @@ async def on_message(ctx):
                     all_data.reverse()
                     i = uno_func.search_player(all_data[i][0], all_data)
             # 上がり
-            if not all_data[i][1] and not all_data[i][3]:
+            if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
                 await guild.get_member(all_data[i][0]).add_roles(role_W)
                 winner = i
                 break
             # 手札は0枚になったがUNO宣言忘れ
-            elif not all_data[i][1] and all_data[i][3]:
+            elif not all_data[i][1] and all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} UNOって言ってないのでペナルティーで2枚追加されました")
                 await send_card(i, 2)
                 all_data[i][3] = [False, None]
