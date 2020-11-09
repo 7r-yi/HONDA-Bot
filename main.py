@@ -591,6 +591,7 @@ async def on_message(ctx):
                         else:
                             await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
                             await send_card(i, 1)
+                            break
                     else:
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
@@ -608,7 +609,8 @@ async def on_message(ctx):
                         else:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}")
             # ドロー2/4のペナルティー枚数計算
-            penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
+            if flag:
+                penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} カラーを指定してください (制限時間20秒)")
@@ -638,9 +640,8 @@ async def on_message(ctx):
             elif card[-1][1:] == "リバース" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
-                    tmp = all_data[i][0]
                     all_data.reverse()
-                    i = uno_func.search_player(tmp, all_data)
+                    i = uno_func.search_player(all_data[i][0], all_data)
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
