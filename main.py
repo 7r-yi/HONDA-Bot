@@ -481,8 +481,8 @@ async def on_message(ctx):
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
-        await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可にしてください\n"
-                               "参加する方は `!Join` と入力してください ( `!End` で締め切り)")
+        await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可してください\n"
+                               "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
         player = []
         while True:
             reply = await client.wait_for('message')
@@ -491,6 +491,9 @@ async def on_message(ctx):
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
             elif reply.content.lower() in ["!e", "!end"] and player:
                 break
+            elif reply.content.lower() == "!cancel":
+                uno_func.UNO_start = False
+                return
         stc = ""
         for i in range(len(player)):
             stc += f"{i + 1}. {guild.get_member(player[i]).display_name}\n"
@@ -521,7 +524,11 @@ async def on_message(ctx):
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, flag, penalty, winner = 0, uno_func.first_card(), False, 0, None
         make_image.make_area(card[-1])
-        await asyncio.sleep(10)
+        await ctx.channel.send("ゲームを始めてもよろしいですか？(Yesで開始)")
+        while True:
+            reply = await client.wait_for('message')
+            if reply.content.lower() == "yes":
+                break
 
         while True:
             stc, i, get_flag = "", abs(cnt % len(player)), True
