@@ -91,6 +91,7 @@ async def on_message(ctx):
     role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
     role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
     role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
+    role_U = discord.utils.get(ctx.guild.roles, id=constant.UNO_Player)
     role_C = discord.utils.get(ctx.guild.roles, id=constant.Challenger)
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
@@ -477,6 +478,7 @@ async def on_message(ctx):
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
         all_data[n][1] = uno_func.sort_card(all_data[n][1] + uno_func.deal_card(times))
+        # 手札が1枚以上なら画像を作成/送信
         if all_data[n][1]:
             make_image.make_hand(all_data[n][1])
             all_data[n][2] = await client.get_user(all_data[n][0]).send(
@@ -531,21 +533,26 @@ async def on_message(ctx):
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, msg1, msg2, flag, penalty, winner = 0, uno_func.first_card(), None, None, False, 0, None
-        await ctx.channel.send("ゲームを始めてもよろしいですか？(全員がYesを入力したら開始)")
-        cnt_yes, cnt_player = 0, []
+        await ctx.channel.send("ゲームを始めてもよろしいですか？(2分以上経過 or 全員が `OK` で開始)")
+        cnt_ok, ok_player, ok_start = 0, [], datetime.now()
         while True:
-            reply = await client.wait_for('message', check=ng_check)
-            if reply.author.id in player:
-                if jaconv.z2h(reply.content, ascii=True).lower() == "yes" and reply.author.id not in cnt_player:
-                    cnt_yes += 1
-                    cnt_player.append(reply.author.id)
-                if cnt_yes == len(player):
-                    shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
-                    make_image.make_area(card[-1])
-                    break
+            try:
+                reply = await client.wait_for('message',
+                                              check=ng_check, timeout=120.0 - (datetime.now() - ok_start).seconds)
+            except asyncio.exceptions.TimeoutError:
+                break
+            if reply.author.id in player and reply.author.id not in ok_player:
+                if jaconv.z2h(reply.content, ascii=True).lower() == "ok":
+                    cnt_ok += 1
+                    ok_player.append(reply.author.id)
+                    await guild.get_member(reply.author.id).add_roles(role_U)
+            if cnt_ok == len(player):
+                shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
+                make_image.make_area(card[-1])
+                break
 
         while True:
-            stc, i, flag, get_flag = "", abs(cnt % len(all_data)), False, True
+            stc, i, flag, get_flag = "", cnt % len(all_data), False, True
             time = 30 if len(all_data[i][1]) * 5 + 15 < 30 else len(all_data[i][1]) * 5 + 15
             if msg1 is not None:
                 await msg1.delete()
@@ -586,13 +593,45 @@ async def on_message(ctx):
                         # 自分のUNOフラグが立っている場合
                         if all_data[j][3][0]:
                             all_data[j][3] = [False, None]
-                            await ctx.channel.send(f"{reply.author.mention} UNOと宣言しました")
+                            await ctx.channel.send(f"{role_U.mention} 【{reply.author.mention}】がUNOを宣言しました")
+                # ゲームから棄権する
+                elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop":
+                    if len(all_data) > 2:
+                        await guild.get_member(all_data[i][0]).remove_roles(role_U)
+                        all_data.pop(i)
+                        cnt -= 1
+                        await ctx.channel.send(f"{role_A.mention} 【{reply.author.mention}】が棄権しました")
+                        break
+                    else:
+                        await ctx.channel.send(f"{reply.author.mention} "
+                                               f"2人以下の状態では棄権出来ません\n(`!Cancel` で中止)", delete_after=5.0)
                 # ゲームを強制中止する
-                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel" and role_check_mode(ctx):
-                    await ctx.channel.send("ゲームを中止しました")
-                    os.remove('uno/Area_tmp.png')
-                    uno_func.UNO_start = False
-                    return
+                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
+                    await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(全員が `OK` で中止、`NG` でキャンセル)")
+                    all_player = [all_data[j][0] for j in range(len(all_data))]
+                    cnt_cancel, cancel_player, cancel_start = 0, [], datetime.now()
+                    while True:
+                        try:
+                            reply = await client.wait_for('message', check=ng_check,
+                                                          timeout=30.0 - (datetime.now() - cancel_start).seconds)
+                        except asyncio.exceptions.TimeoutError:
+                            await ctx.channel.send(f"{role_U.mention} 時間切れでキャンセルしました")
+                            break
+                        if reply.author.id in all_player and reply.author.id not in cancel_player:
+                            if jaconv.z2h(reply.content, ascii=True).lower() == "ok":
+                                cnt_cancel += 1
+                                cancel_player.append(reply.author.id)
+                            elif jaconv.z2h(reply.content, ascii=True).lower() == "ng":
+                                await ctx.channel.send(f"{role_U.mention} キャンセルしました")
+                                break
+                        if cnt_cancel == len(all_player):
+                            os.remove('uno/Area_tmp.png')
+                            for member in role_U.members:
+                                await member.remove_roles(role_U)
+                            uno_func.UNO_start = False
+                            await ctx.channel.send(f"{role_U.mention} ゲームを中止しました")
+                            return
+                # 自分のターンでの行動
                 elif reply.author.id == all_data[i][0]:
                     # 山札から1枚引く
                     if jaconv.z2h(reply.content, ascii=True).lower() in ["!g", "!get"]:
@@ -617,7 +656,7 @@ async def on_message(ctx):
                     else:
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
-                                     card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                            card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
                             bet_card = uno_func.string_to_card(reply.content)
@@ -695,9 +734,11 @@ async def on_message(ctx):
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
             stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n\n"
-        await ctx.channel.send(f"```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
+        await ctx.channel.send(f"```\n★ゲーム結果\n\n{stc}```{role_U.mention} 結果を記録してゲームを終了しました")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
+        for member in role_U.members:
+            await member.remove_roles(role_U)
         uno_func.UNO_start = False
 
 
