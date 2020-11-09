@@ -79,7 +79,7 @@ async def on_message(ctx):
         roles = [roles.name for roles in ctx_role.author.roles]
         return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
 
-    if ctx.author.bot or ctx.content == "":  # Botのメッセージと無入力には反応させない
+    if ctx.author.bot or not isinstance(ctx.content, str):  # Botのメッセージと無入力には反応させない
         return
 
     guild = client.get_guild(constant.Server)
@@ -597,7 +597,7 @@ async def on_message(ctx):
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
                             await send_card(i, 1)
                         break
-                    else:
+                    elif isinstance(reply.content, str):
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
                                      card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
