@@ -489,7 +489,7 @@ async def on_message(ctx):
             reply = await client.wait_for('message')
             if jaconv.z2h(reply.content, ascii=True).lower() in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
-                await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=3.0)
+                await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
             elif jaconv.z2h(reply.content, ascii=True).lower() in ["!e", "!end"] and player:
                 break
             elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
@@ -502,13 +502,17 @@ async def on_message(ctx):
         await ctx.channel.send(f"```プレイヤーリスト\n\n{stc}```\n締め切りました\n次に初期手札の枚数を入力してください")
         while True:
             reply = await client.wait_for('message')
+            if jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
+                await reply.channel.send("中止しました")
+                uno_func.UNO_start = False
+                return
             try:
                 num = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
                 if 2 <= num <= 100:
                     await reply.channel.send(f"初期手札を{num}枚で設定しました")
                     break
                 else:
-                    await reply.channel.send(f"2～100枚以内で指定してください")
+                    await reply.channel.send(f"2～100枚以内で指定してください", delete_after=5.0)
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
@@ -523,7 +527,7 @@ async def on_message(ctx):
         for i in player:
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
-        cnt, card, flag, penalty, winner = 0, uno_func.first_card(), False, 0, None
+        cnt, card, msg1, msg2, flag, penalty, winner = 0, uno_func.first_card(), None, None, False, 0, None
         await ctx.channel.send("ゲームを始めてもよろしいですか？(全員がYesを入力したら開始)")
         cnt_yes, cnt_player = 0, []
         while True:
@@ -540,11 +544,14 @@ async def on_message(ctx):
         while True:
             stc, i, flag, get_flag = "", abs(cnt % len(all_data)), False, True
             time = 30 if len(all_data[i][1]) * 5 + 15 < 30 else len(all_data[i][1]) * 5 + 15
+            if msg1 is not None:
+                await msg1.delete()
+                await msg2.delete()
             for j in range(len(all_data)):
                 stc += f"{j + 1}. {guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
-            await ctx.channel.send(f"```\n各プレイヤーの現在の手札枚数\n\n{stc}```__現在の場札のカード : {card[-1]}__",
-                                   file=discord.File('uno/Area_tmp.png'))
-            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} の番です (制限時間{time}秒)")
+            msg1 = await ctx.channel.send(f"```\n各プレイヤーの現在の手札枚数\n\n{stc}```__現在の場札のカード : {card[-1]}__",
+                                          file=discord.File('uno/Area_tmp.png'))
+            msg2 = await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} の番です (制限時間{time}秒)")
             # 記号しか無いかチェック
             while True:
                 if all([uno_func.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
@@ -556,7 +563,7 @@ async def on_message(ctx):
             start = datetime.now()
             while True:
                 try:
-                    reply = await client.wait_for('message', timeout=float(time) - (datetime.now()-start).seconds)
+                    reply = await client.wait_for('message', timeout=float(time) - (datetime.now() - start).seconds)
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                     break
@@ -586,23 +593,27 @@ async def on_message(ctx):
                     # 山札から1枚引く
                     if jaconv.z2h(reply.content, ascii=True).lower() in ["!g", "!get"]:
                         if get_flag:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引きます")
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                                   f"山札から1枚引きます", delete_after=5.0)
                             await send_card(i, 1)
                             get_flag = False
                         else:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです")
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                                   f"山札から引けるのは1度のみです", delete_after=5.0)
                     # カードを出さない
                     elif jaconv.z2h(reply.content, ascii=True).lower() in ["!p", "!pass"]:
                         if penalty > 0 or not get_flag:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                                   f"パスしました", delete_after=5.0)
                         else:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引いてパスしました")
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                                   f"山札から1枚引いてパスしました", delete_after=5.0)
                             await send_card(i, 1)
                         break
                     elif reply.content != "":
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
-                                     card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                            card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
                             bet_card = uno_func.string_to_card(reply.content)
@@ -621,7 +632,7 @@ async def on_message(ctx):
                 penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
-                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} カラーを指定してください (制限時間20秒)")
+                msg = await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} カラーを指定してください (制限時間20秒)")
                 start = datetime.now()
                 while True:
                     try:
@@ -633,6 +644,7 @@ async def on_message(ctx):
                     if color.author.id == all_data[i][0] and uno_func.translate_input(color.content) in uno_func.Color:
                         card[-1] = f"{uno_func.translate_input(color.content)}{card[-1]}"
                         break
+                await msg.delete()
             # ドロー2/4のペナルティーを受ける
             elif penalty > 0 and not flag:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました")
@@ -640,11 +652,11 @@ async def on_message(ctx):
                 penalty, cnt, = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
-                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}人スキップします")
+                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}人スキップします", delete_after=10.0)
                 cnt += len(uno_func.string_to_card(reply.content))
             # リバース処理
             elif card[-1][1:] == "リバース" and flag:
-                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースします")
+                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースします", delete_after=10.0)
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
                     tmp = copy.copy(all_data[i][0])
                     all_data.reverse()
