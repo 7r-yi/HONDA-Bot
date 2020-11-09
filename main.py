@@ -613,7 +613,7 @@ async def on_message(ctx):
                     elif reply.content != "":
                         # 出せるカードかチェック
                         check, msg = uno_func.check_card(
-                            card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                                     card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
                             bet_card = uno_func.string_to_card(reply.content)
@@ -658,6 +658,7 @@ async def on_message(ctx):
             elif card[-1][1:] == "リバース" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースします", delete_after=10.0)
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
+                    # リバースを出した人のリバースされた配列中の位置を代入
                     tmp = copy.copy(all_data[i][0])
                     all_data.reverse()
                     cnt = uno_func.search_player(tmp, all_data)
