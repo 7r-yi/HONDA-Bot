@@ -1,5 +1,4 @@
 import random
-import os
 import cv2
 import numpy as np
 from PIL import Image
@@ -58,35 +57,20 @@ def make_hand(card):
 
 
 def make_area(card):
-    card_img = cv2.imread(id_to_pass(uno_func.card_to_id(card)), -1)
-    card_img = cv2.resize(card_img, None, fx=0.5, fy=0.5)
-
-    h, w, _ = card_img.shape
-    # 回転角をランダムで指定し、中心を軸として回転
-    angle = random.randint(-70, 70)
-    angle_rad = angle / 180.0 * np.pi
-    rotation_matrix = cv2.getRotationMatrix2D((w // 2, h // 2), angle, 1.0)
-    # 回転後の画像サイズを計算
-    w_rot = int(np.round(h * np.absolute(np.sin(angle_rad)) + w * np.absolute(np.cos(angle_rad))))
-    h_rot = int(np.round(h * np.absolute(np.cos(angle_rad)) + w * np.absolute(np.sin(angle_rad))))
-    size_rot = (w_rot, h_rot)
-    # 平行移動を加える (rotation + translation)
-    affine_matrix = rotation_matrix.copy()
-    affine_matrix[0][2] = affine_matrix[0][2] - w // 2 + w_rot // 2
-    affine_matrix[1][2] = affine_matrix[1][2] - h // 2 + h_rot // 2
-    card_img = cv2.warpAffine(card_img, affine_matrix, size_rot, flags=cv2.INTER_CUBIC, borderValue=(255, 204, 51))
-    # 透過する背景色の指定
-    color = np.array([255, 51, 204, 255])
-    card_img_mask = cv2.inRange(card_img, color, color)
-    # 背景を透過して出力
-    card_img = cv2.bitwise_not(card_img, card_img, mask=card_img_mask)
-    cv2.imwrite('uno/card.png', card_img)
-
-    # 貼り付ける位置をランダムで指定
-    gap_h, gap_w = random.randint(-150, 50), random.randint(-300, 100)
-    # カードを場に重ねる
     area_img = Image.open('uno/Area_tmp.png')
-    card_img = Image.open('uno/card.png')
-    area_img.paste(card_img, (190 + gap_w, 85 + gap_h), card_img)
+    card_img = Image.open(id_to_pass(uno_func.card_to_id(card))).resize(size=(384, 512))
+    # カード画像の回転角をランダムで指定
+    card_img = card_img.rotate(random.randint(-70, 70), fillcolor=(255, 204, 51), expand=True)
+    # カード画像と同じサイズの透過画像を作成
+    alpha_card_img = Image.new('RGBA', card_img.size, (0, 0, 0, 0))
+    for x in range(card_img.size[0]):
+        for y in range(card_img.size[1]):
+            pixel = card_img.getpixel((x, y))
+            # 指定画素以外なら、用意した画像にピクセルを書き込み
+            if not (pixel[0] == 255 and pixel[1] == 204 and pixel[2] == 51):
+                alpha_card_img.putpixel((x, y), pixel)
+    # 貼り付ける位置をランダムで指定
+    gap_w, gap_h = random.randint(-300, 100), random.randint(-150, 50)
+    # カードを場に重ねる
+    area_img.paste(alpha_card_img, (190 + gap_w, 85 + gap_h), alpha_card_img)
     area_img.save('uno/Area_tmp.png')
-    os.remove('uno/card.png')

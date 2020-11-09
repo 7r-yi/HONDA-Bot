@@ -480,7 +480,6 @@ async def on_message(ctx):
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
-        shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
         await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可してください\n"
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
         player = []
@@ -492,6 +491,7 @@ async def on_message(ctx):
             elif reply.content.lower() in ["!e", "!end"] and player:
                 break
             elif reply.content.lower() == "!cancel":
+                await reply.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
         stc = ""
@@ -502,12 +502,11 @@ async def on_message(ctx):
             reply = await client.wait_for('message')
             try:
                 num = int(re.sub(r'[^0-9]', "", reply.content))
-                if 1 <= num <= 100:
+                if 2 <= num <= 100:
                     await reply.channel.send(f"初期手札を{num}枚で設定しました")
-                    await asyncio.sleep(1)
                     break
                 else:
-                    await reply.channel.send(f"1～100枚以内で指定してください")
+                    await reply.channel.send(f"2～100枚以内で指定してください")
             except ValueError:
                 await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
@@ -523,19 +522,20 @@ async def on_message(ctx):
             stc += f"{guild.get_member(i).display_name} → "
         await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
         cnt, card, flag, penalty, winner = 0, uno_func.first_card(), False, 0, None
-        make_image.make_area(card[-1])
         await ctx.channel.send("ゲームを始めてもよろしいですか？(Yesで開始)")
         while True:
             reply = await client.wait_for('message')
             if reply.content.lower() == "yes":
+                shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
+                make_image.make_area(card[-1])
                 break
 
         while True:
             stc, i, get_flag = "", abs(cnt % len(all_data)), True
             for j in range(len(all_data)):
                 stc += f"{guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
-            await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```")
-            await ctx.channel.send(f"**現在の場札のカード : {card[-1]}**", file=discord.File('uno/Area_tmp.png'))
+            await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```**現在の場札のカード : {card[-1]}**",
+                                   file=discord.File('uno/Area_tmp.png'))
             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} の番です (制限時間40秒)")
             # 記号しか無いかチェック
             while True:
@@ -553,7 +553,7 @@ async def on_message(ctx):
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
                     break
                 # 山札から1枚引く
-                if reply.content.lower() == ["!g", "!get"] and reply.author.id == all_data[i][0]:
+                if reply.content.lower() in ["!g", "!get"] and reply.author.id == all_data[i][0]:
                     if get_flag:
                         await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から1枚引きます")
                         await send_card(i, 1)
@@ -561,7 +561,7 @@ async def on_message(ctx):
                     else:
                         await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです")
                 # カードを出さない
-                elif reply.content.lower() == ["!p", "!pass"] and reply.author.id == all_data[i][0]:
+                elif reply.content.lower() in ["!p", "!pass"] and reply.author.id == all_data[i][0]:
                     if penalty > 0 or not get_flag:
                         await reply.channel.send(f"{client.get_user(all_data[i][0]).mention} パスしました")
                         break
@@ -587,6 +587,7 @@ async def on_message(ctx):
                 # ゲームを強制中止する
                 elif reply.content.lower() == "!cancel" and role_check_mode(ctx):
                     await ctx.channel.send("ゲームを中止しました")
+                    os.remove('uno/Area_tmp.png')
                     uno_func.UNO_start = False
                     return
                 # 出せるカードかチェック
