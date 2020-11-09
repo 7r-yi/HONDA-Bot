@@ -8,6 +8,7 @@ import random
 import re
 import os
 import shutil
+import copy
 from dotenv import load_dotenv
 import json
 import sys
@@ -640,8 +641,9 @@ async def on_message(ctx):
             elif card[-1][1:] == "リバース" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
+                    tmp = copy.copy(all_data[i][0])
                     all_data.reverse()
-                    i = uno_func.search_player(all_data[i][0], all_data)
+                    i = uno_func.search_player(tmp, all_data)
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
