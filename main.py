@@ -481,7 +481,7 @@ async def on_message(ctx):
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
-        await ctx.channel.send("UNOを開始します\n※ダイレクトメッセージを許可してください\n"
+        await ctx.channel.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
         player = []
         while True:
@@ -539,8 +539,8 @@ async def on_message(ctx):
         while True:
             stc, i, flag, get_flag = "", abs(cnt % len(all_data)), False, True
             for j in range(len(all_data)):
-                stc += f"{guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
-            await ctx.channel.send(f"```各プレイヤーの現在の手札枚数\n{stc}```**現在の場札のカード : {card[-1]}**",
+                stc += f"{j + 1}. {guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
+            await ctx.channel.send(f"```\n各プレイヤーの現在の手札枚数\n{stc}```**現在の場札のカード : {card[-1]}**",
                                    file=discord.File('uno/Area_tmp.png'))
             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} の番です (制限時間40秒)")
             # 記号しか無いかチェック
@@ -677,7 +677,7 @@ async def on_message(ctx):
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
             stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n\n"
-        await ctx.channel.send(f"```ゲーム結果\n{stc}```\nゲームを終了しました")
+        await ctx.channel.send(f"```\nゲーム結果\n{stc}```\nゲームを終了しました")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
         uno_func.UNO_start = False
