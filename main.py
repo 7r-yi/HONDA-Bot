@@ -609,7 +609,8 @@ async def on_message(ctx):
                             for j in bet_card:
                                 all_data[i][1].remove(j)
                                 make_image.make_area(j)
-                            await send_card(i, 0)
+                            if all_data[i][1]:
+                                await send_card(i, 0)
                             flag = True
                             break
                         else:
