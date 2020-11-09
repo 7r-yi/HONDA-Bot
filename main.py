@@ -638,8 +638,9 @@ async def on_message(ctx):
             elif card[-1][1:] == "リバース" and flag:
                 await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースされました")
                 if len(uno_func.string_to_card(reply.content)) % 2 == 1:
+                    tmp = all_data[i][0]
                     all_data.reverse()
-                    i = uno_func.search_player(all_data[i][0], all_data)
+                    i = uno_func.search_player(tmp, all_data)
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -671,6 +672,7 @@ async def on_message(ctx):
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
+            stc += f"残り手札【{uno_func.card_to_string(all_data[i][1])}】\n"
         await ctx.channel.send(f"```ゲーム結果\n{stc}```\nゲームを終了しました")
         uno_func.data_output(all_data)
         os.remove('uno/Area_tmp.png')
