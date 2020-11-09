@@ -74,10 +74,12 @@ def translate_input(word):
 
 def card_to_string(card):
     stc = ""
-    for i in card:
-        stc += f"{i}, "
-
-    return stc[:-2]
+    if not card:
+        return "なし"
+    else:
+        for i in card:
+            stc += f"{i}, "
+        return stc[:-2]
 
 
 def string_to_card(stc):
