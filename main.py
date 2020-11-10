@@ -799,11 +799,11 @@ async def on_message(ctx):
         embed = discord.Embed(title=user, color=0xFF3333)
         embed.set_author(name='Records', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=data[7])
-        embed.add_field(name="得点", value=f"{data[3]}点")
+        embed.add_field(name="総得点", value=f"{data[3]}点")
         embed.add_field(name="勝率", value=f"{data[2]}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
         embed.add_field(name="最高獲得点", value=f"{data[4]}点")
         embed.add_field(name="最低獲得点", value=f"{data[5]}点")
-        embed.add_field(name="棄権回数", value=f"{data[6]}回")
+        embed.add_field(name="ペナルティー", value=f"{data[6]}点")
         await ctx.channel.send(embed=embed)
 
 

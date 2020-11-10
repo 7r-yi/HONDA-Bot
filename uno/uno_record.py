@@ -25,7 +25,7 @@ def add_penalty(player, card):
     pts = calculate_point(card)
     Player_data[str(player)]["lose"] += 1
     Player_data[str(player)]["point"] += pts - 100
-    Player_data[str(player)]["penalty"] += 1
+    Player_data[str(player)]["penalty"] -= 100
     if Player_data[str(player)]["min"] > pts:
         Player_data[str(player)]["min"] = pts
 
