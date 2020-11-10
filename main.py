@@ -483,7 +483,7 @@ async def on_message(ctx):
         # 手札が1枚以上なら画像を作成/送信
         if all_data[n][1]:
             make_image.make_hand(all_data[n][1])
-            if uno_func.card_to_string(add_card) == "なし" or send_flag:
+            if uno_func.card_to_string(add_card) == "なし" or not send_flag:
                 card_msg = ""
             else:
                 card_msg = f"追加カード↓```{uno_func.card_to_string(uno_func.sort_card(add_card))}```"
