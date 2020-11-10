@@ -639,7 +639,7 @@ async def on_message(ctx):
                         await ctx.channel.send(f"{reply.author.mention} "
                                                f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)
                 # ゲームを強制中止する
-                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
+                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel" and reply.author.id in all_player:
                     await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(全員が `!OK` で中止、`!NG` でキャンセル)")
                     cnt_cancel, cancel_player, cancel_start = 0, [], datetime.now()
                     while True:
