@@ -474,7 +474,7 @@ async def on_message(ctx):
                 await client.get_channel(constant.Result).send(embed=embed)
                 break
 
-    async def send_card(n, times):
+    async def send_card(n, times, send_flag):
         # 前に送ったDMがあるなら削除
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
@@ -483,7 +483,7 @@ async def on_message(ctx):
         # 手札が1枚以上なら画像を作成/送信
         if all_data[n][1]:
             make_image.make_hand(all_data[n][1])
-            if uno_func.card_to_string(add_card) == "なし":
+            if uno_func.card_to_string(add_card) == "なし" or send_flag:
                 card_msg = ""
             else:
                 card_msg = f"追加カード↓```{uno_func.card_to_string(uno_func.sort_card(add_card))}```"
@@ -533,7 +533,7 @@ async def on_message(ctx):
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
         all_data = [[id, [], None, [False, None]] for id in player]
         for i in range(len(player)):
-            await send_card(i, num)
+            await send_card(i, num, False)
         await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno_func.Rule}```")
         stc = ""
@@ -575,7 +575,7 @@ async def on_message(ctx):
             while True:
                 if all([uno_func.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます")
-                    await send_card(i, 2)
+                    await send_card(i, 2, True)
                 else:
                     break
             # カード入力処理
@@ -596,7 +596,7 @@ async def on_message(ctx):
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{client.get_user(all_data[j][0]).mention} "
                                                    f"UNOと言っていないのでペナルティーで2枚追加されます")
-                            await send_card(j, 2)
+                            await send_card(j, 2, True)
                     else:
                         j = uno_func.search_player(reply.author.id, all_data)
                         # 自分のUNOフラグが立っている場合
@@ -607,7 +607,7 @@ async def on_message(ctx):
                 elif jaconv.z2h(reply.content, ascii=True).lower() == "!join" and reply.author.id not in all_player:
                     all_player.append(reply.author.id)
                     all_data.append([reply.author.id, [], None, [False, None]])
-                    await send_card(-1, num)
+                    await send_card(-1, num, False)
                     await guild.get_member(reply.author.id).add_roles(role_U)
                     await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}が途中参加しました")
                 # ゲームから棄権する
@@ -670,7 +670,7 @@ async def on_message(ctx):
                         if get_flag:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
                                                    f"山札から1枚引きます", delete_after=5.0)
-                            await send_card(i, 1)
+                            await send_card(i, 1, True)
                             get_flag = False
                         else:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
@@ -683,7 +683,7 @@ async def on_message(ctx):
                         else:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
                                                    f"山札から1枚引いてパスしました", delete_after=5.0)
-                            await send_card(i, 1)
+                            await send_card(i, 1, True)
                         break
                     else:
                         # 出せるカードかチェック
@@ -697,7 +697,7 @@ async def on_message(ctx):
                             for j in bet_card:
                                 all_data[i][1].remove(j)
                                 make_image.make_area(j)
-                            await send_card(i, 0)
+                            await send_card(i, 0, True)
                             flag = True
                             break
                         else:
@@ -727,7 +727,7 @@ async def on_message(ctx):
             # ドロー2/4のペナルティーを受ける
             elif penalty > 0 and not flag:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました")
-                await send_card(i, penalty)
+                await send_card(i, penalty, True)
                 penalty, cnt, = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
@@ -752,7 +752,7 @@ async def on_message(ctx):
             # 手札は0枚になったがUNO宣言忘れ
             elif not all_data[i][1] and all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します")
-                await send_card(i, 2)
+                await send_card(i, 2, True)
                 all_data[i][3] = [False, None]
             # 残り1枚になったらUNOフラグを立てる
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
