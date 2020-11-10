@@ -1,5 +1,4 @@
 import json
-from uno import uno_func
 
 with open('uno/uno_record.json', 'r') as f:
     Player_data = json.load(f)
@@ -32,11 +31,12 @@ def data_save(data):
 
 def record_output(id):
     data = list(Player_data[str(id)].values())
-    win_rate = round(data[0] / (data[0] + data[1]) * 100, 2)
+    win_rate = round(data[0] / (data[0] + data[1]) * 100, 1)
 
-    if data[2] < 0:
+    if data[2] <= 0:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
+        data[2] = f"+{data[2]}"
 
     return [data[0], data[1], win_rate, data[2], data[3], data[4], data[5], url]
