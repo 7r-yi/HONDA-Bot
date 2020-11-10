@@ -1,5 +1,4 @@
 import random
-import json
 import jaconv
 import copy
 
@@ -43,9 +42,6 @@ for n1 in Color:
     for n2 in Number:
         Card.append(f"{n1}{n2}")
 Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4  # 0は各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
-
-with open('uno/uno_record.json', 'r') as f:
-    Player_data = json.load(f)
 
 
 def translate_input(word):
@@ -206,28 +202,3 @@ def calculate_point(card):
             pts -= 50
 
     return pts
-
-
-def add_penalty(player):
-    if str(player) not in Player_data:
-        Player_data[str(player)] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
-    Player_data[str(player)]["point"] -= 300
-    Player_data[str(player)]["penalty"] += 1
-
-
-def data_output(data):
-    for i in range(len(data)):
-        if str(data[i][0]) not in Player_data:
-            Player_data[str(data[i][0])] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
-        if data[i][4] > 0:
-            Player_data[str(data[i][0])]["win"] += 1
-        else:
-            Player_data[str(data[i][0])]["lose"] += 1
-        Player_data[str(data[i][0])]["point"] += data[i][4]
-        if Player_data[str(data[i][0])]["max"] < data[i][4]:
-            Player_data[str(data[i][0])]["max"] = data[i][4]
-        elif Player_data[str(data[i][0])]["min"] > data[i][4]:
-            Player_data[str(data[i][0])]["min"] = data[i][4]
-
-    with open('uno/uno_record.json', 'w') as file:
-        json.dump(Player_data, file, ensure_ascii=False, indent=2, separators=(',', ': '))

@@ -17,6 +17,7 @@ import constant
 from zyanken import zyanken
 from uno import uno_func
 from uno import make_image
+from uno import uno_record
 
 intents = discord.Intents.default()
 intents.members = True
@@ -619,14 +620,14 @@ async def on_message(ctx):
                                                f"{client.get_user(all_data[j][0]).mention}を棄権させました")
                         if j <= i:
                             cnt -= 1
-                        uno_func.add_penalty(all_data[j][0])
+                        uno_record.add_penalty(all_data[j][0])
                         all_data.pop(j)
                         drop_flag = True
                         break
                     # 自分が棄権する
                     elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                         await guild.get_member(all_data[i][0]).remove_roles(role_U)
-                        uno_func.add_penalty(all_data[i][0])
+                        uno_record.add_penalty(all_data[i][0])
                         all_data.pop(i)
                         await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
                         drop_flag = True
@@ -769,11 +770,39 @@ async def on_message(ctx):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
             stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n\n"
         await ctx.channel.send(f"```\n★ゲーム結果\n\n{stc}```{role_U.mention} 結果を記録してゲームを終了しました")
-        uno_func.data_output(all_data)
+        uno_record.data_save(all_data)
         os.remove('uno/Area_tmp.png')
         for member in role_U.members:
             await member.remove_roles(role_U)
         uno_func.UNO_start = False
+
+    if ctx.content.split()[0].lower() in ["_rc", "_record"]:  # プレイヤーのUNO戦績を表示
+        if ctx.channel.id != constant.UNO_room and not role_check_mode(ctx):  # UNO会場のみ反応(モデレーター以外)
+            return
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()
+        if " " not in ctx.content.strip():
+            name = guild.get_member(ctx.author.id).display_name
+        data, user, id = None, None, None
+        for member in role_V.members:
+            if name.lower() == member.display_name.lower():
+                if str(member.id) in uno_record.Player_data:
+                    data = uno_record.record_output(member.id)
+                    user, id = member.display_name, member.id
+                else:
+                    await ctx.channel.send(f"{ctx.author.mention} データが記録されていません")
+                    return
+        if data is None:
+            await ctx.channel.send(f"{ctx.author.mention} データが見つかりませんでした")
+            return
+        embed = discord.Embed(title=user, color=0x00CC00)
+        embed.set_author(name='Records', icon_url=client.get_user(id).avatar_url)
+        embed.set_thumbnail(url=data[7])
+        embed.add_field(name="得点", value=f"{data[3]}点", inline=False)
+        embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
+        embed.add_field(name="最高獲得点", value=f"{data[4]}点")
+        embed.add_field(name="最低獲得点", value=f"{data[5]}点")
+        embed.add_field(name="棄権回数", value=f"{data[6]}回")
+        await ctx.channel.send(embed=embed)
 
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
