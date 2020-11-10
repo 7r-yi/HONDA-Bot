@@ -2,7 +2,6 @@ import random
 import jaconv
 import copy
 
-
 UNO_start = False
 Rule = "★ハウスルール(基本的なものは除く)\n" \
        "1. 同じ数字/記号なら1ターンで何枚でも出せる (例 : 赤0 → 青0, 緑0, 黄0)\n" \
@@ -33,7 +32,12 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
        "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
        "5-3. 残り1枚となる人のターンが終了してから15秒間は指摘出来ない\n" \
-       "5-4. UNOと宣言せずに上がろうとすると2枚ペナルティー"
+       "5-4. UNOと宣言せずに上がろうとすると2枚ペナルティー\n\n\n" \
+       "★その他コマンド\n" \
+       "・ゲームに途中参加する → !Join\n" \
+       "・ゲームから離脱する → !Drop (確定負け & 手札の点-100点)\n" \
+       "・ゲームから離脱させる → メンション !Drop (モデレーターのみ)\n" \
+       "・ゲームを中止する → !Cancel (その後全員の同意が必要)"
 
 Card = []
 Color = ["赤", "青", "緑", "黄"]
@@ -188,17 +192,3 @@ def calculate_penalty(card):
             penalty += 4
 
     return penalty
-
-
-def calculate_point(card):
-    pts = 0
-    for i in card:
-        id = card_to_id(i)
-        if id % 100 <= 9 and id < 500:  # 数字カードはその数字の点数
-            pts -= id % 100
-        elif id < 500:  # 記号カードは20点
-            pts -= 20
-        else:  # ワイルドカードは50点
-            pts -= 50
-
-    return pts

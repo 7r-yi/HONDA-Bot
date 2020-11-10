@@ -1,14 +1,33 @@
 import json
+from uno import uno_func
 
 with open('uno/uno_record.json', 'r') as f:
     Player_data = json.load(f)
 
 
-def add_penalty(player):
+def calculate_point(card):
+    pts = 0
+    for i in card:
+        id = uno_func.card_to_id(i)
+        if id % 100 <= 9 and id < 500:  # 数字カードはその数字の点数
+            pts -= id % 100
+        elif id < 500:  # 記号カードは20点
+            pts -= 20
+        else:  # ワイルドカードは50点
+            pts -= 50
+
+    return pts
+
+
+def add_penalty(player, card):
     if str(player) not in Player_data:
         Player_data[str(player)] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
-    Player_data[str(player)]["point"] -= 300
+    pts = calculate_point(card)
+    Player_data[str(player)]["lose"] += 1
+    Player_data[str(player)]["point"] += pts - 100
     Player_data[str(player)]["penalty"] += 1
+    if Player_data[str(player)]["min"] > pts:
+        Player_data[str(player)]["min"] = pts
 
 
 def data_save(data):

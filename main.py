@@ -620,14 +620,14 @@ async def on_message(ctx):
                                                f"{client.get_user(all_data[j][0]).mention}を棄権させました")
                         if j <= i:
                             cnt -= 1
-                        uno_record.add_penalty(all_data[j][0])
+                        uno_record.add_penalty(all_data[j][0], all_data[j][1])
                         all_data.pop(j)
                         drop_flag = True
                         break
                     # 自分が棄権する
                     elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                         await guild.get_member(all_data[i][0]).remove_roles(role_U)
-                        uno_record.add_penalty(all_data[i][0])
+                        uno_record.add_penalty(all_data[i][0], all_data[i][1])
                         all_data.pop(i)
                         await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
                         drop_flag = True
@@ -760,7 +760,7 @@ async def on_message(ctx):
         # 点数計算
         all_pts, stc = [], ""
         for i in range(len(all_data)):
-            pts = uno_func.calculate_point(all_data[i][1])
+            pts = uno_record.calculate_point(all_data[i][1])
             all_data[i].append(pts)
             all_pts.append(pts)
         # 1位には他ユーザーの合計得点をプラス
