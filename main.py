@@ -492,7 +492,7 @@ async def on_message(ctx):
 
             os.remove('uno/hand.png')
 
-    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.Test_room and not uno_func.UNO_start:
+    if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
         await ctx.channel.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
