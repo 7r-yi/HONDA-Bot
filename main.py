@@ -731,12 +731,14 @@ async def on_message(ctx):
                 penalty, cnt, = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
-                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}人スキップします", delete_after=10.0)
-                cnt += len(uno_func.string_to_card(reply.content))
+                n = len(uno_func.string_to_card(reply.content))
+                await ctx.channel.send(f"{2 * n - 1}人スキップします", delete_after=10.0)
+                cnt += 2 * n - 1
             # リバース処理
             elif card[-1][1:] == "リバース" and flag:
-                await ctx.channel.send(f"{len(uno_func.string_to_card(reply.content))}回リバースします", delete_after=10.0)
-                if len(uno_func.string_to_card(reply.content)) % 2 == 1:
+                n = len(uno_func.string_to_card(reply.content))
+                await ctx.channel.send(f"{n}回リバースします", delete_after=10.0)
+                if n % 2 == 1:
                     # リバースを出した人のリバースされた配列中の位置を代入
                     tmp = copy.copy(all_data[i][0])
                     all_data.reverse()
