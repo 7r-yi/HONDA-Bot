@@ -616,7 +616,7 @@ async def on_message(ctx):
                     if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         await guild.get_member(all_data[j][0]).remove_roles(role_U)
-                        await ctx.channel.send(f"{role_A.mention}  "
+                        await ctx.channel.send(f"{role_U.mention}  "
                                                f"{client.get_user(all_data[j][0]).mention}を棄権させました")
                         if j <= i:
                             cnt -= 1
@@ -626,10 +626,13 @@ async def on_message(ctx):
                         break
                     # 自分が棄権する
                     elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
-                        await guild.get_member(all_data[i][0]).remove_roles(role_U)
-                        uno_record.add_penalty(all_data[i][0], all_data[i][1])
-                        all_data.pop(i)
-                        await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
+                        await guild.get_member(reply.author.id).remove_roles(role_U)
+                        j = uno_func.search_player(reply.author.id, all_data)
+                        if j <= i:
+                            cnt -= 1
+                        uno_record.add_penalty(all_data[j][0], all_data[j][1])
+                        all_data.pop(j)
+                        await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}が棄権しました")
                         drop_flag = True
                         break
                     else:
