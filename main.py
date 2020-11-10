@@ -552,7 +552,7 @@ async def on_message(ctx):
                 break
 
         while True:
-            stc, i, flag, get_flag = "", cnt % len(all_data), False, True
+            stc, i, flag, get_flag, drop_flag = "", cnt % len(all_data), False, True, False
             time = len(all_data[i][1]) * 5 + 15
             time = 40 if time < 40 else 120 if time > 120 else time
             if msg1 is not None:
@@ -597,17 +597,20 @@ async def on_message(ctx):
                             await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
                 # ゲームから棄権する
                 elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop":
-                    if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
-                        j = uno_func.search_player(reply.raw_mentions[0], all_data)
-                        await guild.get_member(all_data[j][0]).remove_roles(role_U)
-                        await ctx.channel.send(f"{role_A.mention}  {client.get_user(all_data[j][0]).mention}を棄権させました")
-                        all_data.pop(j)
-                        break
-                    elif len(all_data) > 2:
-                        await guild.get_member(all_data[i][0]).remove_roles(role_U)
-                        all_data.pop(i)
-                        cnt -= 1
-                        await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
+                    if len(all_data) > 2:
+                        if len(reply.raw_mentions) == 1 and role_check_mode(reply):
+                            j = uno_func.search_player(reply.raw_mentions[0], all_data)
+                            await guild.get_member(all_data[j][0]).remove_roles(role_U)
+                            await ctx.channel.send(f"{role_A.mention}  "
+                                                   f"{client.get_user(all_data[j][0]).mention}を棄権させました")
+                            if j <= i:
+                                cnt -= 1
+                            all_data.pop(j)
+                        else:
+                            await guild.get_member(all_data[i][0]).remove_roles(role_U)
+                            all_data.pop(i)
+                            await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
+                        drop_flag = True
                         break
                     else:
                         await ctx.channel.send(f"{reply.author.mention} "
@@ -683,6 +686,9 @@ async def on_message(ctx):
                             break
                         else:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}", delete_after=5.0)
+            # 棄権時は以下の処理を飛ばす
+            if drop_flag:
+                continue
             # ドロー2/4のペナルティー枚数計算
             if flag:
                 penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
