@@ -4,6 +4,7 @@
     "lose": 0,
     "point": 0,
     "max": 0,
-    "min": 0
+    "min": 0,
+    "penalty": 0
   }
 }

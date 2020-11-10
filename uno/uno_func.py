@@ -208,10 +208,17 @@ def calculate_point(card):
     return pts
 
 
+def add_penalty(player):
+    if str(player) not in Player_data:
+        Player_data[str(player)] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
+    Player_data[str(player)]["point"] -= 300
+    Player_data[str(player)]["penalty"] += 1
+
+
 def data_output(data):
     for i in range(len(data)):
         if str(data[i][0]) not in Player_data:
-            Player_data[str(data[i][0])] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0}
+            Player_data[str(data[i][0])] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
         if data[i][4] > 0:
             Player_data[str(data[i][0])]["win"] += 1
         else:
