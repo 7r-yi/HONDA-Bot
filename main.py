@@ -589,7 +589,7 @@ async def on_message(ctx):
                     break
                 # UNOの指摘/宣言
                 if "!uno" in jaconv.z2h(reply.content, ascii=True).lower():
-                    if reply.raw_mentions[0] in all_player:
+                    if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         # UNOフラグが立ってから10秒以上経過
                         if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 10:
@@ -613,7 +613,7 @@ async def on_message(ctx):
                 # ゲームから棄権する
                 elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop" and reply.author.id in all_player:
                     # 棄権者を指定
-                    if len(all_data) > 2 and reply.raw_mentions[0] in all_player and role_check_mode(reply):
+                    if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         await guild.get_member(all_data[j][0]).remove_roles(role_U)
                         await ctx.channel.send(f"{role_A.mention}  "
@@ -632,9 +632,6 @@ async def on_message(ctx):
                         await ctx.channel.send(f"{role_A.mention}  {reply.author.mention}が棄権しました")
                         drop_flag = True
                         break
-                    elif len(reply.raw_mentions) != 0 and reply.raw_mentions[0] not in all_player:
-                        await ctx.channel.send(f"{reply.author.mention} "
-                                               f"そのユーザーはゲームに参加していません", delete_after=5.0)
                     else:
                         await ctx.channel.send(f"{reply.author.mention} "
                                                f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)

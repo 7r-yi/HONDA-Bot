@@ -181,7 +181,7 @@ def search_player(player, all_data):
     for j in range(len(all_data)):
         if all_data[j][0] == player:
             return j
-    return None
+    return -1
 
 
 def calculate_penalty(card):
