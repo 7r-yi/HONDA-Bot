@@ -477,12 +477,15 @@ async def on_message(ctx):
         # 前に送ったDMがあるなら削除
         if all_data[n][2] is not None:
             await all_data[n][2].delete()
-        all_data[n][1] = uno_func.sort_card(all_data[n][1] + uno_func.deal_card(times))
+        add_card = uno_func.deal_card(times)
+        all_data[n][1] = uno_func.sort_card(all_data[n][1] + add_card)
         # 手札が1枚以上なら画像を作成/送信
         if all_data[n][1]:
             make_image.make_hand(all_data[n][1])
-            all_data[n][2] = await client.get_user(all_data[n][0]).send(
-                f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```", file=discord.File('uno/hand.png'))
+            card_msg = f"追加カード↓```{uno_func.card_to_string(uno_func.sort_card(add_card))}" \
+                       f"```現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```"
+            all_data[n][2] = await client.get_user(all_data[n][0]).send(card_msg, file=discord.File('uno/hand.png'))
+
             os.remove('uno/hand.png')
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
