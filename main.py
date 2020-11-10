@@ -591,8 +591,8 @@ async def on_message(ctx):
                 if "!uno" in jaconv.z2h(reply.content, ascii=True).lower():
                     if reply.raw_mentions[0] in all_player:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
-                        # UNOフラグが立ってから15秒以上経過
-                        if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 15:
+                        # UNOフラグが立ってから10秒以上経過
+                        if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 10:
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{client.get_user(all_data[j][0]).mention} "
                                                    f"UNOと言っていないのでペナルティーで2枚追加されます")
