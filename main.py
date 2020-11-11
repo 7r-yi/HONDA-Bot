@@ -28,6 +28,7 @@ client = discord.Client(intents=intents)
 async def delete_data(member):
     if member.guild.get_role(constant.Visitor) is not None:
         await client.get_user(member.id).ban(delete_message_days=0)
+        await client.get_channel(constant.Test_room).send(f"{client.get_user(member.id).name}を削除しました")
     if str(member.id) in zyanken.Zyanken_data:
         zyanken.Zyanken_data.pop(str(member.id))
         with open('zyanken/zyanken_record.json', 'w') as f:
