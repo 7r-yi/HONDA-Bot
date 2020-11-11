@@ -142,39 +142,46 @@ def sort_card(card):
 
 def check_card(before, after, hand, penalty):
     error = None
-    if "ドロー2" in before and penalty > 0:  # 場のカードがドロー2の場合
-        if not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
+    hand_tmp, card = copy.copy(hand), ""
+
+    # 場のカードがドロー2の場合
+    if "ドロー2" in before and penalty > 0:
+        if not all(["ドロー" in i for i in after]):
             error = "ドロー2にはドロー2/4でしか返せません"
-    elif "ドロー4" in before and penalty > 0:  # 場のカードがドロー4の場合
-        if not ((before[0] == after[0][0] and after[0][1:] == "ドロー2") or after[0] == "ドロー4"):  # 返さないカードとなっている
+    # 場のカードがドロー4の場合
+    elif "ドロー4" in before and penalty > 0:
+        if not ((before[0] == after[0][0] and after[0][1:] == "ドロー2") or after[0] == "ドロー4"):
             error = "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
-        elif not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
-            error = "その複数枚の出し方は出来ません(ドロー2/4しか出せない)"
-    else:  # 場のカードが4色の場合
-        if after[0] not in ["ワイルド", "ドロー4"]:  # ワイルドorドロー4じゃない場合
-            if before[0] != after[0][0] and before[1:] != after[0][1:]:  # 先頭カードの色も数字も合ってない
-                error = "そのカードは出せません"
-            elif not all([after[0][1:] == after[i][1:] for i in range(len(after))]):  # 複数枚出しの時、数字が異なっている
+        elif not all(["ドロー" in i for i in after]):
+            error = "その複数枚の出し方は出来ません(ドロー2/4と一緒に出せるのはドロー2/4のみ)"
+    # 場のカードが効果の消えたドロー or 色カードの場合
+    else:
+        # ワイルドorドロー4じゃない場合
+        if after[0] not in ["ワイルド", "ドロー4"]:
+            # 先頭カードの色も数字も合ってない
+            if before[0] != after[0][0] and before[1:] != after[0][1:]:
+                error = "そのカードは出せません(場札のカードと色または数字/記号が一致していない)"
+            elif not all([after[0][1:] == after[i][1:] for i in range(len(after))]):
                 error = "その複数枚の出し方は出来ません(数字/記号が異なっているカードがある)"
-        elif after[0] == "ワイルド":  # ワイルドカードの場合
-            if not all([i == "ワイルド" for i in after]):  # ワイルドカードでないものがある
-                error = "その複数枚の出し方は出来ません(ワイルドカードしか出せない)"
-        else:  # ドロー4の場合
-            if not all(["ドロー" in i for i in after]):  # ドロー2/4以外のカードがある
-                error = "その複数枚の出し方は出来ません(ドロー2/4しか出せない)"
-    hand_tmp = copy.copy(hand)
-    try:
-        for i in after:
-            hand_tmp.remove(i)
-    except ValueError:
-        error = "持っていないカードが含まれています"
+        # ワイルドカードの場合
+        elif after[0] == "ワイルド":
+            if not all([i == "ワイルド" for i in after]):
+                error = "その複数枚の出し方は出来ません(ワイルドカードは他の種類のカードと組み合わせられない)"
+        # ドロー4の場合
+        else:
+            if not all(["ドロー" in i for i in after]):
+                error = "その複数枚の出し方は出来ません(ドロー2/4と一緒に出せるのはドロー2/4のみ)"
+
     if after == hand and len(hand) >= 2:
         error = "複数枚出しで一気に上がることが出来ません"
+    # 出すカードを手札から全て削除 → エラーを吐いたら持ってないカードあり
+    try:
+        for card in after:
+            hand_tmp.remove(card)
+    except ValueError:
+        error = f"{card} ってカードは存在しません"
 
-    if error is None:
-        return True, ""
-    else:
-        return False, error
+    return error is None, error
 
 
 def search_player(player, all_data):

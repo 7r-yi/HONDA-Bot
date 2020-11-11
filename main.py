@@ -703,7 +703,7 @@ async def on_message(ctx):
                         break
                     else:
                         # 出せるカードかチェック
-                        check, msg = uno_func.check_card(
+                        check, error = uno_func.check_card(
                             card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
@@ -717,7 +717,8 @@ async def on_message(ctx):
                             flag = True
                             break
                         else:
-                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {msg}", delete_after=5.0)
+                            await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} {error}",
+                                                   delete_after=5.0)
             # 棄権時は以下の処理を飛ばす
             if drop_flag:
                 continue
