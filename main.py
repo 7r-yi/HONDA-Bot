@@ -104,7 +104,7 @@ async def on_message(ctx):
         roles = [roles.id for roles in ctx_role.author.roles]
         return any([constant.Administrator in roles, constant.Moderator in roles, constant.Visitor in roles])
 
-    if ctx.author.bot or ctx.content == "":  # Botのメッセージと無入力(画像のみなど)には反応させない
+    if ctx.author.bot or ctx.content == "" or ctx.guild is None:  # BotのメッセージやDM、無入力(画像のみ)には反応させない
         return
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
