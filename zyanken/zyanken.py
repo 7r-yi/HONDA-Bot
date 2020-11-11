@@ -11,8 +11,6 @@ with open('zyanken/zyanken_record.json', 'r') as f:
     Zyanken_data = json.load(f)
 with open('zyanken/no_reply_user.txt', 'r') as f:
     No_reply = f.read().splitlines()
-with open('zyanken/no_data_user.json', 'r') as f:
-    Rm_user = json.load(f)
 
 
 def honda_word(win):
@@ -86,24 +84,23 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "チョキ"
             emoji1 = "✌"
 
-    if str(user) not in Rm_user:  # 過去に退出したことがあるユーザーは記録しない
-        if str(user) not in Zyanken_data:
-            Zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                                       "keep": {"cnt": 0, "max": 0}}
-        if win:
-            Zyanken_data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
-            Zyanken_data[str(user)]["keep"]["cnt"] += 1
-            if Zyanken_data[str(user)]["keep"]["cnt"] > Zyanken_data[str(user)]["keep"]["max"]:
-                Zyanken_data[str(user)]["keep"]["max"] = Zyanken_data[str(user)]["keep"]["cnt"]
-            Zyanken_data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
-            Zyanken_data[str(constant.Honda)]["keep"]["cnt"] = 0
-        else:
-            Zyanken_data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
-            Zyanken_data[str(user)]["keep"]["cnt"] = 0
-            Zyanken_data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-            Zyanken_data[str(constant.Honda)]["keep"]["cnt"] += 1
-            if Zyanken_data[str(constant.Honda)]["keep"]["cnt"] > Zyanken_data[str(constant.Honda)]["keep"]["max"]:
-                Zyanken_data[str(constant.Honda)]["keep"]["max"] = Zyanken_data[str(constant.Honda)]["keep"]["cnt"]
+    if str(user) not in Zyanken_data:
+        Zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
+                                   "keep": {"cnt": 0, "max": 0}}
+    if win:
+        Zyanken_data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+        Zyanken_data[str(user)]["keep"]["cnt"] += 1
+        if Zyanken_data[str(user)]["keep"]["cnt"] > Zyanken_data[str(user)]["keep"]["max"]:
+            Zyanken_data[str(user)]["keep"]["max"] = Zyanken_data[str(user)]["keep"]["cnt"]
+        Zyanken_data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+        Zyanken_data[str(constant.Honda)]["keep"]["cnt"] = 0
+    else:
+        Zyanken_data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+        Zyanken_data[str(user)]["keep"]["cnt"] = 0
+        Zyanken_data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+        Zyanken_data[str(constant.Honda)]["keep"]["cnt"] += 1
+        if Zyanken_data[str(constant.Honda)]["keep"]["cnt"] > Zyanken_data[str(constant.Honda)]["keep"]["max"]:
+            Zyanken_data[str(constant.Honda)]["keep"]["max"] = Zyanken_data[str(constant.Honda)]["keep"]["cnt"]
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 

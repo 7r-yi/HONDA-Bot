@@ -25,13 +25,15 @@ client = discord.Client(intents=intents)
 
 
 # データを削除
-async def delete_data(id):
-    if str(id) in zyanken.Zyanken_data:
-        zyanken.Zyanken_data.pop(str(id))
+async def delete_data(member):
+    if member.guild.get_role(constant.Visitor) is not None:
+        await client.get_user(member.id).ban(delete_message_days=0)
+    if str(member.id) in zyanken.Zyanken_data:
+        zyanken.Zyanken_data.pop(str(member.id))
         with open('zyanken/zyanken_record.json', 'w') as f:
             json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
-    if str(id) in uno_record.Player_data:
-        uno_record.Player_data(str(id))
+    if str(member.id) in uno_record.Player_data:
+        uno_record.Player_data(str(member.id))
         with open('uno/uno_record.json', 'w') as file:
             json.dump(uno_record.Player_data, file, ensure_ascii=False, indent=2, separators=(',', ': '))
 
@@ -72,12 +74,12 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_remove(member):
-    await delete_data(member.id)
+    await delete_data(member)
 
 
 @client.event
 async def on_member_ban(_, member):
-    await delete_data(member.id)
+    await delete_data(member)
 
 
 @client.event
