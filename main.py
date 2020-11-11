@@ -822,6 +822,15 @@ async def on_message(ctx):
         embed.add_field(name="ペナルティー", value=f"{data[6]}点")
         await ctx.channel.send(embed=embed)
 
+    if ctx.content.split()[0].lower() in ["_cdm", "_cleardm"]:  # BotとのDMを全削除
+        msg = await ctx.channel.send(f"{ctx.author.mention} BotとのDMを削除中...")
+        messages = await client.get_user(ctx.author.id).history(limit=None).flatten()
+        for message in messages:
+            if message.author.id != ctx.author.id:
+                await message.delete()
+        await msg.delete()
+        await ctx.channel.send(f"{ctx.author.mention} 削除が完了しました")
+
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 client.run(os.environ.get('TOKEN'))
