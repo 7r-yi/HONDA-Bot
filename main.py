@@ -590,7 +590,8 @@ async def on_message(ctx):
             # 記号しか無いかチェック
             while True:
                 if all([uno_func.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
-                    await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます")
+                    await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます",
+                                           delete_after=10.0)
                     await send_card(i, 2, True)
                 else:
                     break
@@ -601,18 +602,23 @@ async def on_message(ctx):
                     reply = await client.wait_for('message', check=ng_check,
                                                   timeout=float(time) - (datetime.now() - start).seconds)
                 except asyncio.exceptions.TimeoutError:
-                    await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
+                    await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします",
+                                           delete_after=10.0)
                     break
                 # UNOの指摘/宣言
                 if "!uno" in jaconv.z2h(reply.content, ascii=True).lower():
                     if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
-                        # UNOフラグが立ってから10秒以上経過
-                        if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 10:
-                            all_data[j][3] = [False, None]
-                            await ctx.channel.send(f"{client.get_user(all_data[j][0]).mention} "
-                                                   f"UNOと言っていないのでペナルティーで2枚追加されます")
-                            await send_card(j, 2, True)
+                        if j is not None:
+                            # UNOフラグが立ってから10秒以上経過
+                            if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 10:
+                                all_data[j][3] = [False, None]
+                                await ctx.channel.send(f"{client.get_user(all_data[j][0]).mention} "
+                                                       f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10.0)
+                                await send_card(j, 2, True)
+                        else:
+                            await ctx.channel.send(f"{reply.author.mention} そのユーザーはゲームに参加していません",
+                                                   delete_after=5.0)
                     else:
                         j = uno_func.search_player(reply.author.id, all_data)
                         # 自分のUNOフラグが立っている場合
@@ -631,15 +637,19 @@ async def on_message(ctx):
                     # 棄権者を指定
                     if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
-                        await guild.get_member(all_data[j][0]).remove_roles(role_U)
-                        await ctx.channel.send(f"{role_U.mention}  "
-                                               f"{client.get_user(all_data[j][0]).mention}を棄権させました")
-                        if j <= i:
-                            cnt -= 1
-                        uno_record.add_penalty(all_data[j][0], all_data[j][1])
-                        all_data.pop(j)
-                        drop_flag = True
-                        break
+                        if j is not None:
+                            await guild.get_member(all_data[j][0]).remove_roles(role_U)
+                            await ctx.channel.send(f"{role_U.mention}  "
+                                                   f"{client.get_user(all_data[j][0]).mention}を棄権させました")
+                            if j <= i:
+                                cnt -= 1
+                            uno_record.add_penalty(all_data[j][0], all_data[j][1])
+                            all_data.pop(j)
+                            drop_flag = True
+                            break
+                        else:
+                            await ctx.channel.send(f"{reply.author.mention} そのユーザーはゲームに参加していません",
+                                                   delete_after=5.0)
                     # 自分が棄権する
                     elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                         await guild.get_member(reply.author.id).remove_roles(role_U)
@@ -734,7 +744,8 @@ async def on_message(ctx):
                         color = await client.wait_for('message', check=ng_check,
                                                       timeout=20.0 - (datetime.now() - start).seconds)
                     except asyncio.exceptions.TimeoutError:
-                        await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします")
+                        await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れなのでランダムで決めます",
+                                               delete_after=10.0)
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
                     if color.author.id == all_data[i][0] and uno_func.translate_input(color.content) in uno_func.Color:
@@ -743,7 +754,8 @@ async def on_message(ctx):
                 await msg.delete()
             # ドロー2/4のペナルティーを受ける
             elif penalty > 0 and not flag:
-                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました")
+                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました",
+                                       delete_after=10.0)
                 await send_card(i, penalty, True)
                 penalty, cnt, = 0, cnt - 1
             # スキップ処理
@@ -768,7 +780,8 @@ async def on_message(ctx):
                 break
             # 手札は0枚になったがUNO宣言忘れ
             elif not all_data[i][1] and all_data[i][3][0]:
-                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します")
+                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します",
+                                       delete_after=10.0)
                 await send_card(i, 2, True)
                 all_data[i][3] = [False, None]
             # 残り1枚になったらUNOフラグを立てる
