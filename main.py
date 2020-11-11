@@ -24,6 +24,18 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
+# データを削除
+async def delete_data(id):
+    if str(id) in zyanken.Zyanken_data:
+        zyanken.Zyanken_data.pop(str(id))
+        with open('zyanken/zyanken_record.json', 'w') as f:
+            json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+    if str(id) in uno_record.Player_data:
+        uno_record.Player_data(str(id))
+        with open('uno/uno_record.json', 'w') as file:
+            json.dump(uno_record.Player_data, file, ensure_ascii=False, indent=2, separators=(',', ': '))
+
+
 @tasks.loop(minutes=1)
 async def data_auto_save():
     with open('zyanken/zyanken_record.json', 'r') as f:
@@ -60,40 +72,37 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_remove(member):
-    if str(member.id) in zyanken.Zyanken_data:
-        zyanken.Zyanken_data.pop(member.id)
-        if str(member.id) not in zyanken.Rm_user:
-            time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
-            zyanken.Rm_user[str(member.id)] = {str(member.id): time}
+    await delete_data(member.id)
+
+
+@client.event
+async def on_member_ban(_, member):
+    await delete_data(member.id)
 
 
 @client.event
 async def on_message(ctx):
+    guild = client.get_guild(constant.Server)
+
+    def get_role(role_id):
+        return discord.utils.get(guild.roles, id=role_id)
+
     def ng_check(ctx_wait):
         return not (ctx_wait.author.bot or ctx_wait.content == "")
 
     def role_check_admin(ctx_role):
-        return 'Administrator' in [roles.name for roles in ctx_role.author.roles]
+        return constant.Administrator in [roles.id for roles in ctx_role.author.roles]
 
     def role_check_mode(ctx_role):
-        roles = [roles.name for roles in ctx_role.author.roles]
-        return any(['Administrator' in roles, 'Moderator' in roles])
+        roles = [roles.id for roles in ctx_role.author.roles]
+        return any([constant.Administrator in roles, constant.Moderator in roles])
 
     def role_check_visit(ctx_role):
-        roles = [roles.name for roles in ctx_role.author.roles]
-        return any(['Administrator' in roles, 'Moderator' in roles, 'Visitor' in roles])
+        roles = [roles.id for roles in ctx_role.author.roles]
+        return any([constant.Administrator in roles, constant.Moderator in roles, constant.Visitor in roles])
 
     if ctx.author.bot or ctx.content == "":  # Botのメッセージと無入力(画像のみなど)には反応させない
         return
-
-    guild = client.get_guild(constant.Server)
-    role_A = discord.utils.get(ctx.guild.roles, id=constant.Administrator)
-    role_W = discord.utils.get(ctx.guild.roles, id=constant.Winner)
-    role_L = discord.utils.get(ctx.guild.roles, id=constant.Loser)
-    role_P = discord.utils.get(ctx.guild.roles, id=constant.Participant)
-    role_V = discord.utils.get(ctx.guild.roles, id=constant.Visitor)
-    role_U = discord.utils.get(ctx.guild.roles, id=constant.UNO_Player)
-    role_C = discord.utils.get(ctx.guild.roles, id=constant.Challenger)
 
     if ctx.content.lower() in ["_sd", "_shutdown"] and role_check_admin(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:
@@ -108,7 +117,7 @@ async def on_message(ctx):
         password = f"_join {time.strftime('%Y/%m/%d')}"
         if ctx.content == password:
             await ctx.delete()
-            await ctx.author.add_roles(role_V)
+            await ctx.author.add_roles(get_role(constant.Visitor))
             await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
         else:
             await ctx.delete(delay=5.0)
@@ -131,15 +140,15 @@ async def on_message(ctx):
                     await ctx.add_reaction(emoji2)
                     await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
                                            file=discord.File(img), delete_after=5.0)
-                if 'Challenger' not in [roles.name for roles in ctx.author.roles]:
-                    await guild.get_member(ctx.author.id).add_roles(role_C)
+                if constant.Challenger not in [roles.id for roles in ctx.author.roles]:
+                    await guild.get_member(ctx.author.id).add_roles(get_role(constant.Challenger))
                 break
 
     if ctx.content.split()[0].lower() in ["_nr", "_noreply"] and ctx.channel.id == constant.Zyanken_room:
-        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
-        for member in role_V.members:
+        for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) not in zyanken.No_reply:
                     zyanken.No_reply.append(str(member.id))
@@ -150,10 +159,10 @@ async def on_message(ctx):
         await ctx.channel.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
 
     if ctx.content.split()[0].lower() in ["_nrc", "_noreplycancel"] and ctx.channel.id == constant.Zyanken_room:
-        name = ctx.content[ctx.content.find(" ") + 1:].strip()  # プレイヤーのじゃんけん戦績を表示
+        name = ctx.content[ctx.content.find(" ") + 1:].strip()
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
-        for member in role_V.members:
+        for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in zyanken.No_reply:
                     zyanken.No_reply.remove(str(member.id))
@@ -170,7 +179,7 @@ async def on_message(ctx):
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         data, user, id = None, None, None
-        for member in role_V.members:
+        for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in zyanken.Zyanken_data:
                     data = zyanken.stats_output(member.id)
@@ -230,6 +239,8 @@ async def on_message(ctx):
                 length += len(stc_split[i + 1]) + 1
                 i += 1
             await ctx.channel.send(f"```{msg}```")
+
+        role_W, role_L = get_role(constant.Winner), get_role(constant.Loser)
         if type == "point":
             for member in role_W.members:
                 await member.remove_roles(role_W)
@@ -273,7 +284,7 @@ async def on_message(ctx):
 
     if ctx.content.split()[0].lower() in ["_rm", "_remove"] and role_check_admin(ctx):  # 参加者を削除する
         name = ctx.content[ctx.content.find(" ") + 1:].strip()
-        for member in role_V.members:
+        for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in constant.Joiner:
                     constant.Joiner.remove(member.id)
@@ -295,6 +306,7 @@ async def on_message(ctx):
 
     if ctx.content.split()[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
+            role_P = get_role(constant.Participant)
             num = int(re.sub(r'[^0-9]', "", ctx.content))
             pick_num = sorted(random.sample(list(range(len(constant.Joiner))), num))  # 抽選を行う
             stc = "参加者リスト 抽選結果\n```"
@@ -312,22 +324,21 @@ async def on_message(ctx):
     if ctx.content.split()[0].lower() in ["_rs", "_reset"] and role_check_mode(ctx):  # ロールをリセットする
         role_name = ctx.content[ctx.content.find(" ") + 1:].strip().lower()
         if role_name in ["participant", "p"]:
-            id = constant.Participant
+            rm_role = get_role(constant.Participant)
             constant.Joiner = []
         elif role_name in ["winner", "w"]:
-            id = constant.Winner
+            rm_role = get_role(constant.Winner)
         elif role_name in ["loser", "l"]:
-            id = constant.Loser
+            rm_role = get_role(constant.Loser)
         elif role_name in ["challenger", "c"]:
-            id = constant.Challenger
+            rm_role = get_role(constant.Challenger)
         else:
             await ctx.channel.send(f"{ctx.author.mention} RoleNameを入力してください\n"
                                    ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser / Challenger")
             return
-        role = discord.utils.get(ctx.guild.roles, id=id)
-        for member in role.members:
-            await member.remove_roles(role)
-        await ctx.channel.send(f"ロール {role.mention} をリセットしました")
+        for member in rm_role.members:
+            await member.remove_roles(rm_role)
+        await ctx.channel.send(f"ロール {rm_role.mention} をリセットしました")
 
     if ctx.content.split()[0].lower() in ["_qe", "_quizentry"] and role_check_admin(ctx):
         try:
@@ -464,6 +475,7 @@ async def on_message(ctx):
                     ranker.append(all_user[j])
                     k += 1
             i += k
+        role_A, role_W = get_role(constant.Administrator), get_role(constant.Winner)
         await ctx.channel.send(embed=embed)
         await guild.get_member(ranker[0]).add_roles(role_W)
         await ctx.channel.send(f"クイズを終了しました\n{role_W.mention} → {guild.get_member(ranker[0]).mention}")
@@ -494,6 +506,7 @@ async def on_message(ctx):
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
+        role_U = get_role(constant.UNO_Player)
         await ctx.channel.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                                "参加する方は `!Join` と入力してください ( `!End` で締め切り, `!Cancel` で中止)")
         player = []
@@ -746,7 +759,7 @@ async def on_message(ctx):
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
-                await guild.get_member(all_data[i][0]).add_roles(role_W)
+                await guild.get_member(all_data[i][0]).add_roles(get_role(constant.Winner))
                 winner = i
                 break
             # 手札は0枚になったがUNO宣言忘れ
@@ -785,7 +798,7 @@ async def on_message(ctx):
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
         data, user, id = None, None, None
-        for member in role_V.members:
+        for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 if str(member.id) in uno_record.Player_data:
                     data = uno_record.record_output(member.id)
