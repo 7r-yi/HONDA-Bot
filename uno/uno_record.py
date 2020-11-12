@@ -1,8 +1,8 @@
-import json
+import openpyxl
 from uno import uno_func
 
-with open('uno/uno_record.json', 'r') as f:
-    Player_data = json.load(f)
+
+EXCEL_PASS = 'uno_record.xlsx'
 
 
 def calculate_point(card):
@@ -20,42 +20,117 @@ def calculate_point(card):
 
 
 def add_penalty(player, card):
-    if str(player) not in Player_data:
-        Player_data[str(player)] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
+    book = openpyxl.load_workbook(EXCEL_PASS)
+    sheet1 = book['Records']
+    sheet2 = book['History']
     pts = calculate_point(card)
-    Player_data[str(player)]["lose"] += 1
-    Player_data[str(player)]["point"] += pts - 100
-    Player_data[str(player)]["penalty"] -= 100
-    if Player_data[str(player)]["min"] > pts:
-        Player_data[str(player)]["min"] = pts
+
+    for j in range(1, sheet1.max_row + 1):
+        # 既存ユーザーのデータ上書き
+        if str(player) == sheet1.cell(2, j).value:
+            # ポイント書き込み
+            for k in range(2, sheet2.max_column + 1):
+                if sheet1.cell(k, j).value == "":
+                    sheet2.cell(k, j, pts - 100)
+                    break
+            # Lose 書き込み
+            sheet1.cell(6, j, sheet1.cell(6, j).value + 1)
+            break
+        # 新規ユーザーのデータ作成
+        elif sheet1.cell(2, j).value == "":
+            # ID書き込み
+            sheet1.cell(2, j, str(player))
+            sheet2.cell(1, j, str(player))
+            # Lose 書き込み
+            sheet1.cell(5, j, 0)
+            sheet1.cell(6, j, 1)
+            # ペナルティー書き込み
+            sheet1.cell(9, j, -100)
+            # ポイント書き込み
+            for k in range(2, sheet2.max_column + 1):
+                if sheet2.cell(k, j).value == "":
+                    sheet2.cell(k, j, pts - 100)
+                    break
+    book.save(EXCEL_PASS)
 
 
 def data_save(data):
-    for i in range(len(data)):
-        if str(data[i][0]) not in Player_data:
-            Player_data[str(data[i][0])] = {"win": 0, "lose": 0, "point": 0, "max": 0, "min": 0, "penalty": 0}
-        if data[i][4] > 0:
-            Player_data[str(data[i][0])]["win"] += 1
-        else:
-            Player_data[str(data[i][0])]["lose"] += 1
-        Player_data[str(data[i][0])]["point"] += data[i][4]
-        if Player_data[str(data[i][0])]["max"] < data[i][4]:
-            Player_data[str(data[i][0])]["max"] = data[i][4]
-        elif Player_data[str(data[i][0])]["min"] > data[i][4]:
-            Player_data[str(data[i][0])]["min"] = data[i][4]
+    book = openpyxl.load_workbook(EXCEL_PASS)
+    sheet1 = book['Records']
+    sheet2 = book['History']
 
-    with open('uno/uno_record.json', 'w') as file:
-        json.dump(Player_data, file, ensure_ascii=False, indent=2, separators=(',', ': '))
+    for i in range(len(data)):
+        for j in range(1, sheet1.max_row + 1):
+            # 既存ユーザーのデータ上書き
+            if str(data[i][0]) == sheet1.cell(2, j).value:
+                # ポイント書き込み
+                for k in range(2, sheet2.max_column + 1):
+                    if sheet1.cell(k, j).value == "":
+                        sheet2.cell(k, j, data[i][4])
+                        break
+                # Win or Lose 書き込み
+                if data[i][4] > 0:
+                    sheet1.cell(5, j, sheet1.cell(5, j).value + 1)
+                else:
+                    sheet1.cell(6, j, sheet1.cell(6, j).value + 1)
+                break
+            # 新規ユーザーのデータ作成
+            elif sheet1.cell(2, j).value == "":
+                # ID書き込み
+                sheet1.cell(2, j, str(data[i][0]))
+                sheet2.cell(1, j, str(data[i][0]))
+                # Win or Lose 書き込み
+                if data[i][4] > 0:
+                    sheet1.cell(5, j, 1)
+                    sheet1.cell(6, j, 0)
+                else:
+                    sheet1.cell(5, j, 0)
+                    sheet1.cell(6, j, 1)
+                # ペナルティー書き込み
+                sheet1.cell(9, j, 0)
+                # ポイント書き込み
+                for k in range(2, sheet2.max_column + 1):
+                    if sheet2.cell(k, j).value == "":
+                        sheet2.cell(k, j, data[i][4])
+                        break
+    book.save(EXCEL_PASS)
+
+
+def data_delete(id):
+    book = openpyxl.load_workbook(EXCEL_PASS)
+    sheet1 = book['Records']
+    sheet2 = book['History']
+
+    for row in sheet1.iter_rows(min_row=2):
+        if str(id) == row[0].values:
+            sheet1.delete_rows(row)
+            sheet2.delete_rows(row)
+    book.save(EXCEL_PASS)
 
 
 def record_output(id):
-    data = list(Player_data[str(id)].values())
-    win_rate = round(data[0] / (data[0] + data[1]) * 100, 1)
+    book = openpyxl.load_workbook(EXCEL_PASS)
+    sheet = book['Records']
+    data = []
+    for row in sheet.iter_rows(min_row=2):
+        if str(id) == row[0].values:
+            for col in row:
+                data.append(col.value)
+            break
+
+    if not data:
+        return None
 
     if data[2] <= 0:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
         data[2] = f"+{data[2]}"
+    if data[7] == "":
+        data[7] = "N/A"
+    if data[8] == "":
+        data[8] = "N/A"
+    if data[10] >= 0:
+        data[10] = f"+{data[10]}"
 
-    return [data[0], data[1], win_rate, data[2], data[3], data[4], data[5], url]
+    return data, url
