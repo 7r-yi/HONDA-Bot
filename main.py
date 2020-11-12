@@ -806,7 +806,7 @@ async def on_message(ctx):
         name = ctx.content[ctx.content.find(" ") + 1:].strip()
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
-        data, url, user, id = None, None, None, None
+        data, url, user, id = [], None, None, None
         for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
                 data, url = uno_record.record_output(member.id)
@@ -817,12 +817,12 @@ async def on_message(ctx):
         embed = discord.Embed(title=user, color=0xFF3333)
         embed.set_author(name='UNO Records', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=url)
-        embed.add_field(name="総得点", value=f"{data[3]}点")
-        embed.add_field(name="勝率", value=f"{data[4]} ({data[5] + data[6]}戦 {data[5]}勝{data[6]}敗)", inline=False)
-        embed.add_field(name="最高獲得点", value=f"{data[7]}点")
-        embed.add_field(name="最低獲得点", value=f"{data[8]}点")
+        embed.add_field(name="総得点", value=f"{data[2]}点")
+        embed.add_field(name="勝率", value=f"{data[3]:.01f}% ({data[4] + data[5]}戦 {data[4]}勝{data[5]}敗)")
         embed.add_field(name="直近5戦", value=f"{data[9]}点")
-        embed.add_field(name="ペナルティー", value=f"{data[10]}点")
+        embed.add_field(name="最高獲得点", value=f"{data[6]}点")
+        embed.add_field(name="最低獲得点", value=f"{data[7]}点")
+        embed.add_field(name="ペナルティー", value=f"{data[8]}点")
         await ctx.channel.send(embed=embed)
 
     if ctx.content.split()[0].lower() in ["_cdm", "_cleardm"]:  # BotとのDMを全削除

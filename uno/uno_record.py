@@ -1,8 +1,16 @@
 import openpyxl
+import xlwings as xw
 from uno import uno_func
 
 
-EXCEL_PASS = 'uno_record.xlsx'
+EXCEL_PASS = 'uno/uno_record.xlsx'
+
+
+def refresh_cash():
+    excel_app = xw.App(visible=False)
+    book = xw.Book(EXCEL_PASS)
+    book.save(EXCEL_PASS)
+    excel_app.kill()
 
 
 def calculate_point(card):
@@ -21,116 +29,101 @@ def calculate_point(card):
 
 def add_penalty(player, card):
     book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet1 = book['Records']
-    sheet2 = book['History']
+    sheet = book['History']
     pts = calculate_point(card)
 
-    for j in range(1, sheet1.max_row + 1):
+    for j in range(1, sheet.max_row + 2):
         # 既存ユーザーのデータ上書き
-        if str(player) == sheet1.cell(2, j).value:
+        if str(player) == sheet.cell(j, 1).value:
             # ポイント書き込み
-            for k in range(2, sheet2.max_column + 1):
-                if sheet1.cell(k, j).value == "":
-                    sheet2.cell(k, j, pts - 100)
+            for k in range(3, sheet.max_column + 2):
+                if sheet.cell(j, k).value is None:
+                    sheet.cell(j, k, pts - 100)
                     break
-            # Lose 書き込み
-            sheet1.cell(6, j, sheet1.cell(6, j).value + 1)
+            # ペナルティー書き込み(-100点)
+            sheet.cell(j, 2, int(sheet.cell(j, 2).value) - 100)
             break
         # 新規ユーザーのデータ作成
-        elif sheet1.cell(2, j).value == "":
+        elif sheet.cell(j, 1).value is None:
             # ID書き込み
-            sheet1.cell(2, j, str(player))
-            sheet2.cell(1, j, str(player))
-            # Lose 書き込み
-            sheet1.cell(5, j, 0)
-            sheet1.cell(6, j, 1)
-            # ペナルティー書き込み
-            sheet1.cell(9, j, -100)
+            sheet.cell(j, 1, str(player))
             # ポイント書き込み
-            for k in range(2, sheet2.max_column + 1):
-                if sheet2.cell(k, j).value == "":
-                    sheet2.cell(k, j, pts - 100)
+            for k in range(3, sheet.max_column + 2):
+                if sheet.cell(j, k).value is None:
+                    sheet.cell(j, k, pts - 100)
                     break
+            # ペナルティー書き込み(-100点)
+            sheet.cell(j, 2, str(-100))
+            break
     book.save(EXCEL_PASS)
+    refresh_cash()
 
 
 def data_save(data):
     book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet1 = book['Records']
-    sheet2 = book['History']
+    sheet = book['History']
 
     for i in range(len(data)):
-        for j in range(1, sheet1.max_row + 1):
+        for j in range(1, sheet.max_row + 2):
             # 既存ユーザーのデータ上書き
-            if str(data[i][0]) == sheet1.cell(2, j).value:
+            if str(data[i][0]) == sheet.cell(j, 1).value:
                 # ポイント書き込み
-                for k in range(2, sheet2.max_column + 1):
-                    if sheet1.cell(k, j).value == "":
-                        sheet2.cell(k, j, data[i][4])
+                for k in range(3, sheet.max_column + 2):
+                    if sheet.cell(j, k).value is None:
+                        sheet.cell(j, k, data[i][4])
                         break
-                # Win or Lose 書き込み
-                if data[i][4] > 0:
-                    sheet1.cell(5, j, sheet1.cell(5, j).value + 1)
-                else:
-                    sheet1.cell(6, j, sheet1.cell(6, j).value + 1)
                 break
             # 新規ユーザーのデータ作成
-            elif sheet1.cell(2, j).value == "":
+            elif sheet.cell(j, 1).value is None:
                 # ID書き込み
-                sheet1.cell(2, j, str(data[i][0]))
-                sheet2.cell(1, j, str(data[i][0]))
-                # Win or Lose 書き込み
-                if data[i][4] > 0:
-                    sheet1.cell(5, j, 1)
-                    sheet1.cell(6, j, 0)
-                else:
-                    sheet1.cell(5, j, 0)
-                    sheet1.cell(6, j, 1)
-                # ペナルティー書き込み
-                sheet1.cell(9, j, 0)
+                sheet.cell(j, 1, str(data[i][0]))
+                # ペナルティー書き込み(0点)
+                sheet.cell(j, 2, str(0))
                 # ポイント書き込み
-                for k in range(2, sheet2.max_column + 1):
-                    if sheet2.cell(k, j).value == "":
-                        sheet2.cell(k, j, data[i][4])
+                for k in range(3, sheet.max_column + 2):
+                    if sheet.cell(j, k).value is None:
+                        sheet.cell(j, k, data[i][4])
                         break
+                break
     book.save(EXCEL_PASS)
+    refresh_cash()
 
 
 def data_delete(id):
     book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet1 = book['Records']
-    sheet2 = book['History']
+    sheet = book['History']
 
-    for row in sheet1.iter_rows(min_row=2):
-        if str(id) == row[0].values:
-            sheet1.delete_rows(row)
-            sheet2.delete_rows(row)
+    for row in sheet.iter_rows(min_row=2):
+        if str(id) == row[0].value:
+            sheet.delete_rows(row)
     book.save(EXCEL_PASS)
+    refresh_cash()
 
 
 def record_output(id):
-    book = openpyxl.load_workbook(EXCEL_PASS)
+    book = openpyxl.load_workbook(EXCEL_PASS, data_only=True)
     sheet = book['Records']
     data = []
     for row in sheet.iter_rows(min_row=2):
-        if str(id) == row[0].values:
+        if str(id) == row[1].value:
             for col in row:
                 data.append(col.value)
             break
 
     if not data:
-        return None
+        return None, None
 
     if data[2] <= 0:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
         data[2] = f"+{data[2]}"
-    if data[7] == "":
+    data[3] = round(data[3] * 100, 1)
+    if data[6] is None:
+        data[6] = "N/A"
+    if data[7] is None:
         data[7] = "N/A"
-    if data[8] == "":
-        data[8] = "N/A"
-    if data[10] >= 0:
-        data[10] = f"+{data[10]}"
+    if data[9] >= 0:
+        data[9] = f"+{data[9]}"
 
     return data, url
