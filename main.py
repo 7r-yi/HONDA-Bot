@@ -264,20 +264,20 @@ async def on_message(ctx):
         await ctx.channel.send(f"{ctx.author.mention} 戦績をリセットします.", delete_after=10.0)
         cnt = 0
         confirm = "本当に"
+        msg = await ctx.channel.send(f"{ctx.author.mention} {confirm * cnt}よろしいですか？(Yes or No)")
         while True:
-            msg = await ctx.channel.send(f"{ctx.author.mention} {confirm * cnt}よろしいですか？(Yes or No)")
             reply = await client.wait_for('message', check=ng_check)
-            if reply.content.lower() == "yes":
+            if reply.content.lower() == "yes" and ctx.author.id == reply.author.id:
                 cnt += 1
                 await msg.delete()
-            elif reply.content.lower() == "no":
+                msg = await ctx.channel.send(f"{ctx.author.mention} {confirm * cnt}よろしいですか？(Yes or No)")
+            elif reply.content.lower() == "no" and ctx.author.id == reply.author.id:
                 await ctx.channel.send(f"{ctx.author.mention} キャンセルしました")
                 return
             if cnt >= 10:
                 if str(ctx.author.id) in zyanken.Zyanken_data:
                     zyanken.Zyanken_data.pop(str(ctx.author.id))
                 zyanken.Reset_user.append(str(ctx.author.id))
-                await msg.delete()
                 await ctx.channel.send(f"{ctx.author.mention} リセット完了しました")
                 break
 
@@ -286,6 +286,9 @@ async def on_message(ctx):
             json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         data = "\n".join(zyanken.No_reply)
         with open('zyanken/no_reply_user.txt', 'w') as f:
+            f.write(data)
+        data = "\n".join(zyanken.Reset_user)
+        with open('zyanken/reset_user.txt', 'w') as f:
             f.write(data)
         await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
@@ -563,7 +566,12 @@ async def on_message(ctx):
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
         all_data = [[id, [], None, [False, None]] for id in player]
         for i in range(len(player)):
-            await send_card(i, num, False)
+            try:
+                await send_card(i, num, False)
+            except:
+                await ctx.channel.send(f"{client.get_user(player[i]).mention} DMを許可していないのでエラーが発生しました\n"
+                                       f"最初からやり直してください")
+                return
         await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno_func.Rule}```")
         stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
@@ -848,14 +856,17 @@ async def on_message(ctx):
         embed.add_field(name="ペナルティー", value=f"{data[8]}点")
         await ctx.channel.send(embed=embed)
 
-    if ctx.content.split()[0].lower() in ["_cdm", "_cleardm"]:  # BotとのDMを全削除
-        msg = await ctx.channel.send(f"{ctx.author.mention} BotとのDMを削除中...")
-        messages = await client.get_user(ctx.author.id).history(limit=None).flatten()
-        for message in messages:
-            if message.author.id != ctx.author.id:
-                await message.delete()
-        await msg.delete()
-        await ctx.channel.send(f"{ctx.author.mention} 削除が完了しました")
+    if ctx.content.split()[0].lower() in ["_cdm", "_cleardm"] and ctx.channel.id == constant.UNO_room:  # BotとのDMを全削除
+        try:
+            msg = await ctx.channel.send(f"{ctx.author.mention} BotとのDMを削除中...")
+            messages = await client.get_user(ctx.author.id).history(limit=None).flatten()
+            for message in messages:
+                if message.author.id != ctx.author.id:
+                    await message.delete()
+            await msg.delete()
+            await ctx.channel.send(f"{ctx.author.mention} 削除が完了しました")
+        except:
+            await ctx.channel.send(f"{ctx.author.mention} DMが開放されていないので削除できません")
 
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
