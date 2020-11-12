@@ -521,8 +521,11 @@ async def on_message(ctx):
                 card_msg = f"追加カード↓```{uno_func.card_to_string(uno_func.sort_card(add_card))}```"
             card_msg += f"現在の手札↓```{uno_func.card_to_string(all_data[n][1])}```"
             all_data[n][2] = await client.get_user(all_data[n][0]).send(card_msg, file=discord.File('uno/hand.png'))
-
             os.remove('uno/hand.png')
+        else:
+            card_msg = "手札が全て無くなりました"
+            all_data[n][2] = await client.get_user(all_data[n][0]).send(card_msg,
+                                                                        file=discord.File('uno/Background.png'))
 
     if ctx.content.lower() in ["_us", "_unostart"] and ctx.channel.id == constant.UNO_room and not uno_func.UNO_start:
         uno_func.UNO_start = True
@@ -597,8 +600,8 @@ async def on_message(ctx):
         while True:
             i, flag, get_flag, drop_flag = cnt % len(all_data), False, True, False
             all_player = [all_data[j][0] for j in range(len(all_data))]
-            time = len(all_data[i][1]) * 5 + 15
-            time = 40 if time < 40 else 120 if time > 120 else time
+            time = len(all_data[i][1]) * 5 + 5
+            time = 30 if time < 30 else 60 if time > 60 else time
             if msg1 is not None:
                 await msg1.delete()
                 await msg2.delete()
