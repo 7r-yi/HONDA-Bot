@@ -258,7 +258,7 @@ async def on_message(ctx):
                 await guild.get_member(zyanken.Former_loser_pointall).remove_roles(role_L)
             zyanken.Former_loser_pointall = worst
 
-    if ctx.content in ["_rms", "_resetmystats"] and ctx.channel.id == constant.Test_room:
+    if ctx.content in ["_rms", "_resetmystats"] and ctx.channel.id == constant.Zyanken_room:
         if str(ctx.author.id) in zyanken.Reset_user:
             return
         await ctx.channel.send(f"{ctx.author.mention} 戦績をリセットします.", delete_after=10.0)
