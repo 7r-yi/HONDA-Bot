@@ -1,5 +1,4 @@
 import random
-import jaconv
 import copy
 
 UNO_start = False
@@ -50,37 +49,34 @@ Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4  # 0は各色1枚ず�
 
 
 def translate_input(word):
-    if jaconv.z2h(word, ascii=True).lower() == "w":
+    if word == "w":
         return "ワイルド"
-    elif jaconv.z2h(word, ascii=True, digit=True).lower() in ["+4", "d4"]:
+    elif word in ["+4", "d4"]:
         return "ドロー4"
     else:
         trans1, trans2 = word[0], word[1:]
-        if jaconv.z2h(word[0], ascii=True).lower() == "r":
+        if trans1 == "r":
             trans1 = "赤"
-        elif jaconv.z2h(word[0], ascii=True).lower() == "b":
+        elif trans1 == "b":
             trans1 = "青"
-        elif jaconv.z2h(word[0], ascii=True).lower() == "g":
+        elif trans1 == "g":
             trans1 = "緑"
-        elif jaconv.z2h(word[0], ascii=True).lower() == "y":
+        elif trans1 == "y":
             trans1 = "黄"
-        if jaconv.z2h(word[1:], ascii=True).lower() == "s":
+        if trans2 == "s":
             trans2 = "スキップ"
-        elif jaconv.z2h(word[1:], ascii=True).lower() == "r":
+        elif trans2 == "r":
             trans2 = "リバース"
-        elif jaconv.z2h(word[1:], ascii=True, digit=True).lower() in ["+2", "d2"]:
+        elif trans2 in ["+2", "d2"]:
             trans2 = "ドロー2"
         return f"{trans1}{trans2}"
 
 
 def card_to_string(card):
-    stc = ""
     if not card:
         return "なし"
     else:
-        for i in card:
-            stc += f"{i}, "
-        return stc[:-2]
+        return ', '.join(card)
 
 
 def string_to_card(stc):

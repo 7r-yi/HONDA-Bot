@@ -299,26 +299,23 @@ async def on_message(ctx):
 
     if ctx.channel.id == constant.Recruit and ctx.content.lower() in ["_l", "_list"]:  # 参加希望者を表示する
         if len(constant.Joiner) >= 1:
-            stc = "参加希望者リスト\n```"
-            for i in range(len(constant.Joiner)):
-                stc += f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
-            stc += "```"
+            stc = [f"{i + 1}. {client.get_user(constant.Joiner[i]).display_name}\n"
+                   for i in range(len(constant.Joiner))]
+            await ctx.channel.send(f"参加希望者リスト\n```{''.join(stc)}```", delete_after=20.0)
         else:
-            stc = "参加希望者はいません"
-        await ctx.channel.send(stc, delete_after=20.0)
+            await ctx.channel.send("参加希望者はいません", delete_after=20.0)
 
     if ctx.content.split()[0].lower() in ["_pu", "_pickup"] and role_check_mode(ctx):  # 参加希望者の抽選を行う
         try:
             role_P = get_role(constant.Participant)
             num = int(re.sub(r'[^0-9]', "", ctx.content))
             pick_num = sorted(random.sample(list(range(len(constant.Joiner))), num))  # 抽選を行う
-            stc = "参加者リスト 抽選結果\n```"
-            for i in range(len(pick_num)):
-                stc += f"{i + 1}. {guild.get_member(constant.Joiner[pick_num[i]]).display_name}\n"
-            stc += "```"
+            stc = [f"{i + 1}. {guild.get_member(constant.Joiner[pick_num[i]]).display_name}\n"
+                   for i in range(len(pick_num))]
             for i in pick_num:
                 await guild.get_member(constant.Joiner[i]).add_roles(role_P)
-            await ctx.channel.send(f"{stc}リストのユーザーにロール {role_P.mention} を付与しました\n"
+            await ctx.channel.send(f"参加者リスト 抽選結果\n```{''.join(stc)}```"
+                                   f"リストのユーザーにロール {role_P.mention} を付与しました\n"
                                    f"配信用ボイスチャンネルに接続出来るようになります")
             constant.Joiner = []
         except ValueError:
@@ -394,11 +391,9 @@ async def on_message(ctx):
                     break
             if reply.content.lower() == "yes":
                 await ctx.channel.send("登録済み問題一覧")
-                stc = ""
-                for i in range(len(constant.Question)):
-                    stc += f"[Q{i + 1}] {constant.Question[f'Q{i + 1}']}\n"
-                    stc += f"→ {constant.Answer[f'A{i + 1}']}\n"
-                await ctx.channel.send(f"```{stc}```")
+                stc = [f"[Q{i + 1}] {constant.Question[f'Q{i + 1}']}\n→ {constant.Answer[f'A{i + 1}']}\n"
+                       for i in range(len(constant.Question))]
+                await ctx.channel.send(f"```{''.join(stc)}```")
             else:
                 await ctx.channel.send("キャンセルしました")
         else:
@@ -452,10 +447,9 @@ async def on_message(ctx):
             if flag:
                 await ctx.channel.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {constant.Answer[f'A{i + 1}']})")
             if len(winner) != 0:
-                stc = ""
-                for k in range(len(winner)):
-                    stc += f"{k + 1}位 : {client.get_user(winner[k]).display_name} (+{point[k] * mag[i]}点)\n"
-                await ctx.channel.send(f"**```問題{i + 1} 結果\n{stc}```**")
+                stc = [f"{k + 1}位 : {client.get_user(winner[k]).display_name} (+{point[k] * mag[i]}点)\n"
+                       for k in range(len(winner))]
+                await ctx.channel.send(f"**```問題{i + 1} 結果\n{''.join(stc)}```**")
                 for k in range(len(winner)):
                     if winner[k] not in result:
                         result[winner[k]] = point[k] * mag[i]
@@ -515,28 +509,28 @@ async def on_message(ctx):
         player = []
         while True:
             reply = await client.wait_for('message', check=ng_check)
-            if jaconv.z2h(reply.content, ascii=True).lower() in ["!j", "!join"] and reply.author.id not in player:
+            input = jaconv.z2h(reply.content, ascii=True).lower()
+            if input in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
                 await guild.get_member(reply.author.id).add_roles(role_U)
                 await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
-            elif jaconv.z2h(reply.content, ascii=True).lower() in ["!e", "!end"] and player:
+            elif input in ["!e", "!end"] and player:
                 break
-            elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
+            elif reply.content == "!cancel":
                 await reply.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
-        stc = ""
-        for i in range(len(player)):
-            stc += f"{i + 1}. {guild.get_member(player[i]).display_name}\n"
-        await ctx.channel.send(f"```プレイヤーリスト\n\n{stc}```締め切りました\t次に初期手札の枚数を入力してください")
+        stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
+        await ctx.channel.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\t次に初期手札の枚数を入力してください")
         while True:
             reply = await client.wait_for('message', check=ng_check)
-            if jaconv.z2h(reply.content, ascii=True).lower() == "!cancel":
+            input = jaconv.z2h(reply.content, ascii=True, digit=True).lower()
+            if input == "!cancel":
                 await reply.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
             try:
-                num = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
+                num = int(re.sub(r'[^0-9]', "", input))
                 if 2 <= num <= 100:
                     await reply.channel.send(f"初期手札を{num}枚で設定しました")
                     break
@@ -552,10 +546,8 @@ async def on_message(ctx):
             await send_card(i, num, False)
         await ctx.channel.send(f"カードを配りました\nBotからのDMを確認してください")
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uno_func.Rule}```")
-        stc = ""
-        for i in player:
-            stc += f"{guild.get_member(i).display_name} → "
-        await ctx.channel.send(f"ゲームの進行順は以下のようになります```{stc[:-3]}```")
+        stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
+        await ctx.channel.send(f"ゲームの進行順は以下のようになります```{''.join(stc)}```")
         cnt, card, flag, penalty, winner, msg1, msg2 = 0, uno_func.first_card(), False, 0, None, None, None
         shutil.copy('uno/Area.png', 'uno/Area_tmp.png')
         make_image.make_area(card[-1])
@@ -575,17 +567,17 @@ async def on_message(ctx):
                 break
 
         while True:
-            stc, i, flag, get_flag, drop_flag = "", cnt % len(all_data), False, True, False
+            i, flag, get_flag, drop_flag = cnt % len(all_data), False, True, False
             all_player = [all_data[j][0] for j in range(len(all_data))]
             time = len(all_data[i][1]) * 5 + 15
             time = 40 if time < 40 else 120 if time > 120 else time
             if msg1 is not None:
                 await msg1.delete()
                 await msg2.delete()
-            for j in range(len(all_data)):
-                stc += f"{j + 1}. {guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
-            msg1 = await ctx.channel.send(f"```\n各プレイヤーの現在の手札枚数\n\n{stc}```__現在の場札のカード : {card[-1]}__",
-                                          file=discord.File('uno/Area_tmp.png'))
+            stc = [f"{j + 1}. {guild.get_member(all_data[j][0]).display_name} : {len(all_data[j][1])}枚\n"
+                   for j in range(len(all_data))]
+            msg1 = await ctx.channel.send(f"```\n各プレイヤーの現在の手札枚数\n\n{''.join(stc)}```"
+                                          f"__現在の場札のカード : {card[-1]}__", file=discord.File('uno/Area_tmp.png'))
             msg2 = await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} の番です (制限時間{time}秒)")
             # 記号しか無いかチェック
             while True:
@@ -601,12 +593,13 @@ async def on_message(ctx):
                 try:
                     reply = await client.wait_for('message', check=ng_check,
                                                   timeout=float(time) - (datetime.now() - start).seconds)
+                    input = jaconv.z2h(jaconv.h2z(reply.content), kana=False, ascii=True, digit=True).lower()
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします",
                                            delete_after=10.0)
                     break
                 # UNOの指摘/宣言
-                if "!uno" in jaconv.z2h(reply.content, ascii=True).lower():
+                if "!uno" in input:
                     if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
@@ -626,14 +619,14 @@ async def on_message(ctx):
                             all_data[j][3] = [False, None]
                             await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
                 # 途中参加
-                elif jaconv.z2h(reply.content, ascii=True).lower() == "!join" and reply.author.id not in all_player:
+                elif input in ["!j", "!join"] and reply.author.id not in all_player:
                     all_player.append(reply.author.id)
                     all_data.append([reply.author.id, [], None, [False, None]])
                     await send_card(-1, num, False)
                     await guild.get_member(reply.author.id).add_roles(role_U)
                     await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}が途中参加しました")
                 # ゲームから棄権する
-                elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop" and reply.author.id in all_player:
+                elif input == "!drop" and reply.author.id in all_player:
                     # 棄権者を指定
                     if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
@@ -665,21 +658,22 @@ async def on_message(ctx):
                         await ctx.channel.send(f"{reply.author.mention} "
                                                f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)
                 # ゲームを強制中止する
-                elif jaconv.z2h(reply.content, ascii=True).lower() == "!cancel" and reply.author.id in all_player:
+                elif input == "!cancel" and reply.author.id in all_player:
                     await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(全員が `!OK` で中止、`!NG` でキャンセル)")
                     cnt_cancel, cancel_player, cancel_start = 0, [], datetime.now()
                     while True:
                         try:
-                            reply = await client.wait_for('message', check=ng_check,
-                                                          timeout=30.0 - (datetime.now() - cancel_start).seconds)
+                            confirm = await client.wait_for('message', check=ng_check,
+                                                            timeout=30.0 - (datetime.now() - cancel_start).seconds)
+                            input = jaconv.z2h(confirm.content, ascii=True).lower()
                         except asyncio.exceptions.TimeoutError:
                             await ctx.channel.send(f"{role_U.mention} 時間切れでキャンセルしました")
                             break
                         if reply.author.id in all_player and reply.author.id not in cancel_player:
-                            if jaconv.z2h(reply.content, ascii=True).lower() == "!ok":
+                            if input == "!ok":
                                 cnt_cancel += 1
                                 cancel_player.append(reply.author.id)
-                            elif jaconv.z2h(reply.content, ascii=True).lower() == "!ng":
+                            elif input == "!ng":
                                 await ctx.channel.send(f"{role_U.mention} キャンセルしました")
                                 break
                         if cnt_cancel == len(all_player):
@@ -692,7 +686,7 @@ async def on_message(ctx):
                 # 自分のターンでの行動
                 elif reply.author.id == all_data[i][0]:
                     # 山札から1枚引く
-                    if jaconv.z2h(reply.content, ascii=True).lower() in ["!g", "!get"]:
+                    if input in ["!g", "!get"]:
                         if get_flag:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
                                                    f"山札から1枚引きます", delete_after=5.0)
@@ -702,7 +696,7 @@ async def on_message(ctx):
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
                                                    f"山札から引けるのは1度のみです", delete_after=5.0)
                     # カードを出さない
-                    elif jaconv.z2h(reply.content, ascii=True).lower() in ["!p", "!pass"]:
+                    elif input in ["!p", "!pass"]:
                         if penalty > 0 or not get_flag:
                             await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
                                                    f"パスしました", delete_after=5.0)
@@ -714,10 +708,10 @@ async def on_message(ctx):
                     else:
                         # 出せるカードかチェック
                         check, error = uno_func.check_card(
-                            card[-1], uno_func.string_to_card(reply.content), all_data[i][1], penalty)
+                            card[-1], uno_func.string_to_card(input), all_data[i][1], penalty)
                         if check:
                             # 出したカードを山場に追加
-                            bet_card = uno_func.string_to_card(reply.content)
+                            bet_card = uno_func.string_to_card(input)
                             card += bet_card
                             # 出したカードを手札から削除して送信 & 場札更新
                             for j in bet_card:
@@ -734,7 +728,7 @@ async def on_message(ctx):
                 continue
             # ドロー2/4のペナルティー枚数計算
             if flag:
-                penalty += uno_func.calculate_penalty(uno_func.string_to_card(reply.content))
+                penalty += uno_func.calculate_penalty(uno_func.string_to_card(input))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
                 msg = await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} カラーを指定してください (制限時間20秒)")
@@ -743,13 +737,14 @@ async def on_message(ctx):
                     try:
                         color = await client.wait_for('message', check=ng_check,
                                                       timeout=20.0 - (datetime.now() - start).seconds)
+                        input = jaconv.z2h(color.content, ascii=True).lower()
                     except asyncio.exceptions.TimeoutError:
                         await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れなのでランダムで決めます",
                                                delete_after=10.0)
                         card[-1] = f"{uno_func.Color[random.randint(0, 3)]}{card[-1]}"
                         break
-                    if color.author.id == all_data[i][0] and uno_func.translate_input(color.content) in uno_func.Color:
-                        card[-1] = f"{uno_func.translate_input(color.content)}{card[-1]}"
+                    if color.author.id == all_data[i][0] and uno_func.translate_input(input) in uno_func.Color:
+                        card[-1] = f"{uno_func.translate_input(input)}{card[-1]}"
                         break
                 await msg.delete()
             # ドロー2/4のペナルティーを受ける
@@ -760,12 +755,12 @@ async def on_message(ctx):
                 penalty, cnt, = 0, cnt - 1
             # スキップ処理
             elif card[-1][1:] == "スキップ" and flag:
-                skip_n = len(uno_func.string_to_card(reply.content))
+                skip_n = len(uno_func.string_to_card(input))
                 await ctx.channel.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
                 cnt += 2 * skip_n - 1
             # リバース処理
             elif card[-1][1:] == "リバース" and flag:
-                reverse_n = len(uno_func.string_to_card(reply.content))
+                reverse_n = len(uno_func.string_to_card(input))
                 await ctx.channel.send(f"{reverse_n}回リバースします", delete_after=10.0)
                 if reverse_n % 2 == 1:
                     # リバースを出した人のリバースされた配列中の位置を代入
