@@ -88,7 +88,7 @@ async def on_message(ctx):
         return discord.utils.get(guild.roles, id=role_id)
 
     def ng_check(ctx_wait):
-        return not (ctx_wait.author.bot or ctx_wait.content == "")
+        return not (ctx_wait.author.bot or ctx_wait.content == "" or ctx.guild is None)
 
     def role_check_admin(ctx_role):
         return constant.Administrator in [roles.id for roles in ctx_role.author.roles]
@@ -257,6 +257,29 @@ async def on_message(ctx):
                 await guild.get_member(worst).add_roles(role_L)
                 await guild.get_member(zyanken.Former_loser_pointall).remove_roles(role_L)
             zyanken.Former_loser_pointall = worst
+
+    if ctx.content in ["_rms", "_resetmystats"] and ctx.channel.id == constant.Test_room:
+        if str(ctx.author.id) in zyanken.Reset_user:
+            return
+        await ctx.channel.send(f"{ctx.author.mention} 戦績をリセットします.", delete_after=10.0)
+        cnt = 0
+        confirm = "本当に"
+        while True:
+            msg = await ctx.channel.send(f"{ctx.author.mention} {confirm * cnt}よろしいですか？(Yes or No)")
+            reply = await client.wait_for('message', check=ng_check)
+            if reply.content.lower() == "yes":
+                cnt += 1
+                await msg.delete()
+            elif reply.content.lower() == "no":
+                await ctx.channel.send(f"{ctx.author.mention} キャンセルしました")
+                return
+            if cnt >= 10:
+                if str(ctx.author.id) in zyanken.Zyanken_data:
+                    zyanken.Zyanken_data.pop(str(ctx.author.id))
+                zyanken.Reset_user.append(str(ctx.author.id))
+                await msg.delete()
+                await ctx.channel.send(f"{ctx.author.mention} リセット完了しました")
+                break
 
     if ctx.content in ["_ss", "_statssave"] and role_check_mode(ctx):
         with open('zyanken/zyanken_record.json', 'w') as f:

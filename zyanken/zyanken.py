@@ -11,6 +11,8 @@ with open('zyanken/zyanken_record.json', 'r') as f:
     Zyanken_data = json.load(f)
 with open('zyanken/no_reply_user.txt', 'r') as f:
     No_reply = f.read().splitlines()
+with open('zyanken/no_reply_user.txt', 'r') as f:
+    Reset_user = f.read().splitlines()
 
 
 def honda_word(win):
