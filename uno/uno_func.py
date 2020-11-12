@@ -175,7 +175,7 @@ def check_card(before, after, hand, penalty):
         for card in after:
             hand_tmp.remove(card)
     except ValueError:
-        error = f"{card} ってカードは存在しません"
+        error = f"{card} ってカードは存在しない/持っていません"
 
     return error is None, error
 

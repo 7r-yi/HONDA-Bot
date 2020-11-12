@@ -88,7 +88,7 @@ async def on_message(ctx):
         return discord.utils.get(guild.roles, id=role_id)
 
     def ng_check(ctx_wait):
-        return not (ctx_wait.author.bot or ctx_wait.content == "" or ctx.guild is None)
+        return all([ctx.channel.id == ctx_wait.channel.id, not ctx_wait.author.bot, ctx_wait.content != ""])
 
     def role_check_admin(ctx_role):
         return constant.Administrator in [roles.id for roles in ctx_role.author.roles]
@@ -539,11 +539,11 @@ async def on_message(ctx):
             if input in ["!j", "!join"] and reply.author.id not in player:
                 player.append(reply.author.id)
                 await guild.get_member(reply.author.id).add_roles(role_U)
-                await reply.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
+                await ctx.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
             elif input in ["!e", "!end"] and player:
                 break
             elif reply.content == "!cancel":
-                await reply.channel.send("中止しました")
+                await ctx.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
         stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
@@ -552,18 +552,18 @@ async def on_message(ctx):
             reply = await client.wait_for('message', check=ng_check)
             input = jaconv.z2h(reply.content, ascii=True, digit=True).lower()
             if input == "!cancel":
-                await reply.channel.send("中止しました")
+                await ctx.channel.send("中止しました")
                 uno_func.UNO_start = False
                 return
             try:
                 num = int(re.sub(r'[^0-9]', "", input))
                 if 2 <= num <= 100:
-                    await reply.channel.send(f"初期手札を{num}枚で設定しました")
+                    await ctx.channel.send(f"初期手札を{num}枚で設定しました")
                     break
                 else:
-                    await reply.channel.send(f"2～100枚以内で指定してください", delete_after=5.0)
+                    await ctx.channel.send(f"2～100枚以内で指定してください", delete_after=5.0)
             except ValueError:
-                await reply.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
+                await ctx.channel.send(f"{reply.author.mention} 入力が正しくありません", delete_after=3.0)
 
         random.shuffle(player)
         # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
@@ -640,15 +640,23 @@ async def on_message(ctx):
                                 await ctx.channel.send(f"{client.get_user(all_data[j][0]).mention} "
                                                        f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10.0)
                                 await send_card(j, 2, True)
+                            else:
+                                await ctx.channel.send(f"{reply.author.mention} "
+                                                       f"今はそのユーザーへのUNOの指摘は無効となっています", delete_after=10.0)
                         else:
                             await ctx.channel.send(f"{reply.author.mention} そのユーザーはゲームに参加していません",
                                                    delete_after=5.0)
                     else:
                         j = uno_func.search_player(reply.author.id, all_data)
-                        # 自分のUNOフラグが立っている場合
-                        if all_data[j][3][0]:
-                            all_data[j][3] = [False, None]
-                            await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
+                        if j is not None:
+                            # 自分のUNOフラグが立っている場合
+                            if all_data[j][3][0]:
+                                all_data[j][3] = [False, None]
+                                await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
+                            elif len(all_data[j][1]) >= 2:
+                                await ctx.channel.send(f"{reply.author.mention} 今はUNOを宣言しても意味がありません")
+                            else:
+                                await ctx.channel.send(f"{reply.author.mention} 既にUNOと宣言済みです")
                 # 途中参加
                 elif input in ["!j", "!join"] and reply.author.id not in all_player:
                     all_player.append(reply.author.id)
@@ -657,7 +665,7 @@ async def on_message(ctx):
                     await guild.get_member(reply.author.id).add_roles(role_U)
                     await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}が途中参加しました")
                 # ゲームから棄権する
-                elif input == "!drop" and reply.author.id in all_player:
+                elif "!drop" in input and reply.author.id in all_player:
                     # 棄権者を指定
                     if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
@@ -700,10 +708,10 @@ async def on_message(ctx):
                         except asyncio.exceptions.TimeoutError:
                             await ctx.channel.send(f"{role_U.mention} 時間切れでキャンセルしました")
                             break
-                        if reply.author.id in all_player and reply.author.id not in cancel_player:
+                        if confirm.author.id in all_player and confirm.author.id not in cancel_player:
                             if input == "!ok":
                                 cnt_cancel += 1
-                                cancel_player.append(reply.author.id)
+                                cancel_player.append(confirm.author.id)
                             elif input == "!ng":
                                 await ctx.channel.send(f"{role_U.mention} キャンセルしました")
                                 break
