@@ -513,7 +513,10 @@ async def on_message(ctx):
                 await ctx.channel.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=10.0)
             elif input in ["!e", "!end"] and player:
                 if ctx.author.id == reply.author.id:
-                    break
+                    if len(player) >= 2:
+                        break
+                    else:
+                        await ctx.channel.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5.0)
                 else:
                     await ctx.channel.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
             elif reply.content == "!cancel":
@@ -614,7 +617,7 @@ async def on_message(ctx):
                                                f"時間切れとなったので強制スキップします", delete_after=10.0)
                     break
                 # UNOの指摘/宣言
-                if "!uno" in input:
+                if "!uno" in input and reply.author.id in all_player:
                     if len(reply.raw_mentions) == 1:
                         j = uno_func.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
@@ -632,15 +635,14 @@ async def on_message(ctx):
                                                    delete_after=5.0)
                     else:
                         j = uno_func.search_player(reply.author.id, all_data)
-                        if j is not None:
-                            # 自分のUNOフラグが立っている場合
-                            if all_data[j][3][0]:
-                                all_data[j][3] = [False, None]
-                                await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
-                            elif len(all_data[j][1]) >= 2:
-                                await ctx.channel.send(f"{reply.author.mention} 今はUNOを宣言しても意味がありません")
-                            else:
-                                await ctx.channel.send(f"{reply.author.mention} 既にUNOと宣言済みです")
+                        # 自分のUNOフラグが立っている場合
+                        if all_data[j][3][0]:
+                            all_data[j][3] = [False, None]
+                            await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
+                        elif len(all_data[j][1]) >= 2:
+                            await ctx.channel.send(f"{reply.author.mention} 今はUNOを宣言しても意味がありません")
+                        else:
+                            await ctx.channel.send(f"{reply.author.mention} 既にUNOと宣言済みです")
                 # 途中参加
                 elif input in ["!j", "!join"] and reply.author.id not in all_player:
                     all_player.append(reply.author.id)
@@ -695,14 +697,14 @@ async def on_message(ctx):
                             elif input == "!ng" and confirm.author.id not in ng_player:
                                 cnt_ng += 1
                                 ng_player.append(confirm.author.id)
-                        if cnt_cancel == len(all_player) // 2:
+                        if cnt_cancel >= len(all_player) // 2 + 1:
                             os.remove('uno/Area_tmp.png')
                             for member in role_U.members:
                                 await member.remove_roles(role_U)
                             uno_func.UNO_start = False
                             await ctx.channel.send(f"{role_U.mention} ゲームを中止しました")
                             return
-                        elif cnt_ng == len(all_player) // 2:
+                        elif cnt_ng >= len(all_player) // 2 + 1:
                             await ctx.channel.send(f"{role_U.mention} キャンセルしました")
                             break
                 # 自分のターンでの行動
@@ -748,9 +750,6 @@ async def on_message(ctx):
             # 棄権時は以下の処理を飛ばす
             if drop_flag:
                 continue
-            # ドロー2/4のペナルティー枚数計算
-            if flag:
-                penalty += uno_func.calculate_penalty(uno_func.string_to_card(input))
             # ワイルドカードを出した後の色指定
             if card[-1] in ["ワイルド", "ドロー4"] and flag:
                 msg = await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} カラーを指定してください (制限時間20秒)")
@@ -769,26 +768,15 @@ async def on_message(ctx):
                         card[-1] = f"{uno_func.translate_input(input)}{card[-1]}"
                         break
                 await msg.delete()
+            # ドロー2/4のペナルティー枚数計算
+            if flag:
+                penalty += uno_func.calculate_penalty(uno_func.string_to_card(input))
             # ドロー2/4のペナルティーを受ける
             elif penalty > 0 and not flag:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました",
                                        delete_after=10.0)
                 await send_card(i, penalty, True)
                 penalty, cnt, = 0, cnt - 1
-            # スキップ処理
-            elif card[-1][1:] == "スキップ" and flag:
-                skip_n = len(uno_func.string_to_card(input))
-                await ctx.channel.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
-                cnt += 2 * skip_n - 1
-            # リバース処理
-            elif card[-1][1:] == "リバース" and flag:
-                reverse_n = len(uno_func.string_to_card(input))
-                await ctx.channel.send(f"{reverse_n}回リバースします", delete_after=10.0)
-                if reverse_n % 2 == 1:
-                    # リバースを出した人のリバースされた配列中の位置を代入
-                    tmp = copy.copy(all_data[i][0])
-                    all_data.reverse()
-                    cnt = uno_func.search_player(tmp, all_data)
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -804,6 +792,20 @@ async def on_message(ctx):
             # 残り1枚になったらUNOフラグを立てる
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
+            # スキップ処理
+            if card[-1][1:] == "スキップ" and flag:
+                skip_n = len(uno_func.string_to_card(input))
+                await ctx.channel.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
+                cnt += 2 * skip_n - 1
+            # リバース処理
+            elif card[-1][1:] == "リバース" and flag:
+                reverse_n = len(uno_func.string_to_card(input))
+                await ctx.channel.send(f"{reverse_n}回リバースします", delete_after=10.0)
+                if reverse_n % 2 == 1:
+                    # リバースを出した人のリバースされた配列中の位置を代入
+                    tmp = copy.copy(all_data[i][0])
+                    all_data.reverse()
+                    cnt = uno_func.search_player(tmp, all_data)
             # ワイルドカードで順番シャッフル
             elif "ワイルド" in card[-1]:
                 await ctx.channel.send(f"{role_U.mention} 順番がシャッフルされました", delete_after=10.0)

@@ -50,6 +50,7 @@ Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4  # 0は各色1枚ず�
 
 
 def translate_input(word):
+    word = word.replace("色", "")
     if word == "w":
         return "ワイルド"
     elif word in ["+4", "d4"]:
