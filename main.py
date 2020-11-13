@@ -524,7 +524,7 @@ async def on_message(ctx):
                 else:
                     await ctx.channel.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
         stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
-        await ctx.channel.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\t"
+        await ctx.channel.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n"
                                f"{ctx.author.mention} 次に初期手札の枚数を入力してください")
         while True:
             reply = await client.wait_for('message', check=ng_check)
