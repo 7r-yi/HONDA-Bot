@@ -802,7 +802,7 @@ async def on_message(ctx):
                 all_data[i][3] = [True, datetime.now()]
             # ワイルドカードで順番シャッフル
             elif "ワイルド" in card[-1]:
-                await ctx.channel.send(f"{role_U.mention} 順番がシャッフルされました")
+                await ctx.channel.send(f"{role_U.mention} 順番がシャッフルされました", delete_after=10.0)
                 random.shuffle(all_data)
             cnt += 1
 
