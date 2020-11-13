@@ -742,6 +742,8 @@ async def on_message(ctx):
                                 all_data[i][1].remove(j)
                                 make_image.make_area(j)
                             await send_card(i, 0, True)
+                            # ドロー2/4のペナルティー枚数計算
+                            penalty += uno_func.calculate_penalty(uno_func.string_to_card(input))
                             flag = True
                             break
                         else:
@@ -768,15 +770,6 @@ async def on_message(ctx):
                         card[-1] = f"{uno_func.translate_input(input)}{card[-1]}"
                         break
                 await msg.delete()
-            # ドロー2/4のペナルティー枚数計算
-            if flag:
-                penalty += uno_func.calculate_penalty(uno_func.string_to_card(input))
-            # ドロー2/4のペナルティーを受ける
-            elif penalty > 0 and not flag:
-                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました",
-                                       delete_after=10.0)
-                await send_card(i, penalty, True)
-                penalty, cnt, = 0, cnt - 1
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -792,8 +785,14 @@ async def on_message(ctx):
             # 残り1枚になったらUNOフラグを立てる
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
+            # ドロー2/4のペナルティーを受ける
+            if penalty > 0 and not flag:
+                await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました",
+                                       delete_after=10.0)
+                await send_card(i, penalty, True)
+                penalty, cnt, = 0, cnt - 1
             # スキップ処理
-            if card[-1][1:] == "スキップ" and flag:
+            elif card[-1][1:] == "スキップ" and flag:
                 skip_n = len(uno_func.string_to_card(input))
                 await ctx.channel.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
                 cnt += 2 * skip_n - 1
@@ -807,7 +806,7 @@ async def on_message(ctx):
                     all_data.reverse()
                     cnt = uno_func.search_player(tmp, all_data)
             # ワイルドカードで順番シャッフル
-            elif "ワイルド" in card[-1]:
+            elif "ワイルド" in card[-1] and flag:
                 await ctx.channel.send(f"{role_U.mention} 順番がシャッフルされました", delete_after=10.0)
                 random.shuffle(all_data)
             cnt += 1
