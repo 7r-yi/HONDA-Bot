@@ -684,7 +684,7 @@ async def on_message(ctx):
                                                f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)
                 # ゲームを強制中止する
                 elif input == "!cancel" and reply.author.id in all_player:
-                    await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(半数が `!OK` で中止、`!NG` でキャンセル)")
+                    await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(過半数が `!OK` で中止、`!NG` でキャンセル)")
                     cnt_cancel, cnt_ng, cancel_player, ng_player, cancel_start = 0, 0, [], [], datetime.now()
                     while True:
                         confirm = await client.wait_for('message', check=ng_check,
