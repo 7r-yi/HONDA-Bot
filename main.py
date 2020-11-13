@@ -62,7 +62,8 @@ async def on_member_join(member):
 async def on_member_remove(member):
     if constant.Visitor in [role.id for role in member.roles]:
         await member.ban(delete_message_days=0)
-        await client.get_channel(constant.Test_room).send(f"{member}を削除しました")
+        time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
+        await client.get_channel(constant.Gate).send(f"{member.mention} を削除しました ({time})")
     # データを削除
     if str(member.id) in zyanken.Zyanken_data:
         zyanken.Zyanken_data.pop(str(member.id))
@@ -254,9 +255,6 @@ async def on_message(ctx):
             json.dump(zyanken.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
         data = "\n".join(zyanken.No_reply)
         with open('zyanken/no_reply_user.txt', 'w') as f:
-            f.write(data)
-        data = "\n".join(zyanken.Reset_user)
-        with open('zyanken/reset_user.txt', 'w') as f:
             f.write(data)
         await ctx.channel.send(file=discord.File('zyanken/zyanken_record.json'))
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
