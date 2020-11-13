@@ -605,9 +605,13 @@ async def on_message(ctx):
                                                   timeout=float(time) - (datetime.now() - start).seconds)
                     input = jaconv.z2h(jaconv.h2z(reply.content), kana=False, ascii=True, digit=True).lower()
                 except asyncio.exceptions.TimeoutError:
-                    await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします",
-                                           delete_after=10.0)
-                    await send_card(i, 1, True)
+                    if get_flag:
+                        await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                               f"時間切れとなったので1枚引いて強制スキップします", delete_after=10.0)
+                        await send_card(i, 1, True)
+                    else:
+                        await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} "
+                                               f"時間切れとなったので強制スキップします", delete_after=10.0)
                     break
                 # UNOの指摘/宣言
                 if "!uno" in input:
