@@ -800,6 +800,9 @@ async def on_message(ctx):
             # 残り1枚になったらUNOフラグを立てる
             elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
                 all_data[i][3] = [True, datetime.now()]
+            # ワイルドカードで順番シャッフル
+            elif "ワイルド" in card[-1]:
+                random.shuffle(all_data)
             cnt += 1
 
         # 点数計算
