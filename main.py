@@ -533,7 +533,7 @@ async def on_message(ctx):
                 await ctx.channel.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
             elif input in ["!l", "!list"]:
                 stc = [f"{i + 1}. {guild.get_member(player[i]).display_name}\n" for i in range(len(player))]
-                await ctx.channel.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=5.0)
+                await ctx.channel.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=10.0)
             elif input in ["!e", "!end"] and player:
                 if ctx.author.id == reply.author.id:
                     break
@@ -630,6 +630,7 @@ async def on_message(ctx):
                 except asyncio.exceptions.TimeoutError:
                     await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} 時間切れとなったので強制スキップします",
                                            delete_after=10.0)
+                    await send_card(i, 1, True)
                     break
                 # UNOの指摘/宣言
                 if "!uno" in input:
