@@ -38,7 +38,7 @@ def add_penalty(player, card):
             # ポイント書き込み
             for k in range(3, sheet.max_column + 2):
                 if sheet.cell(j, k).value is None:
-                    sheet.cell(j, k, pts - 100)
+                    sheet.cell(j, k, pts)
                     break
             # ペナルティー書き込み(-100点)
             sheet.cell(j, 2, int(sheet.cell(j, 2).value) - 100)
@@ -50,10 +50,10 @@ def add_penalty(player, card):
             # ポイント書き込み
             for k in range(3, sheet.max_column + 2):
                 if sheet.cell(j, k).value is None:
-                    sheet.cell(j, k, pts - 100)
+                    sheet.cell(j, k, pts)
                     break
             # ペナルティー書き込み(-100点)
-            sheet.cell(j, 2, str(-100))
+            sheet.cell(j, 2, -100)
             break
     book.save(EXCEL_PASS)
     refresh_cash()
@@ -78,7 +78,7 @@ def data_save(data):
                 # ID書き込み
                 sheet.cell(j, 1, str(data[i][0]))
                 # ペナルティー書き込み(0点)
-                sheet.cell(j, 2, str(0))
+                sheet.cell(j, 2, 0)
                 # ポイント書き込み
                 for k in range(3, sheet.max_column + 2):
                     if sheet.cell(j, k).value is None:
