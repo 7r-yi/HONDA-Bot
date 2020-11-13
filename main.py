@@ -653,7 +653,7 @@ async def on_message(ctx):
                             await guild.get_member(all_data[j][0]).remove_roles(role_U)
                             await ctx.channel.send(f"{role_U.mention}  "
                                                    f"{client.get_user(all_data[j][0]).mention}を棄権させました")
-                            if j <= i:
+                            if j > i:
                                 cnt -= 1
                             uno_record.add_penalty(all_data[j][0], all_data[j][1])
                             all_data.pop(j)
@@ -666,7 +666,7 @@ async def on_message(ctx):
                     elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                         await guild.get_member(reply.author.id).remove_roles(role_U)
                         j = uno_func.search_player(reply.author.id, all_data)
-                        if j <= i:
+                        if j > i:
                             cnt -= 1
                         uno_record.add_penalty(all_data[j][0], all_data[j][1])
                         all_data.pop(j)
