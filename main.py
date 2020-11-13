@@ -701,30 +701,29 @@ async def on_message(ctx):
                                                f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)
                 # ゲームを強制中止する
                 elif input == "!cancel" and reply.author.id in all_player:
-                    await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(全員が `!OK` で中止、`!NG` でキャンセル)")
-                    cnt_cancel, cancel_player, cancel_start = 0, [], datetime.now()
+                    await ctx.channel.send(f"{role_U.mention} ゲームを中止しますか？(半数が `!OK` で中止、`!NG` でキャンセル)")
+                    cnt_cancel, cnt_ng, cancel_player, ng_player, cancel_start = 0, 0, [], [], datetime.now()
                     while True:
-                        try:
-                            confirm = await client.wait_for('message', check=ng_check,
-                                                            timeout=60.0 - (datetime.now() - cancel_start).seconds)
-                            input = jaconv.z2h(confirm.content, ascii=True).lower()
-                        except asyncio.exceptions.TimeoutError:
-                            await ctx.channel.send(f"{role_U.mention} 時間切れでキャンセルしました")
-                            break
-                        if confirm.author.id in all_player and confirm.author.id not in cancel_player:
-                            if input == "!ok":
+                        confirm = await client.wait_for('message', check=ng_check,
+                                                        timeout=60.0 - (datetime.now() - cancel_start).seconds)
+                        input = jaconv.z2h(confirm.content, ascii=True).lower()
+                        if confirm.author.id in all_player:
+                            if input == "!ok" and confirm.author.id not in cancel_player:
                                 cnt_cancel += 1
                                 cancel_player.append(confirm.author.id)
-                            elif input == "!ng":
-                                await ctx.channel.send(f"{role_U.mention} キャンセルしました")
-                                break
-                        if cnt_cancel == len(all_player):
+                            elif input == "!ng" and confirm.author.id not in ng_player:
+                                cnt_ng += 1
+                                ng_player.append(confirm.author.id)
+                        if cnt_cancel == len(all_player) // 2:
                             os.remove('uno/Area_tmp.png')
                             for member in role_U.members:
                                 await member.remove_roles(role_U)
                             uno_func.UNO_start = False
                             await ctx.channel.send(f"{role_U.mention} ゲームを中止しました")
                             return
+                        elif cnt_ng == len(all_player) // 2:
+                            await ctx.channel.send(f"{role_U.mention} キャンセルしました")
+                            break
                 # 自分のターンでの行動
                 elif reply.author.id == all_data[i][0]:
                     # 山札から1枚引く
