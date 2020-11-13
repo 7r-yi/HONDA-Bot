@@ -771,7 +771,9 @@ async def on_message(ctx):
             # 上がり
             if not all_data[i][1] and not all_data[i][3][0]:
                 await ctx.channel.send(f"{client.get_user(all_data[i][0]).mention} YOU WIN!")
-                await guild.get_member(all_data[i][0]).add_roles(get_role(constant.Winner))
+                # 10人以上参加時の勝者にはWinnerロール付与
+                if len(all_data) >= 10:
+                    await guild.get_member(all_data[i][0]).add_roles(get_role(constant.Winner))
                 winner = i
                 break
             # 手札は0枚になったがUNO宣言忘れ
