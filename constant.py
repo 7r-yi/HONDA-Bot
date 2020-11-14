@@ -1,3 +1,5 @@
+Commands = ["_sd", "_shutdown", "_cdm", "_cleardm"]
+
 Joiner = []
 Question = {}
 Answer = {}

@@ -80,7 +80,8 @@ async def on_message(ctx):
         return discord.utils.get(guild.roles, id=role_id)
 
     def ng_check(ctx_wait):
-        return all([ctx.channel.id == ctx_wait.channel.id, not ctx_wait.author.bot, ctx_wait.content != ""])
+        return all([ctx.channel.id == ctx_wait.channel.id, not ctx_wait.author.bot,
+                    ctx_wait.content != "", ctx_wait.content not in constant.Commands])
 
     def role_check_admin(ctx_role):
         return constant.Administrator in [roles.id for roles in ctx_role.author.roles]
