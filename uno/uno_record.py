@@ -1,16 +1,36 @@
-import openpyxl
-import xlwings as xw
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import os
 from uno import uno_func
 
 
-EXCEL_PASS = 'uno/uno_record.xlsx'
+def road_spreadsheet(sheet_name):
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    credential = {
+        "type": 'service_account',
+        "project_id": os.environ['PROJECT_ID'],
+        "private_key_id": os.environ['PRIVATE_KEY_ID'],
+        "private_key": os.environ['PRIVATE_KEY'].replace("\\n", "\n"),
+        "client_email": os.environ['CLIENT_EMAIL'],
+        "client_id": os.environ['CLIENT_ID'],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": os.environ['CLIENT_X509_CERT_URL']
+    }
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credential, scope)
+    gc = gspread.authorize(credentials)
+
+    return gc.open_by_key('1ba_1lWkwCa20ulVYyJbcVW41bCZ1jXagLgubtLKomB0').worksheet(sheet_name)
 
 
-def refresh_cash():
-    excel_app = xw.App(visible=False)
-    book = xw.Book(EXCEL_PASS)
-    book.save(EXCEL_PASS)
-    excel_app.kill()
+def num_to_alpha(num):
+    if num <= 26:
+        return chr(64 + num)
+    elif num % 26 == 0:
+        return num_to_alpha(num // 26 - 1) + chr(90)
+    else:
+        return num_to_alpha(num // 26) + chr(64 + num % 26)
 
 
 def calculate_point(card):
@@ -27,103 +47,103 @@ def calculate_point(card):
     return pts
 
 
-def add_penalty(player, card):
-    book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet = book['History']
+def add_penalty(id, name, card):
+    sheet = road_spreadsheet('試合結果データ')
+    data = sheet.get_all_values()
     pts = calculate_point(card)
 
-    for j in range(1, sheet.max_row + 2):
+    for i in range(len(data)):
         # 既存ユーザーのデータ上書き
-        if str(player) == sheet.cell(j, 1).value:
-            # ポイント書き込み
-            for k in range(3, sheet.max_column + 2):
-                if sheet.cell(j, k).value is None:
-                    sheet.cell(j, k, pts)
-                    break
+        if str(id) == data[i][2]:
+            data_row = sheet.range(f'B{i + 1}:{num_to_alpha(len(data[i]) + 1)}{i + 1}')
+            # 名前書き込み
+            data_row[0].value = name
             # ペナルティー書き込み(-100点)
-            sheet.cell(j, 2, int(sheet.cell(j, 2).value) - 100)
+            data_row[2].value = int(data_row[2].value) - 100
+            # ポイント書き込み
+            # ポイント書き込み
+            for j in range(3, len(data[i]) + 1):
+                if not data_row[j].value:
+                    data_row[j].value = pts
+                    break
+            sheet.update_cells(data_row)
             break
         # 新規ユーザーのデータ作成
-        elif sheet.cell(j, 1).value is None:
+        elif data[i][2] == "":
+            data_row = sheet.range(f'B{i + 1}:E{i + 1}')
+            # 名前書き込み
+            data_row[0].value = name
             # ID書き込み
-            sheet.cell(j, 1, str(player))
-            # ポイント書き込み
-            for k in range(3, sheet.max_column + 2):
-                if sheet.cell(j, k).value is None:
-                    sheet.cell(j, k, pts)
-                    break
+            data_row[1].value = id
             # ペナルティー書き込み(-100点)
-            sheet.cell(j, 2, -100)
+            data_row[2].value = -100
+            # ポイント書き込み
+            for j in range(3, len(data[i]) + 1):
+                if not data_row[j].value:
+                    data_row[j].value = pts
+                    break
+            sheet.update_cells(data_row)
             break
-    book.save(EXCEL_PASS)
-    refresh_cash()
 
 
-def data_save(data):
-    book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet = book['History']
+def data_save(all_data, all_name):
+    sheet = road_spreadsheet('試合結果データ')
+    data = sheet.get_all_values()
 
-    for i in range(len(data)):
-        for j in range(1, sheet.max_row + 2):
+    for i in range(len(all_data)):
+        for j in range(len(data)):
             # 既存ユーザーのデータ上書き
-            if str(data[i][0]) == sheet.cell(j, 1).value:
+            if str(all_data[i][0]) == data[j][2]:
+                data_row = sheet.range(f'B{j + 1}:{num_to_alpha(len(data[j]) + 1)}{j + 1}')
+                # 名前書き込み
+                data_row[0].value = all_name[i]
                 # ポイント書き込み
-                for k in range(3, sheet.max_column + 2):
-                    if sheet.cell(j, k).value is None:
-                        sheet.cell(j, k, data[i][4])
+                for k in range(3, len(data[j]) + 1):
+                    if not data_row[k].value:
+                        data_row[k].value = all_data[i][4]
                         break
+                sheet.update_cells(data_row)
                 break
             # 新規ユーザーのデータ作成
-            elif sheet.cell(j, 1).value is None:
+            elif data[j][2] == "":
+                data_row = sheet.range(f'B{j + 1}:E{j + 1}')
+                # 名前書き込み
+                data_row[0].value = all_name[i]
                 # ID書き込み
-                sheet.cell(j, 1, str(data[i][0]))
+                data_row[1].value = all_data[i][0]
                 # ペナルティー書き込み(0点)
-                sheet.cell(j, 2, 0)
+                data_row[2].value = 0
                 # ポイント書き込み
-                for k in range(3, sheet.max_column + 2):
-                    if sheet.cell(j, k).value is None:
-                        sheet.cell(j, k, data[i][4])
-                        break
+                data_row[3].value = all_data[i][4]
+                sheet.update_cells(data_row)
                 break
-    book.save(EXCEL_PASS)
-    refresh_cash()
 
 
 def data_delete(id):
-    book = openpyxl.load_workbook(EXCEL_PASS)
-    sheet = book['History']
+    sheet = road_spreadsheet('試合結果データ')
+    data = sheet.get_all_values()
 
-    for row in sheet.iter_rows(min_row=2):
-        if str(id) == row[0].value:
-            sheet.delete_rows(row)
-    book.save(EXCEL_PASS)
-    refresh_cash()
+    for i in range(len(data)):
+        if str(id) == data[i][2]:
+            for j in range(1, data[i]):
+                # 1列目以外全て空白に書き換える
+                data[i][j] = ""
+
+    sheet.update_cells(data)
 
 
 def record_output(id):
-    book = openpyxl.load_workbook(EXCEL_PASS, data_only=True)
-    sheet = book['Records']
-    data = []
-    for row in sheet.iter_rows(min_row=2):
-        if str(id) == row[1].value:
-            for col in row:
-                data.append(col.value)
-            break
+    sheet = road_spreadsheet('記録一覧')
+    data = sheet.get_all_values()
 
-    if not data:
-        return None, None
+    for i in range(len(data)):
+        if str(id) == data[i][2]:
+            if int(data[i][3].replace("+", "")) <= 0:
+                url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
+            else:
+                url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
-    if data[2] <= 0:
-        url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
-    else:
-        url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
-        data[2] = f"+{data[2]}"
-    data[3] = round(data[3] * 100, 1)
-    if data[6] is None:
-        data[6] = "N/A"
-    if data[7] is None:
-        data[7] = "N/A"
-    if data[9] >= 0:
-        data[9] = f"+{data[9]}"
+            return data[i], url
 
-    return data, url
+    return None, None
+

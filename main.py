@@ -9,7 +9,6 @@ import re
 import os
 import shutil
 import copy
-from dotenv import load_dotenv
 import json
 import sys
 import jaconv
@@ -44,12 +43,12 @@ async def data_auto_save():
 @client.event
 async def on_ready():
     data_auto_save.start()
-    for type in ["point", "pointall"]:
-        _, _, _, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
-        if type == "point":
-            zyanken.Former_loser_point = worst
-        else:  # type == "pointall"
-            zyanken.Former_loser_pointall = worst
+    #for type in ["point", "pointall"]:
+        #_, _, _, worst = zyanken.ranking_output(type, client.get_guild(constant.Server))
+        #if type == "point":
+            #zyanken.Former_loser_point = worst
+        #else:  # type == "pointall"
+            #zyanken.Former_loser_pointall = worst
 
 
 @client.event
@@ -660,7 +659,8 @@ async def on_message(ctx):
                                                    f"{client.get_user(all_data[j][0]).mention}を棄権させました")
                             if j > i:
                                 cnt -= 1
-                            uno_record.add_penalty(all_data[j][0], all_data[j][1])
+                            name = guild.get_member(all_data[j][0]).display_name
+                            uno_record.add_penalty(all_data[j][0], name, all_data[j][1])
                             all_data.pop(j)
                             drop_flag = True
                             break
@@ -673,7 +673,8 @@ async def on_message(ctx):
                         j = uno_func.search_player(reply.author.id, all_data)
                         if j > i:
                             cnt -= 1
-                        uno_record.add_penalty(all_data[j][0], all_data[j][1])
+                        name = guild.get_member(reply.author.id).display_name
+                        uno_record.add_penalty(all_data[j][0], name, all_data[j][1])
                         all_data.pop(j)
                         await ctx.channel.send(f"{role_U.mention}  {reply.author.mention}が棄権しました")
                         drop_flag = True
@@ -813,7 +814,7 @@ async def on_message(ctx):
             cnt += 1
 
         # 点数計算
-        all_pts, stc = [], ""
+        all_pts, all_name, stc = [], [], ""
         for i in range(len(all_data)):
             pts = uno_record.calculate_point(all_data[i][1])
             all_data[i].append(pts)
@@ -822,10 +823,11 @@ async def on_message(ctx):
         all_data[winner][4] = sum(all_pts) * -1
         sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
         for i in range(len(sort_data)):
-            stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} ({sort_data[i][4]}pts)\n"
+            all_name.append(guild.get_member(sort_data[i][0]).display_name)
+            stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]}pts)\n"
             stc += f"残り手札【{uno_func.card_to_string(sort_data[i][1])}】\n\n"
         await ctx.channel.send(f"```\n★ゲーム結果\n\n{stc}```{role_U.mention} 結果を記録してゲームを終了しました")
-        uno_record.data_save(all_data)
+        uno_record.data_save(sort_data, all_name)
         os.remove('uno/Area_tmp.png')
         for member in role_U.members:
             await member.remove_roles(role_U)
@@ -837,6 +839,7 @@ async def on_message(ctx):
         name = ctx.content[ctx.content.find(" ") + 1:].strip()
         if " " not in ctx.content.strip():
             name = guild.get_member(ctx.author.id).display_name
+        msg = await ctx.channel.send(f"{name}のデータを検索中...")
         data, url, user, id = [], None, None, None
         for member in get_role(constant.Visitor).members:
             if name.lower() == member.display_name.lower():
@@ -844,17 +847,19 @@ async def on_message(ctx):
                 user, id = member.display_name, member.id
         if data is None:
             await ctx.channel.send(f"{ctx.author.mention} データが記録されていません")
+            await msg.delete()
             return
         embed = discord.Embed(title=user, color=0xFF3333)
         embed.set_author(name='UNO Records', icon_url=client.get_user(id).avatar_url)
         embed.set_thumbnail(url=url)
-        embed.add_field(name="総得点", value=f"{data[2]}点")
-        embed.add_field(name="勝率", value=f"{data[3]:.01f}% ({data[4] + data[5]}戦 {data[4]}勝{data[5]}敗)")
-        embed.add_field(name="直近5戦", value=f"{data[9]}点")
-        embed.add_field(name="最高獲得点", value=f"{data[6]}点")
-        embed.add_field(name="最低減少点", value=f"{data[7]}点")
-        embed.add_field(name="ペナルティー", value=f"{data[8]}点")
+        embed.add_field(name="総得点", value=f"{data[3]}点")
+        embed.add_field(name="勝率", value=f"{data[4]} ({int(data[5]) + int(data[6])}戦 {data[5]}勝{data[6]}敗)")
+        embed.add_field(name="直近5戦", value=f"{data[10]}点")
+        embed.add_field(name="最高獲得点", value=f"{data[7]}点")
+        embed.add_field(name="最低減少点", value=f"{data[8]}点")
+        embed.add_field(name="ペナルティー", value=f"{data[9]}点")
         await ctx.channel.send(embed=embed)
+        await msg.delete()
 
     if ctx.content.split()[0].lower() in ["_cdm", "_cleardm"] and ctx.channel.id == constant.UNO_room:  # BotとのDMを全削除
         try:
@@ -869,5 +874,4 @@ async def on_message(ctx):
             await ctx.channel.send(f"{ctx.author.mention} DMが開放されていないので削除できません")
 
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-client.run(os.environ.get('TOKEN'))
+client.run(os.environ['TOKEN'])
