@@ -845,7 +845,7 @@ async def on_message(ctx):
             if name.lower() == member.display_name.lower():
                 data, url = uno_record.record_output(member.id)
                 user, id = member.display_name, member.id
-        if data is None:
+        if any([data is None, user is None, id is None]):
             await ctx.channel.send(f"{ctx.author.mention} データが記録されていません")
             await msg.delete()
             return

@@ -66,7 +66,7 @@ def add_penalty(id, name, card):
                 if not data_row[j].value:
                     data_row[j].value = pts
                     break
-            sheet.update_cells(data_row)
+            sheet.update_cells(data_row, value_input_option='USER_ENTERED')
             break
         # 新規ユーザーのデータ作成
         elif data[i][2] == "":
@@ -74,7 +74,7 @@ def add_penalty(id, name, card):
             # 名前書き込み
             data_row[0].value = name
             # ID書き込み
-            data_row[1].value = id
+            data_row[1].value = str(id)
             # ペナルティー書き込み(-100点)
             data_row[2].value = -100
             # ポイント書き込み
@@ -82,7 +82,7 @@ def add_penalty(id, name, card):
                 if not data_row[j].value:
                     data_row[j].value = pts
                     break
-            sheet.update_cells(data_row)
+            sheet.update_cells(data_row, value_input_option='USER_ENTERED')
             break
 
 
@@ -102,7 +102,7 @@ def data_save(all_data, all_name):
                     if not data_row[k].value:
                         data_row[k].value = all_data[i][4]
                         break
-                sheet.update_cells(data_row)
+                sheet.update_cells(data_row, value_input_option='USER_ENTERED')
                 break
             # 新規ユーザーのデータ作成
             elif data[j][2] == "":
@@ -110,12 +110,12 @@ def data_save(all_data, all_name):
                 # 名前書き込み
                 data_row[0].value = all_name[i]
                 # ID書き込み
-                data_row[1].value = all_data[i][0]
+                data_row[1].value = str(all_data[i][0])
                 # ペナルティー書き込み(0点)
                 data_row[2].value = 0
                 # ポイント書き込み
                 data_row[3].value = all_data[i][4]
-                sheet.update_cells(data_row)
+                sheet.update_cells(data_row, value_input_option='USER_ENTERED')
                 break
 
 
@@ -129,7 +129,7 @@ def data_delete(id):
             for j in range(data_row):
                 # 1列目以外全て空白に書き換える
                 data_row[j].value = ""
-            sheet.update_cells(data)
+            sheet.update_cells(data, value_input_option='USER_ENTERED')
             break
 
 
