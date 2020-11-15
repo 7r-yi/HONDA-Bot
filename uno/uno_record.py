@@ -125,11 +125,12 @@ def data_delete(id):
 
     for i in range(len(data)):
         if str(id) == data[i][2]:
-            for j in range(1, data[i]):
+            data_row = sheet.range(f'B{i + 1}:{num_to_alpha(len(data[i]) + 1)}{i + 1}')
+            for j in range(data_row):
                 # 1列目以外全て空白に書き換える
-                data[i][j] = ""
-
-    sheet.update_cells(data)
+                data_row[j].value = ""
+            sheet.update_cells(data)
+            break
 
 
 def record_output(id):
