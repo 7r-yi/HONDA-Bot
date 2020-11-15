@@ -156,11 +156,16 @@ def check_card(before, after, hand, penalty):
     else:
         # ワイルドorドロー4じゃない場合
         if after[0] not in ["ワイルド", "ドロー4"]:
-            # 先頭カードの色も数字も合ってない
-            if before[0] != after[0][0] and before[1:] != after[0][1:]:
-                error = "そのカードは出せません(場札のカードと色または数字/記号が一致していない)"
-            elif not all([after[0][1:] == after[i][1:] for i in range(len(after))]):
-                error = "その複数枚の出し方は出来ません(数字/記号が異なっているカードがある)"
+            # ドロー2の場合
+            if before[0] == after[0][0] and "ドロー2" in after[0]:
+                if not all(["ドロー" in i for i in after]):
+                    error = "その複数枚の出し方は出来ません(ドロー2/4と一緒に出せるのはドロー2/4のみ)"
+            else:
+                # 先頭カードの色も数字も合ってない
+                if before[0] != after[0][0] and before[1:] != after[0][1:]:
+                    error = "そのカードは出せません(場札のカードと色または数字/記号が一致していない)"
+                elif not all([after[0][1:] == after[i][1:] for i in range(len(after))]):
+                    error = "その複数枚の出し方は出来ません(数字/記号が異なっているカードがある)"
         # ワイルドカードの場合
         elif after[0] == "ワイルド":
             if not all([i == "ワイルド" for i in after]):
