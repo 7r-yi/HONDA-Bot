@@ -1,5 +1,6 @@
 import random
 import copy
+import re
 
 UNO_start = False
 Rule = "★ハウスルール(基本的なものは除く)\n" \
@@ -82,6 +83,7 @@ def card_to_string(card):
 
 
 def string_to_card(stc):
+    stc = re.sub('[.、]', ',', stc)
     if stc.count(",") >= 1:  # 出すカードをリスト化
         stc, card = stc.split(","), []
         for i in range(len(stc)):
