@@ -80,26 +80,22 @@ class Stream(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def c(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_can(ctx)
+        await run_can(ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def can(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_can(ctx)
+        await run_can(ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def d(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_drop(ctx)
+        await run_drop(ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def drop(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_drop(ctx)
+        await run_drop(ctx)
 
     @commands.command()
     @commands.has_role(cs.Administrator)
@@ -114,14 +110,12 @@ class Stream(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def l(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_list(self.bot, ctx)
+        await run_list(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def list(self, ctx):
-        if ctx.channel.id == cs.Recruit:
-            await run_list(self.bot, ctx)
+        await run_list(self.bot, ctx)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
