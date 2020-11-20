@@ -155,7 +155,7 @@ def ranking_output(guild, type):
             if (j == 1 or j == 2 or j % 7 == 0) and j != num - 1:  # Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
-            elif not j % 5 == 0 and (j % 6 == 0 or j == num):  # Loser
+            elif j % 7 != 0 and (j % 6 == 0 or j == num):  # Loser
                 stc += " [Loser]"
                 loser.append(sort_data[i][0])
             stc += "\n"
