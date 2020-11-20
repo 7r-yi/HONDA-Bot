@@ -1,0 +1,9 @@
+jaconv==0.2.4
+discord.py==1.5.1
+gspread==3.6.0
+numpy==1.19.3
+opencv_python_headless==4.4.0.44
+pytz==2020.1
+oauth2client==4.1.3
+discord==1.0.1
+Pillow==8.0.1
