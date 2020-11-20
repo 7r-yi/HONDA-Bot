@@ -8,7 +8,7 @@ from .zyanken import zyanken_func
 
 async def run(bot, ctx):
     with open('zyanken/zyanken_record.json', 'w') as f:
-        json.dump(zyanken_func.Zyanken_data, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+        json.dump(zyanken_func.ZData, f, ensure_ascii=False, indent=2, separators=(',', ': '))
     await ctx.send(file=discord.File('zyanken/zyanken_record.json'))
     await ctx.send("Botをシャットダウンします")
     await bot.logout()

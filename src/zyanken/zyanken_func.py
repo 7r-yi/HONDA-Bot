@@ -152,19 +152,22 @@ def ranking_output(guild, type):
         for i in range(num):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(最大{sort_data[i][5]}連勝, 勝率{sort_data[i][3]:.02f}%)"
-            if (j == 1 or j % 7 == 0) and j != num - 1:  # Winner
+            if (j == 1 or j == 2 or j % 7 == 0) and j != num - 1:  # Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
-            elif not j % 5 == 0 and (j % 6 == 0 or j == num - 1):  # Loser
+            elif not j % 5 == 0 and (j % 6 == 0 or j == num):  # Loser
                 stc += " [Loser]"
                 loser.append(sort_data[i][0])
             stc += "\n"
+            j, k = j + 1 + k, 0
+            """
             if i != num - 1:
                 if sort_data[i][3] == sort_data[i + 1][3]:  # 同率の場合
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-        return "最大連勝数基準, 10戦以上", stc, winner, loser
+            """
+        return "最大連勝数基準(>勝率>登録順), 10戦以上", stc, winner, loser
 
     else:  # if type == "winsmaxall":
         sort_data = sorted(users_data, key=itemgetter(5, 3), reverse=True)  # ポイント→勝率でソート
@@ -172,4 +175,4 @@ def ranking_output(guild, type):
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(最大{sort_data[i][5]}連勝, 勝率{sort_data[i][3]:.02f}%)\n"
-        return "最大連勝数基準", stc, None, None
+        return "最大連勝数基準(>勝率>登録順)", stc, None, None

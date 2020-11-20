@@ -211,12 +211,12 @@ class Zyanken(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def nrc(self, ctx, name=None):
-        await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def noreplycancel(self, ctx, name=None):
-        await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Visitor)

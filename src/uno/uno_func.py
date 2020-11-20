@@ -184,7 +184,7 @@ def check_card(before, after, hand, penalty):
             return False, "ドロー2にはドロー2/4でしか返せません"
     # 場のカードが効果継続中のドロー4の場合
     elif 540 <= before <= 544 and penalty > 0:
-        if before % 540 != first // 100 and first != 540:
+        if not (before % 540 == first // 100 and before % 100 == 12) and first != 540:
             return False, "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
 
     # 場札と最初のカードの色が一致
