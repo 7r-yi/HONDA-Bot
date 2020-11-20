@@ -3,13 +3,17 @@ import json
 import sys
 from discord.ext import commands
 import constant as cs
-from .zyanken import zyanken_func
+from .zyanken import zyanken_func as zf
 
 
 async def run(bot, ctx):
-    with open('zyanken/zyanken_record.json', 'w') as f:
-        json.dump(zyanken_func.ZData, f, ensure_ascii=False, indent=2, separators=(',', ': '))
-    await ctx.send(file=discord.File('zyanken/zyanken_record.json'))
+    with open(zf.RECORD_PASS, 'w') as f:
+        json.dump(zf.ZData, f, ensure_ascii=False, indent=2, separators=(',', ': '))
+    await ctx.send(file=discord.File(zf.RECORD_PASS))
+    data = "\n".join(zf.No_reply)
+    with open(zf.REPLY_PASS, 'w') as f:
+        f.write(data)
+    await ctx.send(file=discord.File(zf.REPLY_PASS))
     await ctx.send("Botをシャットダウンします")
     await bot.logout()
     await sys.exit()

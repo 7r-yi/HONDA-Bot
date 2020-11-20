@@ -103,12 +103,12 @@ async def update_roles(guild, winner, loser):
 async def run_ranking(guild, ctx, type, num):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
-    elif type not in ["wm", "winsmax", "wma", "winsmaxall"] or not isinstance(num, int):
+    elif type.lower() not in ["wm", "winsmax", "wma", "winsmaxall"] or not isinstance(num, int):
         return await ctx.send(f"{ctx.author.mention} 入力形式が間違っています\n"
                               ">>> **_RanKing Type N**\nType = WinsMax / WinsMaxAll\n"
                               "N : 上位N名を表示 (未入力/範囲外の場合 : 対象者全員)")
 
-    type = "winsmaxall" if type in ["wma", "winsmaxall"] else "winsmax"
+    type = "winsmaxall" if type.lower() in ["wma", "winsmaxall"] else "winsmax"
     title, stc, winner, loser = zf.ranking_output(guild, type)
     if len(stc) == 0:
         await ctx.send("現在、対象者はいません")
