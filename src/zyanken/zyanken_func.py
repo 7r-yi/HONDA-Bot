@@ -152,7 +152,7 @@ def ranking_output(guild, type):
         for i in range(num):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
                    f"(最大{sort_data[i][5]}連勝, 勝率{sort_data[i][3]:.02f}%)"
-            if (j == 1 or j == 2 or j % 7 == 0) and j != num - 1:  # Winner
+            if j == 1 or j == 2 or j % 7 == 0:  # Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
             elif j % 7 != 0 and (j % 6 == 0 or j == num):  # Loser
