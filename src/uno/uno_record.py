@@ -1,7 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-from uno import uno_func
+from src.uno import uno_func
 
 
 def road_spreadsheet(sheet_name):
@@ -89,9 +89,10 @@ def add_penalty(id, name, card):
 def data_save(all_data, all_name):
     sheet = road_spreadsheet('試合結果データ')
     data = sheet.get_all_values()
-
+    times = len(data)
     for i in range(len(all_data)):
-        for j in range(len(data)):
+        j = 0
+        while j < times:
             # 既存ユーザーのデータ上書き
             if str(all_data[i][0]) == data[j][2]:
                 data_row = sheet.range(f'B{j + 1}:{num_to_alpha(len(data[j]) + 1)}{j + 1}')
@@ -116,7 +117,9 @@ def data_save(all_data, all_name):
                 # ポイント書き込み
                 data_row[3].value = all_data[i][4]
                 sheet.update_cells(data_row, value_input_option='USER_ENTERED')
+                times += 1
                 break
+            j += 1
 
 
 def data_delete(id):
@@ -147,4 +150,3 @@ def record_output(id):
             return data[i], url
 
     return None, None
-

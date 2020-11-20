@@ -4,12 +4,14 @@ from operator import itemgetter
 import constant
 
 File_backup = None
-Former_loser_point = None
-Former_loser_pointall = None
+Former_winner = []
+Former_loser = []
+RECORD_PASS = 'src/zyanken/zyanken_record.json'
+REPLY_PASS = 'src/zyanken/no_reply_user.txt'
 
-with open('zyanken/zyanken_record.json', 'r') as f:
-    Zyanken_data = json.load(f)
-with open('zyanken/no_reply_user.txt', 'r') as f:
+with open(RECORD_PASS, 'r') as f:
+    ZData = json.load(f)
+with open(REPLY_PASS, 'r') as f:
     No_reply = f.read().splitlines()
 
 
@@ -53,13 +55,13 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    if random.randint(1, 100) >= 6:  # 勝率95%
+    if random.randint(1, 2) == 1:  # 勝率95%
         win = True
-        img_pass = './zyanken/image/YOU WIN.jpg'
+        img_pass = 'src/zyanken/image/YOU WIN.jpg'
         emoji2 = "🎉"
     else:
         win = False
-        img_pass = './zyanken/image/YOU LOSE.jpg'
+        img_pass = 'src/zyanken/image/YOU LOSE.jpg'
         emoji2 = "👎"
 
     if my_hand == "グー":
@@ -84,98 +86,90 @@ def honda_to_zyanken(my_hand, user):
             honda_hand = "チョキ"
             emoji1 = "✌"
 
-    if str(user) not in Zyanken_data:
-        Zyanken_data[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                                   "keep": {"cnt": 0, "max": 0}}
+    if str(user) not in ZData:
+        ZData[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
+                            "keep": {"cnt": 0, "max": 0}}
     if win:
-        Zyanken_data[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
-        Zyanken_data[str(user)]["keep"]["cnt"] += 1
-        if Zyanken_data[str(user)]["keep"]["cnt"] > Zyanken_data[str(user)]["keep"]["max"]:
-            Zyanken_data[str(user)]["keep"]["max"] = Zyanken_data[str(user)]["keep"]["cnt"]
-        Zyanken_data[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
-        Zyanken_data[str(constant.Honda)]["keep"]["cnt"] = 0
+        ZData[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+        ZData[str(user)]["keep"]["cnt"] += 1
+        if ZData[str(user)]["keep"]["cnt"] > ZData[str(user)]["keep"]["max"]:
+            ZData[str(user)]["keep"]["max"] = ZData[str(user)]["keep"]["cnt"]
+        ZData[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(constant.Honda)]["keep"]["cnt"] = 0
     else:
-        Zyanken_data[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
-        Zyanken_data[str(user)]["keep"]["cnt"] = 0
-        Zyanken_data[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-        Zyanken_data[str(constant.Honda)]["keep"]["cnt"] += 1
-        if Zyanken_data[str(constant.Honda)]["keep"]["cnt"] > Zyanken_data[str(constant.Honda)]["keep"]["max"]:
-            Zyanken_data[str(constant.Honda)]["keep"]["max"] = Zyanken_data[str(constant.Honda)]["keep"]["cnt"]
+        ZData[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+        ZData[str(user)]["keep"]["cnt"] = 0
+        ZData[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(constant.Honda)]["keep"]["cnt"] += 1
+        if ZData[str(constant.Honda)]["keep"]["cnt"] > ZData[str(constant.Honda)]["keep"]["max"]:
+            ZData[str(constant.Honda)]["keep"]["max"] = ZData[str(constant.Honda)]["keep"]["cnt"]
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 
 
 def stats_output(id):
     cnt_win, cnt_lose = 0, 0
-    win_data = list(Zyanken_data[str(id)]["win"].values())
-    lose_data = list(Zyanken_data[str(id)]["lose"].values())
-    keepwin_data = list(Zyanken_data[str(id)]["keep"].values())
+    win_data = list(ZData[str(id)]["win"].values())
+    lose_data = list(ZData[str(id)]["lose"].values())
+    keepwin_data = list(ZData[str(id)]["keep"].values())
     for i in range(3):
         cnt_win += win_data[i]
     for i in range(3):
         cnt_lose += lose_data[i]
 
-    pts = keepwin_data[0] * 3 + keepwin_data[1] - cnt_lose
-
     win_rate = cnt_win / (cnt_win + cnt_lose) * 100
-    if win_rate < 95:
+    if win_rate <= 50:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
-    return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, keepwin_data, pts, url]
+    return [cnt_win, cnt_lose, round(win_rate, 2), win_data, lose_data, keepwin_data, url]
 
 
-def ranking_output(type, guild):
-    user = list(Zyanken_data.keys())
+def ranking_output(guild, type):
+    user = list(ZData.keys())
     users_data = []
     for i in range(len(user)):
-        cnt_win = sum(Zyanken_data[user[i]]["win"].values())
-        cnt_lose = sum(Zyanken_data[user[i]]["lose"].values())
-        cnt_keepwin = Zyanken_data[user[i]]["keep"]["cnt"]
-        cnt_maxwin = Zyanken_data[user[i]]["keep"]["max"]
+        cnt_win = sum(ZData[user[i]]["win"].values())
+        cnt_lose = sum(ZData[user[i]]["lose"].values())
+        cnt_keepwin = ZData[user[i]]["keep"]["cnt"]
+        cnt_maxwin = ZData[user[i]]["keep"]["max"]
         cnt = cnt_win + cnt_lose
-        pts = cnt_keepwin * 3 + cnt_maxwin - cnt_lose
-        users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin, pts])
+        users_data.append([int(user[i]), cnt_win, cnt_lose, (cnt_win / cnt) * 100, cnt_keepwin, cnt_maxwin])
 
     stc = ""
-    if type == "point":
-        sort_data = sorted(users_data, key=itemgetter(6, 3), reverse=True)  # ポイント→勝率でソート
+    if type == "winsmax":
+        sort_data = sorted(users_data, key=itemgetter(5, 3), reverse=True)  # 最大勝利数→勝率でソート
         i = 0
         while i < len(sort_data):
-            if sort_data[i][1] + sort_data[i][2] < 100:  # 100戦以上
+            if sort_data[i][1] + sort_data[i][2] < 10:  # 10戦以上
                 sort_data.remove(sort_data[i])
                 i -= 1
             i += 1
 
-        j, k, flag, winner, loser = 1, 0, True, [], None
-        for i in range(len(sort_data)):
+        num = len(sort_data)
+        j, k, winner, loser = 1, 0, [], []
+        for i in range(num):
             stc += f"{j}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][4]}連勝中)"
-            if j <= 5:  # 5位以上の場合Winner
+                   f"(最大{sort_data[i][5]}連勝, 勝率{sort_data[i][3]:.02f}%)"
+            if (j == 1 or j % 7 == 0) and j != num - 1:  # Winner
                 stc += " [Winner]"
                 winner.append(sort_data[i][0])
-            elif j == 6:  # 6位の場合Loser
+            elif not j % 5 == 0 and (j % 6 == 0 or j == num - 1):  # Loser
                 stc += " [Loser]"
-                loser = sort_data[i][0]
+                loser.append(sort_data[i][0])
             stc += "\n"
-            if i != len(sort_data) - 1:
-                if sort_data[i][6] == sort_data[i + 1][6]:  # 同率の場合
+            if i != num - 1:
+                if sort_data[i][3] == sort_data[i + 1][3]:  # 同率の場合
                     k += 1
                 else:
                     j, k = j + 1 + k, 0
-            if j >= 6 and flag:  # 5位と6位の境目に区切り線を表示
-                stc += f"{'-' * 50}\n"
-                flag = False
-        return "ポイント基準, 100戦以上", stc, winner, loser
+        return "最大連勝数基準, 10戦以上", stc, winner, loser
 
-    else:  # if type == "pointall":
-        sort_data = sorted(users_data, key=itemgetter(6, 3), reverse=True)  # ポイント→勝率でソート
+    else:  # if type == "winsmaxall":
+        sort_data = sorted(users_data, key=itemgetter(5, 3), reverse=True)  # ポイント→勝率でソート
 
         for i in range(len(sort_data)):
             stc += f"{i + 1}位 : {guild.get_member(sort_data[i][0]).display_name} " \
-                   f"({sort_data[i][6]}点, 勝率{sort_data[i][3]:.02f}%, {sort_data[i][4]}連勝中)"
-            if i >= len(sort_data) - 2:  # ワースト2場合Loser
-                stc += " [Loser]"
-            stc += "\n"
-        return "ポイント(>勝率>登録順)基準", stc, None, sort_data[len(sort_data) - 2][0]
+                   f"(最大{sort_data[i][5]}連勝, 勝率{sort_data[i][3]:.02f}%)\n"
+        return "最大連勝数基準", stc, None, None
