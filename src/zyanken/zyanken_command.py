@@ -136,6 +136,7 @@ async def run_statssave(ctx):
     with open(zf.REPLY_PASS, 'w') as f:
         f.write(data)
     await ctx.send(file=discord.File(zf.RECORD_PASS))
+    await ctx.send(file=discord.File(zf.REPLY_PASS))
     time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
     await ctx.send(f"全戦績データを出力＆セーブしました ({time})")
 
