@@ -302,7 +302,7 @@ async def run_uno(bot, guild, ctx):
                 try:
                     color = await bot.wait_for('message', check=user_check,
                                                timeout=20.0 - (datetime.now() - start).seconds)
-                    input = jaconv.z2h(color.content, ascii=True).lower()
+                    input = jaconv.z2h(color.content, ascii=True, kana=False).lower()
                 except asyncio.exceptions.TimeoutError:
                     await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 時間切れなのでランダムで決めます",
                                    delete_after=10.0)
