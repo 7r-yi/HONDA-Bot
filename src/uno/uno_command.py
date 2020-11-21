@@ -39,7 +39,7 @@ async def run_uno(bot, guild, ctx):
             all_data[n][2] = await bot.get_user(all_data[n][0]).send(card_msg, file=discord.File(mi.BG_PASS))
 
     async def turn_pass(pass_stc=""):
-        if get_flag and penalty == 0:
+        if not get_flag and penalty == 0:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}山札から1枚引いてパスします", delete_after=5.0)
             await send_card(i, 1, True)
         else:
@@ -86,8 +86,8 @@ async def run_uno(bot, guild, ctx):
             else:
                 await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
-    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n"
-                   f"{ctx.author.mention} 次に初期手札の枚数を入力してください")
+
+    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n{ctx.author.mention} 初期手札の枚数を入力してください")
     while True:
         reply = await bot.wait_for('message', check=ng_check)
         input = jaconv.z2h(reply.content, digit=True).lower()
@@ -104,6 +104,7 @@ async def run_uno(bot, guild, ctx):
         except ValueError:
             pass
 
+    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
@@ -116,13 +117,10 @@ async def run_uno(bot, guild, ctx):
             await guild.get_member(all_player[i]).remove_roles(role_U)
             all_player.pop(i)
             all_data.pop(i)
-    await ctx.send(f"カードを配りました\nBotからのDMを確認してください")
-    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
+    await ctx.send(f"{role_U.mention} カードを配りました\nBotからのDMを確認してください")
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
     await ctx.send(f"ゲームの進行順は以下のようになります```{''.join(stc)}```")
-    cnt, card, flag, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), False, 0, None, None, None, 1
-    shutil.copy(mi.AREA_PASS, mi.AREA_TEMP_PASS)
-    mi.make_area(card[-1])
+
     await ctx.send(f"{role_U.mention} ゲームを始めてもよろしいですか？(1分以上経過 or 全員が `!OK` で開始)")
     cnt_ok, ok_player, ok_start = 0, [], datetime.now()
     while True:
@@ -136,13 +134,20 @@ async def run_uno(bot, guild, ctx):
                 ok_player.append(reply.author.id)
         if cnt_ok == len(all_player):
             break
+    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 1
+    shutil.copy(mi.AREA_PASS, mi.AREA_TEMP_PASS)
+    mi.make_area(card[-1])
 
     while True:
-        i, flag, get_flag, drop_flag = cnt % len(all_data), False, True, False
+        # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
+        i, bet_flag, get_flag, drop_flag = cnt % len(all_data), False, False, False
+        # 参加者のIDリスト
         all_player = [all_data[j][0] for j in range(len(all_data))]
+        # 制限時間設定
         time = len(all_data[i][1]) * 5 + 5
         time = 30 if time < 30 else 60 if time > 60 else time
         time, time_cut = round(time / time_cut, 1), 1
+        # 場札更新の際に以前のメッセージを削除
         if msg1 is not None:
             await msg1.delete()
             await msg2.delete()
@@ -169,6 +174,7 @@ async def run_uno(bot, guild, ctx):
                 break
             # UNOの指摘/宣言
             if "!uno" in input and reply.author.id in all_player:
+                # 他プレイヤーへの指摘
                 if len(reply.raw_mentions) == 1:
                     j = uf.search_player(reply.raw_mentions[0], all_data)
                     if j is not None:
@@ -181,12 +187,14 @@ async def run_uno(bot, guild, ctx):
                         else:
                             await ctx.send(f"{reply.author.mention} "
                                            f"今は、そのユーザーへのUNOの指摘は無効となっています", delete_after=10.0)
+                # 自分の宣言
                 else:
                     j = uf.search_player(reply.author.id, all_data)
                     # 自分のUNOフラグが立っている場合
                     if all_data[j][3][0]:
                         all_data[j][3] = [False, None]
                         await ctx.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
+                    # 手札が2枚以上ある場合
                     elif len(all_data[j][1]) >= 2:
                         await ctx.send(f"{reply.author.mention} 今はUNOを宣言しても意味がありません")
                     else:
@@ -256,10 +264,10 @@ async def run_uno(bot, guild, ctx):
             elif reply.author.id == all_data[i][0]:
                 # 山札から1枚引く
                 if input in ["!g", "!get"]:
-                    if get_flag:
+                    if not get_flag:
                         await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から1枚引きます", delete_after=5.0)
                         await send_card(i, 1, True)
-                        get_flag = False
+                        get_flag = True
                     else:
                         await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです", delete_after=5.0)
                 # カードを出さない
@@ -286,7 +294,7 @@ async def run_uno(bot, guild, ctx):
                         await send_card(i, 0, True)
                         # ドロー2/4のペナルティー枚数計算
                         penalty += uf.calculate_penalty(uf.string_to_card(input))
-                        flag = True
+                        bet_flag = True
                         break
                     else:
                         await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {error}", delete_after=5.0)
@@ -294,7 +302,7 @@ async def run_uno(bot, guild, ctx):
         if drop_flag:
             continue
         # ワイルドカードを出した後の色指定
-        if card[-1] in ["ワイルド", "ドロー4"] and flag:
+        if card[-1] in ["ワイルド", "ドロー4"] and bet_flag:
             msg = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[RD] と入力)")
             start = datetime.now()
@@ -333,7 +341,7 @@ async def run_uno(bot, guild, ctx):
         elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
             all_data[i][3] = [True, datetime.now()]
         # ドロー2/4のペナルティーを受ける
-        if penalty > 0 and not flag:
+        if penalty > 0 and not bet_flag:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました", delete_after=10.0)
             await send_card(i, penalty, True)
             penalty, cnt, = 0, cnt - 1
@@ -341,12 +349,12 @@ async def run_uno(bot, guild, ctx):
         if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]
         # スキップ処理
-        elif card[-1][1:] == "スキップ" and flag:
+        elif card[-1][1:] == "スキップ" and bet_flag:
             skip_n = len(uf.string_to_card(input))
             await ctx.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
             cnt += 2 * skip_n - 1
         # リバース処理
-        elif card[-1][1:] == "リバース" and flag:
+        elif card[-1][1:] == "リバース" and bet_flag:
             reverse_n = len(uf.string_to_card(input))
             await ctx.send(f"{reverse_n}回リバースします", delete_after=10.0)
             if reverse_n % 2 == 1:
@@ -355,7 +363,7 @@ async def run_uno(bot, guild, ctx):
                 all_data.reverse()
                 cnt = uf.search_player(tmp, all_data)
         # ワイルドカードで順番シャッフル
-        elif "ワイルド" in card[-1] and flag:
+        elif "ワイルド" in card[-1] and bet_flag:
             await ctx.send(f"{role_U.mention} 順番がシャッフルされました", delete_after=10.0)
             random.shuffle(all_data)
         cnt += 1
