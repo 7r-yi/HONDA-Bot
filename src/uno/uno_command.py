@@ -206,6 +206,7 @@ async def run_uno(bot, guild, ctx):
                 await send_card(-1, num, False)
                 await guild.get_member(reply.author.id).add_roles(role_U)
                 await ctx.send(f"{role_U.mention}  {reply.author.mention}が途中参加しました")
+                cnt = i
             # ゲームから棄権する
             elif "!drop" in input and reply.author.id in all_player:
                 # 棄権者を指定
@@ -215,8 +216,7 @@ async def run_uno(bot, guild, ctx):
                         await guild.get_member(all_data[j][0]).remove_roles(role_U)
                         await ctx.send(f"{role_U.mention}  "
                                        f"{bot.get_user(all_data[j][0]).mention}を棄権させました")
-                        if j > i:
-                            cnt -= 1
+                        cnt = i - 1 if j < i else i
                         ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
                         all_data.pop(j)
                         drop_flag = True
@@ -228,8 +228,7 @@ async def run_uno(bot, guild, ctx):
                     await guild.get_member(reply.author.id).remove_roles(role_U)
                     await ctx.send(f"{role_U.mention}  {reply.author.mention}が棄権しました")
                     j = uf.search_player(reply.author.id, all_data)
-                    if j > i:
-                        cnt -= 1
+                    cnt = i - 1 if j < i else i
                     ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
                     all_data.pop(j)
                     drop_flag = True
