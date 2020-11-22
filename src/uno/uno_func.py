@@ -99,7 +99,7 @@ def string_to_card(stc):
         return [translate_input(stc.strip())]
 
 
-# 赤100番台, 青200番台,　緑300番台, 黄400番台, ワイルド531～534, ドロー4 541～544
+# 赤100番台, 青200番台,　緑300番台, 黄400番台, ワイルド530～534, ドロー4 540～544
 def card_to_id(card):
     if "ワイルド" in card:
         for i in range(len(Color)):

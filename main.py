@@ -6,6 +6,7 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix="_", case_insensitive=True, intents=intents)
 
+# Cogの読み込み
 for filename in os.listdir('./src'):
     if filename.endswith('.py'):
         bot.load_extension(f'src.{filename[:-3]}')
