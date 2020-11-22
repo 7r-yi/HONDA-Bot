@@ -37,7 +37,7 @@ class Welcome(commands.Cog):
         if cs.Visitor in [role.id for role in member.roles]:
             await member.ban(delete_message_days=0)
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
-            await self.bot.get_channel(cs.Gate).send(f"{member.mention} を削除しました ({time})")
+            await self.bot.get_channel(cs.Gate).send(f"{member.mention}({member}) を削除しました ({time})")
         # データを削除
         if str(member.id) in zf.ZData:
             zf.ZData.pop(str(member.id))
