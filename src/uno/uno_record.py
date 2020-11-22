@@ -127,9 +127,9 @@ def data_delete(id):
     data = sheet.get_all_values()
 
     for i in range(len(data)):
-        if str(id) == data[i][2]:
+        if id == data[i][2]:
             data_row = sheet.range(f'B{i + 1}:{num_to_alpha(len(data[i]) + 1)}{i + 1}')
-            for j in range(data_row):
+            for j in range(len(data_row)):
                 # 1列目以外全て空白に書き換える
                 data_row[j].value = ""
             sheet.update_cells(data, value_input_option='USER_ENTERED')
