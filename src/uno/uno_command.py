@@ -17,7 +17,9 @@ from . import make_image as mi
 from . import uno_record as ur
 
 
+# UNOゲーム実行処理
 async def run_uno(bot, guild, ctx):
+    # 手札を送信する(n: ユーザー指定変数, times: 新たに追加される手札の枚数, send_flag: 追加カードの分を送信するか)
     async def send_card(n, times, send_flag):
         # 前に送ったDMがあるなら削除
         if all_data[n][2] is not None:
@@ -38,6 +40,7 @@ async def run_uno(bot, guild, ctx):
             card_msg = "手札が全て無くなりました"
             all_data[n][2] = await bot.get_user(all_data[n][0]).send(card_msg, file=discord.File(mi.BG_PASS))
 
+    # ターンパス時の処理
     async def turn_pass(pass_stc=""):
         if not get_flag and penalty == 0:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}山札から1枚引いてパスします", delete_after=5.0)
@@ -45,13 +48,16 @@ async def run_uno(bot, guild, ctx):
         else:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}パスします", delete_after=5.0)
 
+    # 入力を受け付けない条件一覧
     def ng_check(ctx_wait):
         return all([ctx.channel.id == ctx_wait.channel.id, not ctx_wait.author.bot,
                     ctx_wait.content != "", ctx_wait.content not in cs.Commands])
 
+    # ng_check + 指定したユーザーしか入力不可
     def user_check(ctx_wait):
         return ng_check(ctx_wait) and ctx_wait.author.id in all_player
 
+    # 既にUNO実行中はゲームを開始しない
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) or uf.UNO_start:
         return
 
@@ -117,9 +123,8 @@ async def run_uno(bot, guild, ctx):
             await guild.get_member(all_player[i]).remove_roles(role_U)
             all_player.pop(i)
             all_data.pop(i)
-    await ctx.send(f"{role_U.mention} カードを配りました\nBotからのDMを確認してください")
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
-    await ctx.send(f"ゲームの進行順は以下のようになります```{''.join(stc)}```")
+    await ctx.send(f"カードを配りました、各自BotからのDMを確認してください\nゲームの進行順は以下のようになります```{''.join(stc)}```")
 
     await ctx.send(f"{role_U.mention} ゲームを始めてもよろしいですか？(1分以上経過 or 全員が `!OK` で開始)")
     cnt_ok, ok_player, ok_start = 0, [], datetime.now()
