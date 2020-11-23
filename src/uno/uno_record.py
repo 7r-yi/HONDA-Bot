@@ -91,7 +91,7 @@ def data_save(all_data, all_name):
     data = sheet.get_all_values()
     times = len(data)
 
-    for i in range(1, len(all_data)):
+    for i in range(len(all_data)):
         j = 0
         while j < times:
             # 既存ユーザーのデータ上書き
