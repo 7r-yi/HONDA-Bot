@@ -133,7 +133,7 @@ def data_delete(id):
             for j in range(len(data_row)):
                 # 1列目以外全て空白に書き換える
                 data_row[j].value = ""
-            sheet.update_cells(data, value_input_option='USER_ENTERED')
+            sheet.update_cells(data_row, value_input_option='USER_ENTERED')
             break
 
 
