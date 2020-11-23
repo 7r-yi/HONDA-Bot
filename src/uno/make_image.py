@@ -5,10 +5,11 @@ import numpy as np
 from PIL import Image
 from src.uno import uno_func
 
-AREA_PASS = 'src/uno/Area.png'
-AREA_TEMP_PASS = 'src/uno/Area_tmp.png'
-BG_PASS = 'src/uno/Background.png'
-HAND_PASS = 'src/uno/hand.png'
+AREA_PASS = 'src/uno/base_image/Area.png'
+AREA_TEMP_PASS = 'src/uno/base_image/Area_tmp.png'
+BG_PASS = 'src/uno/base_image/Background.png'
+HAND_PASS = 'src/uno/base_image/hand.png'
+ALPHA_CARD_PASS = 'src/uno/base_image/card.png'
 
 
 def id_to_pass(id):
@@ -77,7 +78,7 @@ def make_area(card):
     w_rot = int(np.round(h * np.absolute(np.sin(angle_rad)) + w * np.absolute(np.cos(angle_rad))))
     h_rot = int(np.round(h * np.absolute(np.cos(angle_rad)) + w * np.absolute(np.sin(angle_rad))))
     size_rot = (w_rot, h_rot)
-    # 平行移動を加える (rotation + translation)
+    # 平行移動を加える
     affine_matrix = rotation_matrix.copy()
     affine_matrix[0][2] = affine_matrix[0][2] - w // 2 + w_rot // 2
     affine_matrix[1][2] = affine_matrix[1][2] - h // 2 + h_rot // 2
@@ -87,13 +88,13 @@ def make_area(card):
     card_img_mask = cv2.inRange(card_img, color, color)
     # 背景を透過して一旦出力
     card_img = cv2.bitwise_not(card_img, card_img, mask=card_img_mask)
-    cv2.imwrite('card.png', card_img)
+    cv2.imwrite(ALPHA_CARD_PASS, card_img)
     # 貼り付ける位置をランダムで指定
     gap_w, gap_h = random.randint(-300, 100), random.randint(-150, 50)
     # カードを場に重ねる
     area_img = Image.open(AREA_TEMP_PASS)
-    card_img = Image.open('card.png')
+    card_img = Image.open(ALPHA_CARD_PASS)
     area_img.paste(card_img, (190 + gap_w, 85 + gap_h), card_img)
     area_img.save(AREA_TEMP_PASS)
     # 一旦出力した画像を削除
-    os.remove('card.png')
+    os.remove(ALPHA_CARD_PASS)

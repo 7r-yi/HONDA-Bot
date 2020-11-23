@@ -402,25 +402,26 @@ async def run_record(bot, guild, ctx, name):
         name = guild.get_member(ctx.author.id).display_name
 
     msg = await ctx.send(f"{name}のデータを検索中...")
-    data, url, user, id = [], None, None, None
     for member in get_role(guild, cs.Visitor).members:
         if name.lower() == member.display_name.lower():
-            data, url = ur.record_output(member.id)
+            data, player, url = ur.record_output(member.id)
             user, id = member.display_name, member.id
-    if any([data is None, user is None, id is None]):
-        await ctx.send(f"{ctx.author.mention} データが記録されていません")
-        await msg.delete()
-        return
-    embed = discord.Embed(title=user, color=0xFF3333)
-    embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
-    embed.set_thumbnail(url=url)
-    embed.add_field(name="総得点", value=f"{data[3]}点")
-    embed.add_field(name="勝率", value=f"{data[4]} ({data[5]}戦 {data[6]}勝{data[7]}敗)")
-    embed.add_field(name="直近5戦", value=f"{data[11]}点")
-    embed.add_field(name="最高獲得点", value=f"{data[8]}点")
-    embed.add_field(name="最低減少点", value=f"{data[9]}点")
-    embed.add_field(name="ペナルティー", value=f"{data[10]}点")
-    await ctx.send(embed=embed)
+
+            embed = discord.Embed(title=user, color=0xFF3333)
+            embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
+            embed.set_thumbnail(url=url)
+            embed.add_field(name="順位", value=f"**{data[0]}** /{player}位", inline=False)
+            embed.add_field(name="総得点", value=f"{data[3]}点")
+            embed.add_field(name="勝率", value=f"{data[4]} ({data[5]}戦 {data[6]}勝{data[7]}敗)")
+            embed.add_field(name="直近5戦", value=f"{data[11]}点")
+            embed.add_field(name="最高獲得点", value=f"{data[8]}点")
+            embed.add_field(name="最低減少点", value=f"{data[9]}点")
+            embed.add_field(name="ペナルティー", value=f"{data[10]}点")
+            await ctx.send(embed=embed)
+            await msg.delete()
+            return
+
+    await ctx.send(f"{ctx.author.mention} データが記録されていません")
     await msg.delete()
 
 

@@ -52,7 +52,7 @@ def add_penalty(id, name, card):
     data = sheet.get_all_values()
     pts = calculate_point(card)
 
-    for i in range(len(data)):
+    for i in range(1, len(data)):
         # 既存ユーザーのデータ上書き
         if str(id) == data[i][2]:
             data_row = sheet.range(f'B{i + 1}:{num_to_alpha(len(data[i]) + 1)}{i + 1}')
@@ -90,7 +90,8 @@ def data_save(all_data, all_name):
     sheet = road_spreadsheet('試合結果データ')
     data = sheet.get_all_values()
     times = len(data)
-    for i in range(len(all_data)):
+
+    for i in range(1, len(all_data)):
         j = 0
         while j < times:
             # 既存ユーザーのデータ上書き
@@ -126,7 +127,7 @@ def data_delete(id):
     sheet = road_spreadsheet('試合結果データ')
     data = sheet.get_all_values()
 
-    for i in range(len(data)):
+    for i in range(1, len(data)):
         if str(id) == data[i][2]:
             data_row = sheet.range(f'B{i + 1}:{num_to_alpha(len(data[i]) + 1)}{i + 1}')
             for j in range(len(data_row)):
@@ -137,16 +138,19 @@ def data_delete(id):
 
 
 def record_output(id):
-    sheet = road_spreadsheet('記録一覧')
+    sheet = road_spreadsheet('ランキング')
     data = sheet.get_all_values()
 
-    for i in range(len(data)):
+    for i in range(1, len(data)):
         if str(id) == data[i][2]:
             if int(data[i][3].replace("+", "")) <= 0:
                 url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
             else:
                 url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
 
-            return data[i], url
+            # プレイヤー数の取得
+            for j in range(i, len(data)):
+                if data[j][1] == "":
+                    return data[i], j - 1, url
 
-    return None, None
+    return None
