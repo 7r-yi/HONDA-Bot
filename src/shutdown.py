@@ -25,13 +25,13 @@ class Shutdown(commands.Cog):
 
     @commands.command()
     @commands.has_role(cs.Administrator)
-    async def sd(self, bot, ctx):
-        await run(bot, ctx)
+    async def sd(self, ctx):
+        await run(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.Administrator)
-    async def shutdown(self, bot, ctx):
-        await run(bot, ctx)
+    async def shutdown(self, ctx):
+        await run(self.bot, ctx)
 
 
 def setup(bot):
