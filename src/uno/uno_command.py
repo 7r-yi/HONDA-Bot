@@ -133,7 +133,7 @@ async def run_uno(bot, guild, ctx):
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
     await ctx.send(f"カードを配りました、各自BotからのDMを確認してください\nゲームの進行順は以下のようになります```{''.join(stc)}```")
 
-    await ctx.send(f"{role_U.mention} ゲームを始めてもよろしいですか？(1分以上経過 or 全員が `!OK` で開始, `!Drop` で離脱)")
+    await ctx.send(f"{role_U.mention} ゲームを始めてもよろしいですか？(1分以上経過 or 全員が `!OK` で開始)")
     cnt_ok, ok_player, ok_start = 0, [], datetime.now()
     while True:
         try:
@@ -144,12 +144,6 @@ async def run_uno(bot, guild, ctx):
             if jaconv.z2h(reply.content, ascii=True).lower() == "!ok":
                 cnt_ok += 1
                 ok_player.append(reply.author.id)
-            elif jaconv.z2h(reply.content, ascii=True).lower() == "!drop":
-                await guild.get_member(reply.author.id).remove_roles(role_U)
-                i = uf.search_player(reply.author.id, all_data)
-                all_data.pop(i)
-                all_player.pop(i)
-                await ctx.send(f"{reply.author.mention} 離脱しました")
         if cnt_ok == len(all_player):
             break
     cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 1
@@ -455,7 +449,7 @@ async def run_cleardm(bot, ctx):
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]):
         return
     # UNOプレイ中の場合はコマンド実行不可
-    elif uf.UNO_start and cs.UNO_Player in [roles.id for roles in ctx.author.roles]:
+    elif cs.UNO_Player in [roles.id for roles in ctx.author.roles]:
         return await ctx.send(f"{ctx.author.mention} UNOプレイ中は削除できません", delete_after=5.0)
 
     msg = await ctx.send(f"{ctx.author.mention} BotとのDMを削除中...")
