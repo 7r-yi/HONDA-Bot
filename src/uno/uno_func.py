@@ -142,16 +142,18 @@ def deal_card(num):
     return hand
 
 
-def sort_card(card):
+# 数字/記号が揃うように並べ替える
+def sort_card(cards):
     card_id = []
-    for i in card:
-        card_id.append(card_to_id(i))
+    for card in cards:
+        id = card_to_id(card)
+        card_id.append([id % 100, id])
     card_id.sort()
-    card = []
-    for i in card_id:
-        card.append(id_to_card(i))
+    cards = []
+    for id in card_id:
+        cards.append(id_to_card(id[1]))
 
-    return card
+    return cards
 
 
 def check_card(before, after, hand, penalty):
