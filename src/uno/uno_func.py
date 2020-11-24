@@ -89,14 +89,14 @@ def card_to_string(card):
 def string_to_card(stc):
     stc = re.sub('[.、\s]', ',', stc)
     if stc.count(",") >= 1:  # 出すカードをリスト化
-        stc, card = stc.split(","), []
-        for i in range(len(stc)):
-            if stc[i].strip() != "":
-                card.append(translate_input(stc[i].strip()))
-        if not card:
+        card, cards = stc.split(","), []
+        for i in range(len(card)):
+            if card[i].strip() != "":
+                cards.append(translate_input(card[i].strip()))
+        if not cards:
             return [stc]
         else:
-            return card
+            return cards
     else:
         return [translate_input(stc.strip())]
 
