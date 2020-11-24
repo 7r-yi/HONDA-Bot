@@ -404,10 +404,10 @@ async def run_uno(bot, guild, ctx):
         embed = discord.Embed(color=0xff0000)
         embed.set_author(name='Results', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/JHRshwi.png')
-        embed.add_field(name=f"Winner (+{sort_data[0][4]}点)", value=f"{all_name[0]}", inline=False)
+        embed.add_field(name=f"優勝 (+{sort_data[0][4]}点)", value=f"{all_name[0]}", inline=False)
         for i in range(1, len(sort_data) - 1):
             embed.add_field(name=f"{i + 1}位 ({sort_data[i][4]}点)", value=f"{all_name[i]}")
-        embed.add_field(name=f"Loser ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
+        embed.add_field(name=f"最下位 ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
         await bot.get_channel(cs.Result).send(embed=embed)
 
     await ctx.send(f"```\n★ゲーム結果\n\n{stc}```{role_U.mention} 結果を記録してゲームを終了しました")
