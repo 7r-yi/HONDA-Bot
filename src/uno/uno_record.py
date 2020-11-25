@@ -153,4 +153,4 @@ def record_output(id):
                 if data[j][1] == "":
                     return data[i], j - 1, url
 
-    return None
+    return None, None, None
