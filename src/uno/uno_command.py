@@ -96,7 +96,7 @@ async def run_uno(bot, guild, ctx):
                     await ctx.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5.0)
             else:
                 await ctx.send(f"{reply.author.mention} 開始者以外は締め切れません", delete_after=5.0)
-        elif reply.content == "!cancel":
+        elif reply.content == "!cancel" and reply.author.id in all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
                 for member in role_U.members:
                     await member.remove_roles(role_U)
@@ -388,16 +388,15 @@ async def run_uno(bot, guild, ctx):
         elif "ワイルド" in card[-1] and bet_flag:
             await ctx.send(f"{role_U.mention} 順番がシャッフルされました", delete_after=10.0)
             random.shuffle(all_data)
+        # ターンエンド → 次のプレイヤーへ
         cnt += 1
 
     # 点数計算
-    all_pts, all_name, stc = [], [], ""
+    all_name, stc = [], ""
     for i in range(len(all_data)):
-        pts = ur.calculate_point(all_data[i][1])
-        all_data[i].append(pts)
-        all_pts.append(pts)
+        all_data[i].append(ur.calculate_point(all_data[i][1]))
     # 1位には他ユーザーの合計得点をプラス
-    all_data[winner][4] = sum(all_pts) * -1
+    all_data[winner][4] = sum([all_data[i][4] for i in range(len(all_data))]) * -1
     sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
