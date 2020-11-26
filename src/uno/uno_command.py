@@ -435,7 +435,7 @@ async def run_record(bot, guild, ctx, name):
             embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
             embed.set_thumbnail(url=url)
             embed.add_field(name="順位", value=f"**{data[0]}** /{player}位", inline=False)
-            embed.add_field(name="総得点", value=f"{data[3]}点")
+            embed.add_field(name="総得点", value=f"**{data[3]}**点")
             embed.add_field(name="勝率", value=f"{data[4]} ({data[5]}戦 {data[6]}勝{data[7]}敗)")
             embed.add_field(name="直近5戦", value=f"{data[11]}点")
             embed.add_field(name="最高獲得点", value=f"{data[8]}点")
