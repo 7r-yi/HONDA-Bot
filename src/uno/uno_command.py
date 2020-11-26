@@ -7,6 +7,7 @@ import os
 import shutil
 import copy
 import random
+import numpy as np
 import jaconv
 from datetime import datetime
 from pytz import timezone
@@ -106,24 +107,32 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
 
-    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n{ctx.author.mention} 初期手札の枚数を入力してください")
+    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n"
+                   f"次に、初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
+    want_nums, ok_player, ask_start = [], [], datetime.now()
     while True:
-        reply = await bot.wait_for('message', check=ng_check)
-        input = jaconv.z2h(reply.content, digit=True).lower()
         try:
-            initial_num = int(re.sub(r'[^0-9]', "", input))
-            if ctx.author.id == reply.author.id:
-                if 2 <= initial_num <= 100:
-                    await ctx.send(f"初期手札を{initial_num}枚で設定しました")
-                    break
-                else:
-                    await ctx.send(f"2～100枚以内で指定してください", delete_after=5.0)
+            reply = await bot.wait_for('message', check=ng_check, timeout=30.0 - (datetime.now() - ask_start).seconds)
+            try:
+                input = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
+            except ValueError:
+                continue
+        except asyncio.exceptions.TimeoutError:
+            break
+        if reply.author.id not in ok_player and reply.author.id in all_player:
+            if 2 <= input <= 100:
+                want_nums.append(input)
+                ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.mention} あなたには聞いていません", delete_after=5.0)
-        except ValueError:
-            pass
+                await ctx.send(f"{reply.author.id} 2～100枚以内で指定してください", delete_after=5.0)
+        if len(ok_player) == len(all_player):
+            break
+    try:
+        initial_num = random.choice([i for i, x in enumerate(want_nums) if x == max(want_nums)])
+    except IndexError:
+        initial_num = 7
 
-    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
+    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```\n初期手札を{initial_num}枚に設定しました")
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
@@ -140,17 +149,16 @@ async def run_uno(bot, guild, ctx):
     await ctx.send(f"カードを配りました、各自BotからのDMを確認してください\nゲームの進行順は以下のようになります```{''.join(stc)}```")
 
     await ctx.send(f"{role_U.mention} ゲームを始めてもよろしいですか？(1分以上経過 or 全員が `!OK` で開始)")
-    cnt_ok, ok_player, ok_start = 0, [], datetime.now()
+    ok_player, ask_start = [], datetime.now()
     while True:
         try:
-            reply = await bot.wait_for('message', check=user_check, timeout=60.0 - (datetime.now() - ok_start).seconds)
+            reply = await bot.wait_for('message', check=user_check, timeout=60.0 - (datetime.now() - ask_start).seconds)
         except asyncio.exceptions.TimeoutError:
             break
-        if reply.author.id not in ok_player:
+        if reply.author.id not in ok_player and reply.author.id in all_player:
             if jaconv.z2h(reply.content, ascii=True).lower() == "!ok":
-                cnt_ok += 1
                 ok_player.append(reply.author.id)
-        if cnt_ok == len(all_player):
+        if len(ok_player) == len(all_player):
             break
     cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 1
     start_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
