@@ -7,7 +7,7 @@ import os
 import shutil
 import copy
 import random
-import numpy as np
+import collections
 import jaconv
 from datetime import datetime
 from pytz import timezone
@@ -124,15 +124,16 @@ async def run_uno(bot, guild, ctx):
                 want_nums.append(input)
                 ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.id} 2～100枚以内で指定してください", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
         if len(ok_player) == len(all_player):
             break
     try:
-        initial_num = random.choice([i for i, x in enumerate(want_nums) if x == max(want_nums)])
+        initial_num = collections.Counter(want_nums).most_common()[0][0]
     except IndexError:
         initial_num = 7
 
-    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```\n初期手札を{initial_num}枚に設定しました")
+    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
+    await ctx.send(f"初期手札を{initial_num}枚に設定しました")
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
