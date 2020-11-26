@@ -65,7 +65,8 @@ async def run_uno(bot, guild, ctx):
     role_U = get_role(guild, cs.UNO_Player)
     await ctx.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                    "参加する方は `!Join` と入力してください ( `!Drop` で離脱, `!End` で締め切り, `!Cancel` で中止)")
-    all_player = []
+    all_player = [ctx.author.id]
+    await guild.get_member(ctx.author.id).add_roles(role_U)
     while True:
         reply = await bot.wait_for('message', check=ng_check)
         input = jaconv.z2h(reply.content, ascii=True).lower()
@@ -77,17 +78,17 @@ async def run_uno(bot, guild, ctx):
             else:
                 await ctx.send(f"{reply.author.mention} 既に参加済みです", delete_after=5.0)
         elif input in ["!d", "!drop"] and reply.author.id in all_player:
-            if len(all_player) >= 2:
+            if reply.author.id == ctx.author.id:
+                await ctx.send(f"{reply.author.mention} 開始者は離脱出来ません", delete_after=5.0)
+            elif len(all_player) >= 2:
                 all_player.remove(reply.author.id)
                 await guild.get_member(reply.author.id).remove_roles(role_U)
                 await ctx.send(f"{reply.author.mention} 離脱しました", delete_after=5.0)
-            else:
-                await ctx.send(f"{reply.author.mention} 1人以下の場合はキャンセルしてください", delete_after=5.0)
         elif input in ["!l", "!list"]:
             stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
             await ctx.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=15.0)
         elif input in ["!e", "!end"] and all_player:
-            if ctx.author.id == reply.author.id:
+            if ctx.author.id == reply.author.id or role_check_mode(ctx):
                 if len(all_player) >= 2 or role_check_admin(ctx):
                     break
                 else:
@@ -95,7 +96,7 @@ async def run_uno(bot, guild, ctx):
             else:
                 await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
         elif reply.content == "!cancel":
-            if ctx.author.id == reply.author.id:
+            if ctx.author.id == reply.author.id or role_check_mode(ctx):
                 for member in role_U.members:
                     await member.remove_roles(role_U)
                 uf.UNO_start = False
