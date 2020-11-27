@@ -29,9 +29,10 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "・数字カード → 赤0 [R0], 青1 [B1], 緑2 [G2], 黄3 [Y3] など\n" \
        "・記号カード → 赤スキップ [RS], 青リバース [BR], 緑ドロー2 [G+2, GD2] など\n" \
        "・ワイルドカード → ワイルド [W], ドロー4 [+4, D4]\n\n" \
-       "1. 複数枚出し時はカンマで区切る (例 : 赤0, 青0, 赤0, 緑0)\n" \
+       "1. 複数枚出す時はカンマで区切る (例 : 赤0, 青0, 赤0, 緑0)\n" \
+       "1-2. カンマ以外にも空白、読点、コンマなどでも可能\n" \
        "2. ワイルドカードを出す時は ワイルド or ドロー4 と入力する\n" \
-       "2-2. その後色指定の時間があるので、赤 or 青 or 緑 or 黄 と入力する\n" \
+       "2-2. その後に色指定の時間があるので、赤 or 青 or 緑 or 黄 or ランダム と入力する\n" \
        "3. 山札からカードを1枚引く場合は !Get [!G] と入力する\n" \
        "4. カードを出さない場合は !Pass [!P] と入力する\n" \
        "5. 残り1枚になった後は !UNO と入力する\n" \
@@ -40,7 +41,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "5-4. UNOと宣言せずに上がる or 指摘されると2枚ペナルティー\n\n\n" \
        "★その他ゲーム中のコマンド\n" \
        "・ゲームに途中参加する → !Join\n" \
-       "・ゲームから離脱する → !Drop (ペナルティーとして手札の点-100点)\n" \
+       "・ゲームから離脱する → !Drop (ペナルティーとして -手札の点 & -100点)\n" \
        "・ゲームから離脱させる → メンション !Drop (モデレーターのみ)\n" \
        "・ゲームを中止する → !Cancel (過半数の同意が必要)"
 
@@ -163,14 +164,19 @@ def check_card(before, after, hand, penalty):
 
     # カード全出し
     if after == hand and len(hand) >= 2:
-        return False, "複数枚出しで一気に上がることが出来ません"
+        return False, "複数枚出しで上がることは出来ません"
 
     # 出すカードを手札から全て削除 → エラーを吐いたら持ってないカードあり
     try:
         for card in after:
             hand_tmp.remove(card)
     except ValueError:
-        return False, f"{card} ってカードは存在しない/持っていません"
+        if card in hand:
+            return False, f"{card} を出す枚数が、手札に対して多すぎます"
+        elif card in Card:
+            return False, f"{card} は持っていません"
+        else:
+            return False, f"{card} ってカードは存在しませんよ"
 
     # 出したカードの全ての記号が一致するか判定
     if all([first % 100 == card_to_id(i) % 100 for i in after]):
@@ -178,14 +184,14 @@ def check_card(before, after, hand, penalty):
     elif "ドロー" in after[0]:
         # ドロー2/4以外が含まれているか判定
         if not all(["ドロー" in i for i in after]):
-            return False, "その複数枚の出し方は出来ません(ドロー2/4と一緒に出せるのはドロー2/4のみ)"
+            return False, "ドロー2/4と一緒に出せるのは、ドロー2/4のみです"
     else:
-        return False, "そのカードは出せません(数字/記号が異なっているカードがある)"
+        return False, "出したカードの中に、他のカードと数字/記号が異なっているカードがあります"
 
     # 場のカードが効果継続中のドロー2の場合
     if before % 100 == 12 and penalty > 0:
         if first % 100 != 12 and first != 540:
-            return False, "ドロー2にはドロー2/4でしか返せません"
+            return False, "ドロー2には、ドロー2/4でしか返せません"
     # 場のカードが効果継続中のドロー4の場合
     elif 540 <= before <= 544 and penalty > 0:
         if not (before % 540 == first // 100 and first % 100 == 12) and first != 540:
@@ -204,7 +210,7 @@ def check_card(before, after, hand, penalty):
     elif before % 100 == first % 100:
         pass
     else:
-        return False, "そのカードは出せません(場札のカードと、出した最初のカードの色が一致していない)"
+        return False, "場札のカードと、最初に出すカードの色が一致していません"
 
     return True, None
 
