@@ -400,7 +400,7 @@ async def run_uno(bot, guild, ctx):
     sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
-        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
+        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
 
     # 10人以上参加 & 初期手札7~10枚の時、Winner/Loserロール付与 & 結果出力
     if 10 <= len(all_data) and 7 <= initial_num <= 10:
@@ -411,7 +411,7 @@ async def run_uno(bot, guild, ctx):
         embed = discord.Embed(color=0xff0000)
         embed.set_author(name='Results', icon_url='https://i.imgur.com/F2oH0Bu.png')
         embed.set_thumbnail(url='https://i.imgur.com/JHRshwi.png')
-        embed.add_field(name=f"優勝 (+{sort_data[0][4]}点)", value=f"{all_name[0]}", inline=False)
+        embed.add_field(name=f"優勝 ({sort_data[0][4]:+}点)", value=f"{all_name[0]}", inline=False)
         for i in range(1, len(sort_data) - 1):
             embed.add_field(name=f"{i + 1}位 ({sort_data[i][4]}点)", value=f"{all_name[i]}")
         embed.add_field(name=f"最下位 ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
