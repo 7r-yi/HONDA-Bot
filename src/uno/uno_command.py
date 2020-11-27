@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.errors import Forbidden, DiscordServerError
+import aiohttp.client_exceptions as ac
 import asyncio
 import asyncio.exceptions
 import os
@@ -483,7 +484,7 @@ class Uno(commands.Cog):
     @commands.Cog.listener(name='on_command_error')
     @commands.guild_only()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, DiscordServerError):
+        if isinstance(error, DiscordServerError) or isinstance(error, ac.ClientOSError):
             return await ctx.channel.send("サーバーエラーが発生しました")
 
     @commands.command()
