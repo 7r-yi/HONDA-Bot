@@ -108,24 +108,25 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
 
-    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました\n"
-                   f"次に、初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
+    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました")
+    await ctx.send(f"{role_U.mention} 次に、初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
     want_nums, ok_player, ask_start = [], [], datetime.now()
     while True:
         try:
             reply = await bot.wait_for('message', check=ng_check, timeout=30.0 - (datetime.now() - ask_start).seconds)
-            try:
-                input = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
-            except ValueError:
-                continue
+            input = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
+        except ValueError:
+            continue
         except asyncio.exceptions.TimeoutError:
             break
-        if reply.author.id not in ok_player and reply.author.id in all_player:
-            if 2 <= input <= 100:
-                want_nums.append(input)
+        if reply.author.id not in all_player:
+            continue
+        if 2 <= input <= 100:
+            want_nums.append(input)
+            if reply.author.id not in ok_player:
                 ok_player.append(reply.author.id)
-            else:
-                await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
+        else:
+            await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
         if len(ok_player) == len(all_player):
             break
     try:
@@ -225,7 +226,7 @@ async def run_uno(bot, guild, ctx):
                         await ctx.send(f"{role_U.mention}  {reply.author.mention}がUNOを宣言しました")
                     # 手札が2枚以上ある場合
                     elif len(all_data[j][1]) >= 2:
-                        await ctx.send(f"{reply.author.mention} 今はUNOを宣言しても意味がありません", delete_after=10.0)
+                        await ctx.send(f"{reply.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10.0)
                     else:
                         await ctx.send(f"{reply.author.mention} 既にUNOと宣言済みです", delete_after=10.0)
             # 途中参加
@@ -250,8 +251,6 @@ async def run_uno(bot, guild, ctx):
                         all_data.pop(j)
                         drop_flag = True
                         break
-                    else:
-                        await ctx.send(f"{reply.author.mention} そのユーザーはゲームに参加していません", delete_after=5.0)
                 # 自分が棄権する
                 elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                     await guild.get_member(reply.author.id).remove_roles(role_U)
@@ -263,8 +262,7 @@ async def run_uno(bot, guild, ctx):
                     drop_flag = True
                     break
                 else:
-                    await ctx.send(f"{reply.author.mention} "
-                                   f"2人以下の状態では棄権出来ません(`!Cancel` で中止)", delete_after=5.0)
+                    await ctx.send(f"{reply.author.mention} 2人以下の状態では棄権出来ません", delete_after=10.0)
             # ゲームを強制中止する
             elif input == "!cancel" and reply.author.id in all_player:
                 await ctx.send(f"{role_U.mention} ゲームを中止しますか？(過半数が `!OK` で中止、`!NG` でキャンセル)")
@@ -324,7 +322,7 @@ async def run_uno(bot, guild, ctx):
                         bet_flag = True
                         break
                     else:
-                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {error}", delete_after=5.0)
+                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {error}", delete_after=7.5)
         # 棄権時は以下の処理を飛ばす
         if drop_flag:
             continue

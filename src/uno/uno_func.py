@@ -38,9 +38,9 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "5-2. 他プレイヤーのUNO宣言忘れを指摘する際は メンション !UNO と入力する (例 : @そばゆ !UNO)\n" \
        "5-3. 残り1枚となる人のターンが終了してから10秒間は指摘出来ない\n" \
        "5-4. UNOと宣言せずに上がる or 指摘されると2枚ペナルティー\n\n\n" \
-       "★その他コマンド\n" \
+       "★その他ゲーム中のコマンド\n" \
        "・ゲームに途中参加する → !Join\n" \
-       "・ゲームから離脱する → !Drop (確定負け & 手札の点-100点)\n" \
+       "・ゲームから離脱する → !Drop (ペナルティーとして手札の点-100点)\n" \
        "・ゲームから離脱させる → メンション !Drop (モデレーターのみ)\n" \
        "・ゲームを中止する → !Cancel (過半数の同意が必要)"
 
@@ -56,25 +56,25 @@ Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4
 
 def translate_input(word):
     word = word.replace("色", "")
-    if word == "w":
+    if word in ["w", "wild", "ドングリフレンズ"]:
         return "ワイルド"
-    elif word in ["+4", "d4"]:
+    elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
         return "ドロー4"
     else:
         trans1, trans2 = word[0], word[1:]
-        if trans1 == "r":
+        if trans1 in ["r", "red"]:
             trans1 = "赤"
-        elif trans1 == "b":
+        elif trans1 in ["b", "blue"]:
             trans1 = "青"
-        elif trans1 == "g":
+        elif trans1 in ["g", "green"]:
             trans1 = "緑"
-        elif trans1 == "y":
+        elif trans1 in ["y", "yellow"]:
             trans1 = "黄"
-        if trans2 == "s":
+        if trans2 in ["s", "skip"]:
             trans2 = "スキップ"
-        elif trans2 == "r":
+        elif trans2 in ["r", "reverse"]:
             trans2 = "リバース"
-        elif trans2 in ["+2", "d2"]:
+        elif trans2 in ["+2", "d2", "draw2", "ダブルピース"]:
             trans2 = "ドロー2"
         return f"{trans1}{trans2}"
 
