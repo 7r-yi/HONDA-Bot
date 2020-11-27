@@ -81,7 +81,7 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send(f"{reply.author.mention} 既に参加済みです", delete_after=5.0)
         elif input in ["!d", "!drop"] and reply.author.id in all_player:
             if reply.author.id == ctx.author.id:
-                await ctx.send(f"{reply.author.mention} 開始者は参加を取り消し出来ません", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 開始者は参加を取り消せません", delete_after=5.0)
             elif len(all_player) >= 2:
                 all_player.remove(reply.author.id)
                 await guild.get_member(reply.author.id).remove_roles(role_U)
