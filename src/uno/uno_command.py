@@ -302,8 +302,8 @@ async def run_uno(bot, guild, ctx):
                     break
                 else:
                     # 出せるカードかチェック
-                    check, error = uf.check_card(card[-1], uf.string_to_card(input), all_data[i][1], penalty)
-                    if check:
+                    error = uf.check_card(card[-1], uf.string_to_card(input), all_data[i][1], penalty)
+                    if error is None:
                         # 出したカードを山場に追加
                         bet_card = uf.string_to_card(input)
                         card += bet_card

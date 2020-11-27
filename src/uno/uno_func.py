@@ -164,7 +164,7 @@ def check_card(before, after, hand, penalty):
 
     # カード全出し
     if after == hand and len(hand) >= 2:
-        return False, "複数枚出しで上がることは出来ません"
+        return "複数枚出しで上がることは出来ません"
 
     # 出すカードを手札から全て削除 → エラーを吐いたら持ってないカードあり
     try:
@@ -172,11 +172,11 @@ def check_card(before, after, hand, penalty):
             hand_tmp.remove(card)
     except ValueError:
         if card in hand:
-            return False, f"{card} を出す枚数が、手札に対して多すぎます"
+            return f"{card} を出す枚数が、手札に対して多すぎます"
         elif card in Card:
-            return False, f"{card} は持っていません"
+            return f"{card} は持っていません"
         else:
-            return False, f"{card} ってカードは存在しませんよ"
+            return f"{card} ってカードは存在しませんよ"
 
     # 出したカードの全ての記号が一致するか判定
     if all([first % 100 == card_to_id(i) % 100 for i in after]):
@@ -184,18 +184,18 @@ def check_card(before, after, hand, penalty):
     elif "ドロー" in after[0]:
         # ドロー2/4以外が含まれているか判定
         if not all(["ドロー" in i for i in after]):
-            return False, "ドロー2/4と一緒に出せるのは、ドロー2/4のみです"
+            return "ドロー2/4と一緒に出せるのは、ドロー2/4のみです"
     else:
-        return False, "出したカードの中に、他のカードと数字/記号が異なっているカードがあります"
+        return "出したカードの中に、他のカードと数字/記号が異なっているカードがあります"
 
     # 場のカードが効果継続中のドロー2の場合
     if before % 100 == 12 and penalty > 0:
         if first % 100 != 12 and first != 540:
-            return False, "ドロー2には、ドロー2/4でしか返せません"
+            return "ドロー2には、ドロー2/4でしか返せません"
     # 場のカードが効果継続中のドロー4の場合
     elif 540 <= before <= 544 and penalty > 0:
         if not (before % 540 == first // 100 and first % 100 == 12) and first != 540:
-            return False, "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
+            return "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
 
     # 場札と最初のカードの色が一致
     if before // 100 == first // 100:
@@ -210,9 +210,9 @@ def check_card(before, after, hand, penalty):
     elif before % 100 == first % 100:
         pass
     else:
-        return False, "場札のカードと、最初に出すカードの色が一致していません"
+        return "場札のカードと、最初に出すカードの色が一致していません"
 
-    return True, None
+    return None
 
 
 def search_player(player, all_data):
