@@ -177,7 +177,7 @@ def check_card(before, after, hand, penalty):
         elif card in Card:
             return f"{card} は持っていません"
         else:
-            return f"{card} ってカードは存在しませんよ"
+            return f"{card} ってカードは存在しませんよ(笑)"
 
     # 出したカードの全ての記号が一致するか判定
     if all([first % 100 == card_to_id(i) % 100 for i in after]):
