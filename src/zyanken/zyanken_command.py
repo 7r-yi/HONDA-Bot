@@ -194,9 +194,9 @@ class Zyanken(commands.Cog):
                     await ctx.add_reaction(emoji2)
                     await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
                                            file=discord.File(img), delete_after=5.0)
-                if cs.Challenger not in [roles.id for roles in ctx.author.roles]:
+                if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
                     guild = self.bot.get_guild(cs.Server)
-                    await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Challenger))
+                    await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
                 break
 
     @commands.command()
