@@ -122,15 +122,15 @@ async def run_uno(bot, guild, ctx):
         if reply.author.id not in all_player:
             continue
         if 2 <= input <= 100:
-            want_nums.append(input)
             if reply.author.id not in ok_player:
+                want_nums.append(input)
                 ok_player.append(reply.author.id)
         else:
             await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
         if len(ok_player) == len(all_player):
             break
     try:
-        initial_num = collections.Counter(want_nums).most_common()[0][0]
+        initial_num = sorted(collections.Counter(want_nums).most_common())[0][0]
     except IndexError:
         initial_num = 7
 
