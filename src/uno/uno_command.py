@@ -329,7 +329,7 @@ async def run_uno(bot, guild, ctx):
         # ワイルドカードを出した後の色指定
         if card[-1] in ["ワイルド", "ドロー4"] and bet_flag:
             msg = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 色を指定してください (制限時間20秒)\n"
-                                 f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[RD] と入力)")
+                                 f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
             start = datetime.now()
             while True:
                 try:
@@ -344,7 +344,7 @@ async def run_uno(bot, guild, ctx):
                 if color.author.id == all_data[i][0] and uf.translate_input(input) in uf.Color:
                     card[-1] = f"{uf.translate_input(input)}{card[-1]}"
                     break
-                elif color.author.id == all_data[i][0] and input in ["ランダム", "rd", "random"]:
+                elif color.author.id == all_data[i][0] and input in ["ランダム", "x", "random"]:
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                     break
                 elif color.author.id == all_data[i][0]:
