@@ -58,7 +58,6 @@ Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4
 
 
 def translate_input(word):
-    word = word.replace("色", "")
     if word in ["w", "wild", "ドングリフレンズ"]:
         return "ワイルド"
     elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
@@ -90,7 +89,7 @@ def card_to_string(card):
 
 
 def string_to_card(stc):
-    stc = re.sub('[.、\s]', ',', stc)
+    stc = re.sub('[.、\s]', ',', stc).replace("色", "")
     if stc.count(",") >= 1:  # 出すカードをリスト化
         card, cards = stc.split(","), []
         for i in range(len(card)):
