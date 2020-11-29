@@ -15,7 +15,7 @@ async def run_noreply(guild, ctx, name):
 
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
-    for member in get_role(guild, cs.Visitor).members:
+    for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():
             if str(member.id) not in zf.No_reply:
                 zf.No_reply.append(str(member.id))
@@ -32,7 +32,7 @@ async def run_noreplycancel(guild, ctx, name):
 
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
-    for member in get_role(guild, cs.Visitor).members:
+    for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():
             if str(member.id) in zf.No_reply:
                 zf.No_reply.remove(str(member.id))
@@ -51,20 +51,18 @@ async def run_stats(bot, guild, ctx, name):
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     data, user, id = None, None, None
-    for member in get_role(guild, cs.Visitor).members:
+    for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():
-            if str(member.id) in zf.ZData:
-                data = zf.stats_output(member.id)
-                user, id = member.display_name, member.id
-            else:
-                await ctx.send(f"{ctx.author.mention} データが記録されていません")
-                return
-    if name == "ケイスケホンダ" and data is None and id is None:
-        data = zf.stats_output(cs.Honda)
-        user, id = name, cs.Honda
-    elif data is None and id is None:
-        await ctx.send(f"{ctx.author.mention} データが見つかりませんでした")
-        return
+            data = zf.stats_output(member.id)
+            user, id = member.display_name, member.id
+            break
+        elif name == "ケイスケホンダ":
+            data = zf.stats_output(cs.Honda)
+            user, id = name, cs.Honda
+            break
+
+    if data is None and id is None:
+        return await ctx.send(f"{ctx.author.mention} データが記録されていません")
 
     embed = discord.Embed(title=user, color=0x4169E1)
     embed.set_author(name='Stats', icon_url=bot.get_user(id).avatar_url)
@@ -200,52 +198,52 @@ class Zyanken(commands.Cog):
                 break
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def nr(self, ctx, name=None):
         await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def noreply(self, ctx, name=None):
         await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def nrc(self, ctx, name=None):
         await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def noreplycancel(self, ctx, name=None):
         await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def st(self, ctx, name=None):
         await run_stats(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def stats(self, ctx, name=None):
         await run_stats(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def rk(self, ctx, type="winsmax", num=999):
         await run_ranking(self.bot.get_guild(cs.Server), ctx, type, num)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.Zyanken)
     async def ranking(self, ctx, type="winsmax", num=999):
         await run_ranking(self.bot.get_guild(cs.Server), ctx, type, num)
 
     @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator)
+    @commands.has_role(cs.Administrator)
     async def ss(self, ctx):
         await run_statssave(ctx)
 
     @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator)
+    @commands.has_role(cs.Administrator)
     async def statssave(self, ctx):
         await run_statssave(ctx)
 

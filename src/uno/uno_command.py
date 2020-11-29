@@ -117,9 +117,11 @@ async def run_uno(bot, guild, ctx):
             input = jaconv.z2h(reply.content, digit=True)
         except asyncio.exceptions.TimeoutError:
             break
-        if reply.author.id not in all_player or not input.isdecimal():
+        if reply.author.id not in all_player:
             continue
-        if 2 <= int(input) <= 100:
+        elif not input.isdecimal():
+            await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5.0)
+        elif 2 <= int(input) <= 100:
             if reply.author.id not in ok_player:
                 want_nums.append(int(input))
                 ok_player.append(reply.author.id)
@@ -439,12 +441,10 @@ async def run_record(bot, guild, ctx, name):
         name = guild.get_member(ctx.author.id).display_name
 
     msg = await ctx.send(f"{name}のデータを検索中...")
-    for member in get_role(guild, cs.Visitor).members:
+    for member in get_role(guild, cs.UNO).members:
         if name.lower() == member.display_name.lower():
             data, player, url = ur.record_output(member.id)
             user, id = member.display_name, member.id
-            if data is None:
-                break
             embed = discord.Embed(title=user, color=0xFF3333)
             embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
             embed.set_thumbnail(url=url)
@@ -502,22 +502,22 @@ class Uno(commands.Cog):
         await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.UNO)
     async def rc(self, ctx, name=None):
         await run_record(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.UNO)
     async def record(self, ctx, name=None):
         await run_record(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.UNO)
     async def cdm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
     @commands.command()
-    @commands.has_role(cs.Visitor)
+    @commands.has_role(cs.UNO)
     async def cleardm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
