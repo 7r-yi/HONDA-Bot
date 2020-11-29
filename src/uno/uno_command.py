@@ -442,9 +442,7 @@ async def run_record(bot, guild, ctx, name):
             data, player, url = ur.record_output(member.id)
             user, id = member.display_name, member.id
             if data is None:
-                await ctx.send(f"{ctx.author.mention} データが記録されていません")
-                await msg.delete()
-                return
+                break
             embed = discord.Embed(title=user, color=0xFF3333)
             embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
             embed.set_thumbnail(url=url)
@@ -457,7 +455,10 @@ async def run_record(bot, guild, ctx, name):
             embed.add_field(name="ペナルティー", value=f"{data[10]}点")
             await ctx.send(embed=embed)
             await msg.delete()
-            return
+
+    await ctx.send(f"{ctx.author.mention} データが記録されていません")
+    await msg.delete()
+    return
 
 
 # BotとのDMを全削除
