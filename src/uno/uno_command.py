@@ -240,17 +240,20 @@ async def run_uno(bot, guild, ctx):
             # ゲームから棄権する
             elif "!drop" in input and reply.author.id in all_player:
                 # 棄権者を指定
-                if len(all_data) > 2 and len(reply.raw_mentions) == 1 and role_check_mode(reply):
-                    j = uf.search_player(reply.raw_mentions[0], all_data)
-                    if j is not None:
-                        await guild.get_member(all_data[j][0]).remove_roles(role_AP)
-                        await ctx.send(f"{role_AP.mention}  "
-                                       f"{bot.get_user(all_data[j][0]).mention}を棄権させました")
-                        cnt = i - 1 if j < i else i
-                        ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
-                        all_data.pop(j)
-                        drop_flag = True
-                        break
+                if len(all_data) > 2 and len(reply.raw_mentions) == 1:
+                    if role_check_mode(reply):
+                        j = uf.search_player(reply.raw_mentions[0], all_data)
+                        if j is not None:
+                            await guild.get_member(all_data[j][0]).remove_roles(role_AP)
+                            await ctx.send(f"{role_AP.mention}  "
+                                           f"{bot.get_user(all_data[j][0]).mention}を棄権させました")
+                            cnt = i - 1 if j < i else i
+                            ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
+                            all_data.pop(j)
+                            drop_flag = True
+                            break
+                    else:
+                        await ctx.send(f"{reply.author.mention} モデレーターでないと他者を棄権させられません", delete_after=10.0)
                 # 自分が棄権する
                 elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                     await guild.get_member(reply.author.id).remove_roles(role_AP)
