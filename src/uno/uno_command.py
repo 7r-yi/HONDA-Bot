@@ -245,10 +245,10 @@ async def run_uno(bot, guild, ctx):
                         j = uf.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
                             await guild.get_member(all_data[j][0]).remove_roles(role_AP)
-                            await ctx.send(f"{role_AP.mention}  "
-                                           f"{bot.get_user(all_data[j][0]).mention}を棄権させました")
+                            await ctx.send(f"{role_AP.mention}  {bot.get_user(all_data[j][0]).mention}を棄権させました")
                             cnt = i - 1 if j < i else i
-                            ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
+                            drop_name = guild.get_member(all_data[j][0]).display_name
+                            ur.add_penalty(all_data[j][0], drop_name, all_data[j][1])
                             all_data.pop(j)
                             drop_flag = True
                             break
