@@ -253,7 +253,8 @@ async def run_uno(bot, guild, ctx):
                             drop_flag = True
                             break
                     else:
-                        await ctx.send(f"{reply.author.mention} モデレーターでないと他者を棄権させられません", delete_after=10.0)
+                        role_M = get_role(guild, cs.Moderator)
+                        await ctx.send(f"{reply.author.mention}  {role_M.mention}でないと棄権させられません", delete_after=10.0)
                 # 自分が棄権する
                 elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
                     await guild.get_member(reply.author.id).remove_roles(role_AP)
