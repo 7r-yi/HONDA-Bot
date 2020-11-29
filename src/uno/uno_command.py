@@ -114,16 +114,14 @@ async def run_uno(bot, guild, ctx):
     while True:
         try:
             reply = await bot.wait_for('message', check=ng_check, timeout=30.0 - (datetime.now() - ask_start).seconds)
-            input = int(re.sub(r'[^0-9]', "", jaconv.z2h(reply.content, digit=True)))
-        except ValueError:
-            continue
+            input = jaconv.z2h(reply.content, digit=True)
         except asyncio.exceptions.TimeoutError:
             break
-        if reply.author.id not in all_player:
+        if reply.author.id not in all_player or not input.isdecimal():
             continue
-        if 2 <= input <= 100:
+        if 2 <= int(input) <= 100:
             if reply.author.id not in ok_player:
-                want_nums.append(input)
+                want_nums.append(int(input))
                 ok_player.append(reply.author.id)
         else:
             await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
