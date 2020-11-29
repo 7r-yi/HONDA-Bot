@@ -456,7 +456,7 @@ async def run_record(bot, guild, ctx, name):
             embed.add_field(name="最低減少点", value=f"{data[9]}点")
             embed.add_field(name="ペナルティー", value=f"{data[10]}点")
             await ctx.send(embed=embed)
-            await msg.delete()
+            return await msg.delete()
 
     await ctx.send(f"{ctx.author.mention} データが記録されていません")
     await msg.delete()
