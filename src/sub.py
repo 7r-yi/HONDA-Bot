@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.ext.commands import CommandNotFound, BadArgument
+from discord.ext.commands import CommandNotFound, BadArgument, MissingRole, MissingAnyRole
 import constant as cs
 from multi_func import role_check_mode
 
@@ -24,7 +24,7 @@ class Sub(commands.Cog):
     @commands.Cog.listener(name='on_command_error')
     @commands.guild_only()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, CommandNotFound):
+        if isinstance(error, CommandNotFound) or isinstance(error, MissingRole) or isinstance(error, MissingAnyRole):
             return
         if isinstance(error, BadArgument):
             return await ctx.channel.send(f"{ctx.author.mention} 入力エラー")
