@@ -58,7 +58,7 @@ Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4
 
 
 def translate_input(word):
-    if word in ["w", "wild", "ドングリフレンズ"]:
+    if word in ["w", "wild", "ドリラー"]:
         return "ワイルド"
     elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
         return "ドロー4"
