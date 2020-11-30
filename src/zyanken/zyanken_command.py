@@ -52,7 +52,10 @@ async def run_stats(bot, guild, ctx, name):
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     elif len(re.sub('[^0-9]', "", name)) == 18:
-        name = guild.get_member(int(re.sub('[^0-9]', "", name))).display_name
+        try:
+            name = guild.get_member(int(re.sub('[^0-9]', "", name))).display_name
+        except AttributeError:
+            pass
     data, user, id = None, None, None
     for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():

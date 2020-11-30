@@ -441,7 +441,10 @@ async def run_record(bot, guild, ctx, name):
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     elif len(re.sub('[^0-9]', "", name)) == 18:
-        name = guild.get_member(int(re.sub('[^0-9]', "", name))).display_name
+        try:
+            name = guild.get_member(int(re.sub('[^0-9]', "", name))).display_name
+        except AttributeError:
+            pass
 
     msg = await ctx.send(f"{name}のデータを検索中...")
     for member in get_role(guild, cs.UNO).members:
