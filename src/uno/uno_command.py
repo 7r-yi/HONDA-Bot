@@ -427,7 +427,7 @@ async def run_uno(bot, guild, ctx):
     os.remove(mi.AREA_TEMP_PASS)
     for member in role_AP.members:
         if cs.UNO not in [roles.id for roles in member.roles]:
-            await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.UNO))
+            await member.add_roles(get_role(guild, cs.UNO))
         await member.remove_roles(role_AP)
     uf.UNO_start = False
 
