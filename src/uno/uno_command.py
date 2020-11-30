@@ -421,11 +421,12 @@ async def run_uno(bot, guild, ctx):
         embed.add_field(name=f"最下位 ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
         await bot.get_channel(cs.Result).send(embed=embed)
 
-    # ゲーム終了処理(画像削除やロール付与&削除)
+    # ゲーム終了処理 (画像やロール削除)
     await ctx.send(f"```\n★ゲーム結果\n\n{stc}```{role_AP.mention} 結果を記録してゲームを終了しました")
     ur.data_save(sort_data, all_name)
     os.remove(mi.AREA_TEMP_PASS)
     for member in role_AP.members:
+        # 新規プレイヤーにはUNOロール付与
         if cs.UNO not in [roles.id for roles in member.roles]:
             await member.add_roles(get_role(guild, cs.UNO))
         await member.remove_roles(role_AP)
