@@ -24,9 +24,11 @@ class Sub(commands.Cog):
     @commands.Cog.listener(name='on_command_error')
     @commands.guild_only()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, CommandNotFound) or isinstance(error, MissingRole) or isinstance(error, MissingAnyRole):
+        if isinstance(error, CommandNotFound):
             return
-        if isinstance(error, BadArgument):
+        elif isinstance(error, MissingRole) or isinstance(error, MissingAnyRole):
+            return
+        elif isinstance(error, BadArgument):
             return await ctx.channel.send(f"{ctx.author.mention} 入力エラー")
         raise error
 
