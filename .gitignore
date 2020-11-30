@@ -1,13 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
-.gitignore
-.idea/Keisuke Honda Bot.iml
-.idea/dictionaries/
-.idea/inspectionProfiles/
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/encodings.xml
+.idea/
 __pycache__/
-.env
 /src/zyanken/former_data/
+.gitignore
 heroku log.bat
