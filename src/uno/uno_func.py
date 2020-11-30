@@ -220,15 +220,16 @@ def search_player(player, all_data):
     for j in range(len(all_data)):
         if all_data[j][0] == player:
             return j
+
     return None
 
 
-def calculate_penalty(card):
+def calculate_penalty(cards):
     penalty = 0
-    for i in card:
-        if "ドロー2" in i:
+    for card in cards:
+        if "ドロー2" in card:
             penalty += 2
-        elif i == "ドロー4":
+        elif card == "ドロー4":
             penalty += 4
 
     return penalty
