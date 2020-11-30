@@ -3,6 +3,7 @@ from discord.ext import tasks, commands
 import jaconv
 from datetime import datetime
 from pytz import timezone
+import re
 import json
 import constant as cs
 from multi_func import get_role, role_check_mode
@@ -50,6 +51,8 @@ async def run_stats(bot, guild, ctx, name):
 
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
+    elif len(re.sub('[^0-9]', "", name)) == 18:
+        name = guild.get_member(int(re.sub('[^0-9]', "", name))).display_name
     data, user, id = None, None, None
     for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():
