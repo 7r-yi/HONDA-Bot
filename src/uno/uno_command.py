@@ -460,7 +460,7 @@ async def run_record(bot, guild, ctx, name):
             embed.add_field(name="直近5戦", value=f"{data[11]}点")
             embed.add_field(name="最高獲得点", value=f"{data[8]}点")
             embed.add_field(name="最低減少点", value=f"{data[9]}点")
-            embed.add_field(name="ペナルティー", value=f"{data[10]}点")
+            embed.add_field(name="加点/減点", value=f"{data[10]}点")
             await ctx.send(embed=embed)
             return await msg.delete()
 
