@@ -130,7 +130,7 @@ async def run_uno(bot, guild, ctx):
         if len(ok_player) == len(all_player):
             break
     try:
-        initial_num = sorted(collections.Counter(want_nums).most_common())[0][0]
+        initial_num = collections.Counter(want_nums).most_common()[0][0]
     except IndexError:
         initial_num = 7
 
