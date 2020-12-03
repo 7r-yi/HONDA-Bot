@@ -15,7 +15,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "4-3. ドロー4の後は、ドロー4もしくは指定された色のドロー2のみ返すことが可能\n" \
        "4-4. 一度にドロー2とドロー4を組み合わせて出すことは出来る\n" \
        "5. ワイルドカードを出すと、色選択に加えてランダムに席順が入れ替わる\n" \
-       "6. '7'を出すと、次の人の制限時間を[1 / (出した枚数 + 1)]に減らせる\n" \
+       "6. '7'を出すと、次の人の制限時間を[1 / (3 ^ 出した枚数)]に減らせる\n" \
        "6-2. 制限時間は[ターン開始時の手札の枚数 × 5 + 5]秒で、最小30秒～最大60秒\n" \
        "6-3. '7'の妨害効果は最小30秒の制限を無視する\n" \
        "7. 山札から引いた後にすぐ出すことができる、そこから手札とコンボを組んでも良い\n" \
@@ -133,13 +133,16 @@ def id_to_card(id):
 
 
 def first_card():
-    return [Card[random.randint(0, len(Card) - 9)]]
+    while True:
+        card = random.choice(Card)
+        if card_to_id(card) % 100 <= 9:
+            return card
 
 
 def deal_card(num):
     hand = []
     for _ in range(num):
-        hand.append(Card[random.randint(0, len(Card) - 1)])
+        hand.append(random.choice(Card))
 
     return hand
 

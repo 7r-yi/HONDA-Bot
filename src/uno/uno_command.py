@@ -163,7 +163,7 @@ async def run_uno(bot, guild, ctx):
                 ok_player.append(reply.author.id)
         if len(ok_player) == len(all_player):
             break
-    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 1
+    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 0
     start_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     shutil.copy(mi.AREA_PASS, mi.AREA_TEMP_PASS)
     mi.make_area(card[-1])
@@ -176,7 +176,7 @@ async def run_uno(bot, guild, ctx):
         # 制限時間設定
         time = len(all_data[i][1]) * 5 + 5
         time = 30 if time < 30 else 60 if time > 60 else time
-        time, time_cut = round(time / time_cut, 1), 1
+        time, time_cut = round(time / 3 ** time_cut, 1), 0
         # 場札更新の際に以前のメッセージを削除
         if msg1 is not None:
             await msg1.delete()
