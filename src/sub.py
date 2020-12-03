@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.ext.commands import CommandNotFound, BadArgument, MissingRole, MissingAnyRole
+from discord.ext.commands import CommandNotFound, BadArgument, MissingRole, MissingAnyRole, NoPrivateMessage
 import constant as cs
 from multi_func import role_check_mode
 
@@ -18,7 +18,7 @@ class Sub(commands.Cog):
         if ctx.content.count("\n") < 7 and len(ctx.content) < 400:
             return
         await ctx.delete()
-        await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=5.0)
+        await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=5)
 
     # コマンド入力ミスのエラーを表示させない
     @commands.Cog.listener(name='on_command_error')
@@ -27,7 +27,9 @@ class Sub(commands.Cog):
         if isinstance(error, CommandNotFound):
             return
         elif isinstance(error, MissingRole) or isinstance(error, MissingAnyRole):
-            return await ctx.channel.send(f"{ctx.author.mention} コマンドを実行できるロールを所持していません", delete_after=5.0)
+            return await ctx.channel.send(f"{ctx.author.mention} コマンドを実行できるロールを所持していません", delete_after=5)
+        elif isinstance(error, NoPrivateMessage):
+            return
         elif isinstance(error, BadArgument):
             return await ctx.channel.send(f"{ctx.author.mention} 入力エラー")
         raise error

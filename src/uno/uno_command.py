@@ -46,10 +46,10 @@ async def run_uno(bot, guild, ctx):
     # ターンパス時の処理
     async def turn_pass(pass_stc=""):
         if not get_flag and penalty == 0:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}山札から1枚引いてパスします", delete_after=5.0)
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}山札から1枚引いてパスします", delete_after=5)
             await send_card(i, 1, True)
         else:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}パスします", delete_after=5.0)
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {pass_stc}パスします", delete_after=5)
 
     # 入力を受け付けない条件一覧
     def ng_check(ctx_wait):
@@ -76,27 +76,27 @@ async def run_uno(bot, guild, ctx):
             if reply.author.id not in all_player:
                 all_player.append(reply.author.id)
                 await guild.get_member(reply.author.id).add_roles(role_AP)
-                await ctx.send(f"{reply.author.mention} 参加しました", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 参加しました", delete_after=5)
             else:
-                await ctx.send(f"{reply.author.mention} 既に参加済みです", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 既に参加済みです", delete_after=5)
         elif input in ["!d", "!drop"] and reply.author.id in all_player:
             if reply.author.id == ctx.author.id:
-                await ctx.send(f"{reply.author.mention} 開始者は参加を取り消せません", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 開始者は参加を取り消せません", delete_after=5)
             elif len(all_player) >= 2:
                 all_player.remove(reply.author.id)
                 await guild.get_member(reply.author.id).remove_roles(role_AP)
-                await ctx.send(f"{reply.author.mention} 参加を取り消しました", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 参加を取り消しました", delete_after=5)
         elif input in ["!l", "!list"]:
             stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
-            await ctx.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=15.0)
+            await ctx.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=15)
         elif input in ["!e", "!end"] and all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
                 if len(all_player) >= 2 or role_check_admin(ctx):
                     break
                 else:
-                    await ctx.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5.0)
+                    await ctx.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5)
             else:
-                await ctx.send(f"{reply.author.mention} 開始者以外は締め切れません", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 開始者以外は締め切れません", delete_after=5)
         elif reply.content == "!cancel" and reply.author.id in all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
                 for member in role_AP.members:
@@ -105,7 +105,7 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send("中止しました")
                 return
             else:
-                await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5.0)
+                await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5)
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
 
     await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました")
@@ -113,20 +113,20 @@ async def run_uno(bot, guild, ctx):
     want_nums, ok_player, ask_start = [], [], datetime.now()
     while True:
         try:
-            reply = await bot.wait_for('message', check=ng_check, timeout=30.0 - (datetime.now() - ask_start).seconds)
+            reply = await bot.wait_for('message', check=ng_check, timeout=30 - (datetime.now() - ask_start).seconds)
             input = jaconv.z2h(reply.content, digit=True)
         except asyncio.exceptions.TimeoutError:
             break
         if reply.author.id not in all_player:
             continue
         elif not input.isdecimal():
-            await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5.0)
+            await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
         elif 2 <= int(input) <= 100:
             if reply.author.id not in ok_player:
                 want_nums.append(int(input))
                 ok_player.append(reply.author.id)
         else:
-            await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5.0)
+            await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5)
         if len(ok_player) == len(all_player):
             break
     try:
@@ -154,7 +154,7 @@ async def run_uno(bot, guild, ctx):
     ok_player, ask_start = [], datetime.now()
     while True:
         try:
-            reply = await bot.wait_for('message', check=user_check, timeout=60.0 - (datetime.now() - ask_start).seconds)
+            reply = await bot.wait_for('message', check=user_check, timeout=60 - (datetime.now() - ask_start).seconds)
         except asyncio.exceptions.TimeoutError:
             break
         if reply.author.id not in ok_player and reply.author.id in all_player:
@@ -188,7 +188,7 @@ async def run_uno(bot, guild, ctx):
         # 記号しか無いかチェック
         while True:
             if all([uf.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
-                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます", delete_after=10.0)
+                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます", delete_after=10)
                 await send_card(i, 2, True)
             else:
                 break
@@ -211,11 +211,11 @@ async def run_uno(bot, guild, ctx):
                         if all_data[j][3][0] and (datetime.now() - all_data[j][3][1]).seconds >= 10:
                             all_data[j][3] = [False, None]
                             await ctx.send(f"{bot.get_user(all_data[j][0]).mention} "
-                                           f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10.0)
+                                           f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10)
                             await send_card(j, 2, True)
                         else:
                             await ctx.send(f"{reply.author.mention} "
-                                           f"今は、そのユーザーへのUNOの指摘は無効となっています", delete_after=10.0)
+                                           f"今は、そのユーザーへのUNOの指摘は無効となっています", delete_after=10)
                 # 自分の宣言
                 else:
                     j = uf.search_player(reply.author.id, all_data)
@@ -225,9 +225,9 @@ async def run_uno(bot, guild, ctx):
                         await ctx.send(f"{role_AP.mention}  {reply.author.mention}がUNOを宣言しました")
                     # 手札が2枚以上ある場合
                     elif len(all_data[j][1]) >= 2:
-                        await ctx.send(f"{reply.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10.0)
+                        await ctx.send(f"{reply.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10)
                     else:
-                        await ctx.send(f"{reply.author.mention} 既にUNOと宣言済みです", delete_after=10.0)
+                        await ctx.send(f"{reply.author.mention} 既にUNOと宣言済みです", delete_after=10)
             # 途中参加
             elif input in ["!j", "!join"] and reply.author.id not in all_player:
                 all_player.append(reply.author.id)
@@ -265,7 +265,7 @@ async def run_uno(bot, guild, ctx):
                     drop_flag = True
                     break
                 else:
-                    await ctx.send(f"{reply.author.mention} 2人以下の状態では棄権出来ません", delete_after=10.0)
+                    await ctx.send(f"{reply.author.mention} 2人以下の状態では棄権出来ません", delete_after=10)
             # ゲームを強制中止する
             elif input == "!cancel" and reply.author.id in all_player:
                 await ctx.send(f"{role_AP.mention} ゲームを中止しますか？(過半数が `!OK` で中止、`!NG` でキャンセル)")
@@ -294,11 +294,11 @@ async def run_uno(bot, guild, ctx):
                 # 山札から1枚引く
                 if input in ["!g", "!get"]:
                     if not get_flag:
-                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から1枚引きます", delete_after=5.0)
+                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から1枚引きます", delete_after=5)
                         await send_card(i, 1, True)
                         get_flag = True
                     else:
-                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです", delete_after=5.0)
+                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 山札から引けるのは1度のみです", delete_after=5)
                 # カードを出さない
                 elif input in ["!p", "!pass"]:
                     await turn_pass()
@@ -325,7 +325,7 @@ async def run_uno(bot, guild, ctx):
                         bet_flag = True
                         break
                     else:
-                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {error}", delete_after=7.5)
+                        await ctx.send(f"{bot.get_user(all_data[i][0]).mention} {error}", delete_after=7)
         # 棄権時は以下の処理を飛ばす
         if drop_flag:
             continue
@@ -337,11 +337,10 @@ async def run_uno(bot, guild, ctx):
             while True:
                 try:
                     color = await bot.wait_for('message', check=user_check,
-                                               timeout=20.0 - (datetime.now() - start).seconds)
+                                               timeout=20 - (datetime.now() - start).seconds)
                     input = jaconv.z2h(color.content, ascii=True, kana=False).lower()
                 except asyncio.exceptions.TimeoutError:
-                    await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 時間切れなのでランダムで決めます",
-                                   delete_after=10.0)
+                    await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                     break
                 if color.author.id == all_data[i][0] and uf.translate_input(input) in uf.Color:
@@ -351,18 +350,18 @@ async def run_uno(bot, guild, ctx):
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                     break
                 elif color.author.id == all_data[i][0]:
-                    await ctx.send(f"{bot.get_user(all_data[i][0]).mention} そんな色はありません", delete_after=5.0)
+                    await ctx.send(f"{bot.get_user(all_data[i][0]).mention} そんな色はありません", delete_after=5)
             await msg.delete()
         # ディスカードオール処理
         if card[-1][1:] == "ディスカードオール" and bet_flag:
             colors = set([f"{bet_card[j][0]}色" for j in range(len(bet_card))])
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} "
-                           f"{', '.join(colors)} のカードを全て捨てます", delete_after=10.0)
+                           f"{', '.join(colors)} のカードを全て捨てます", delete_after=10)
             for j in range(len(bet_card)):
                 all_data[i][1] = uf.remove_color_card(bet_card[j][0], all_data[i][1])
             # 全部カードが無くなった場合
             if not all_data[i][1]:
-                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号上がりとなるので2枚追加します", delete_after=10.0)
+                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号上がりとなるので2枚追加します", delete_after=10)
                 await send_card(i, 2, True)
             else:
                 await send_card(i, 0, False)
@@ -373,14 +372,14 @@ async def run_uno(bot, guild, ctx):
             break
         # 手札は0枚になったがUNO宣言忘れ
         elif not all_data[i][1] and all_data[i][3][0]:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します", delete_after=10.0)
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します", delete_after=10)
             await send_card(i, 2, True)
         # 残り1枚になったらUNOフラグを立てる
         elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
             all_data[i][3] = [True, datetime.now()]
         # ドロー2/4のペナルティーを受ける
         if penalty > 0 and not bet_flag:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました", delete_after=10.0)
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました", delete_after=10)
             await send_card(i, penalty, True)
             penalty, cnt, = 0, cnt - 1
         # UNOフラグを降ろす
@@ -389,12 +388,12 @@ async def run_uno(bot, guild, ctx):
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
             skip_n = len(bet_card)
-            await ctx.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
+            await ctx.send(f"{2 * skip_n - 1}人スキップします", delete_after=10)
             cnt += 2 * skip_n - 1
         # リバース処理
         elif card[-1][1:] == "リバース" and bet_flag:
             reverse_n = len(bet_card)
-            await ctx.send(f"{reverse_n}回リバースします", delete_after=10.0)
+            await ctx.send(f"{reverse_n}回リバースします", delete_after=10)
             if reverse_n % 2 == 1:
                 # リバースを出した人のリバースされた配列中の位置を代入
                 tmp = copy.copy(all_data[i][0])
@@ -402,7 +401,7 @@ async def run_uno(bot, guild, ctx):
                 cnt = uf.search_player(tmp, all_data)
         # ワイルドカードで順番シャッフル
         elif "ワイルド" in card[-1] and bet_flag:
-            await ctx.send(f"{role_AP.mention} 順番がシャッフルされました", delete_after=10.0)
+            await ctx.send(f"{role_AP.mention} 順番がシャッフルされました", delete_after=10)
             random.shuffle(all_data)
         # ターンエンド → 次のプレイヤーへ
         cnt += 1
@@ -488,7 +487,7 @@ async def run_cleardm(bot, ctx):
         return
     # UNOプレイ中の場合はコマンド実行不可
     elif cs.All_Player in [roles.id for roles in ctx.author.roles]:
-        return await ctx.send(f"{ctx.author.mention} UNOプレイ中は削除できません", delete_after=5.0)
+        return await ctx.send(f"{ctx.author.mention} UNOプレイ中は削除できません", delete_after=5)
 
     msg = await ctx.send(f"{ctx.author.mention} BotとのDMを削除中...")
     messages = await bot.get_user(ctx.author.id).history(limit=None).flatten()
@@ -508,7 +507,7 @@ class Uno(commands.Cog):
     @commands.guild_only()
     async def on_command_error(self, ctx, error):
         if isinstance(error, DiscordServerError) or isinstance(error, ac.ClientOSError):
-            return await ctx.channel.send("サーバーエラーが発生しました")
+            await ctx.channel.send("サーバーエラーが発生しました")
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)

@@ -191,17 +191,17 @@ class Zyanken(commands.Cog):
 
         for hand in ["グー", "チョキ", "パー"]:
             # グー,チョキ,パーの順に文字が含まれているか検索
-            if hand in jaconv.hira2kata(jaconv.h2z(ctx.content)):
-                img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken(hand, ctx.author.id)
-                if str(ctx.author.id) not in zf.No_reply:
-                    await ctx.add_reaction(emoji1)
-                    await ctx.add_reaction(emoji2)
-                    await ctx.channel.send(f"{ctx.author.mention} {hand}\n**{msg}**",
-                                           file=discord.File(img), delete_after=5.0)
-                if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
-                    guild = self.bot.get_guild(cs.Server)
-                    await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
-                break
+            if hand not in jaconv.hira2kata(jaconv.h2z(ctx.content)):
+                continue
+            img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken(hand, ctx.author.id)
+            if str(ctx.author.id) not in zf.No_reply:
+                await ctx.add_reaction(emoji1)
+                await ctx.add_reaction(emoji2)
+                await ctx.channel.send(f"{ctx.author.mention} {hand}\n{msg}", file=discord.File(img), delete_after=5)
+            if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
+                guild = self.bot.get_guild(cs.Server)
+                await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
+            break
 
     @commands.command()
     @commands.has_role(cs.Zyanken)

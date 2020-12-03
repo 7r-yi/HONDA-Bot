@@ -11,9 +11,9 @@ async def run_can(ctx):
 
     if ctx.author.id not in cs.Joiner:
         cs.Joiner.append(ctx.author.id)
-        await ctx.send(f'{ctx.author.mention} 参加希望者リストに追加しました', delete_after=5.0)
+        await ctx.send(f'{ctx.author.mention} 参加希望者リストに追加しました', delete_after=5)
     else:
-        await ctx.send(f'{ctx.author.mention} すでに参加希望が出されています', delete_after=5.0)
+        await ctx.send(f'{ctx.author.mention} すでに参加希望が出されています', delete_after=5)
 
 
 # 参加希望を取り消す
@@ -23,9 +23,9 @@ async def run_drop(ctx):
 
     if ctx.author.id in cs.Joiner:
         cs.Joiner.remove(ctx.author.id)
-        await ctx.send(f'{ctx.author.mention} 参加希望を取り消しました', delete_after=5.0)
+        await ctx.send(f'{ctx.author.mention} 参加希望を取り消しました', delete_after=5)
     else:
-        await ctx.send(f'{ctx.author.mention} 参加希望が出されていません', delete_after=5.0)
+        await ctx.send(f'{ctx.author.mention} 参加希望が出されていません', delete_after=5)
 
 
 # 参加者を削除する
@@ -50,9 +50,9 @@ async def run_list(bot, ctx):
 
     if len(cs.Joiner) >= 1:
         stc = [f"{i + 1}. {bot.get_user(cs.Joiner[i]).display_name}\n" for i in range(len(cs.Joiner))]
-        await ctx.send(f"参加希望者リスト\n```{''.join(stc)}```", delete_after=20.0)
+        await ctx.send(f"参加希望者リスト\n```{''.join(stc)}```", delete_after=20)
     else:
-        await ctx.send("参加希望者はいません", delete_after=20.0)
+        await ctx.send("参加希望者はいません", delete_after=20)
 
 
 # 参加希望者の抽選を行う
