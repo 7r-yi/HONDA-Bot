@@ -405,10 +405,10 @@ async def run_uno(bot, guild, ctx):
         elif "ワイルド" in card[-1] and bet_flag:
             await ctx.send(f"{role_AP.mention} 順番がシャッフルされました", delete_after=10)
             random.shuffle(all_data)
-        # 観戦機能ON時は手札を表示(3分間)
+        # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
             msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
-            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=180)
+            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # ターンエンド → 次のプレイヤーへ
         cnt += 1
 
@@ -455,10 +455,10 @@ async def run_watchgame(ctx):
     global WATCH_FLAG
     if WATCH_FLAG is None:
         WATCH_FLAG = ctx.channel.id
-        await ctx.send("UNOの観戦を開始します")
+        await ctx.send(f"{ctx.author.mention} UNOの観戦を開始します")
     else:
         WATCH_FLAG = None
-        await ctx.send("UNOの観戦を終了します")
+        await ctx.send(f"{ctx.author.mention} UNOの観戦を終了します")
 
 
 # プレイヤーのUNO戦績を表示
