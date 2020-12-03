@@ -7,7 +7,7 @@ import constant as cs
 
 
 # メンション先にメッセージを送信する
-async def run(guild, ctx, to_id, *msg):
+async def run_send(bot, guild, ctx, to_id, *msg):
     if to_id is None:
         return await ctx.send(f"{ctx.author.mention} 送信先をメンションしてください", delete_after=10)
     elif not msg:
@@ -42,7 +42,7 @@ class Talk(commands.Cog):
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def send(self, ctx, to_id=None, *msg):
-        await run(self.bot.get_guild(cs.Server), ctx, to_id, *msg)
+        await run_send(self.bot, self.bot.get_guild(cs.Server), ctx, to_id, *msg)
 
 
 def setup(bot):
