@@ -27,7 +27,7 @@ class Sub(commands.Cog):
         if isinstance(error, CommandNotFound):
             return
         elif isinstance(error, MissingRole) or isinstance(error, MissingAnyRole):
-            return
+            return await ctx.channel.send(f"{ctx.author.mention} コマンドを実行できるロールを所持していません", delete_after=5.0)
         elif isinstance(error, BadArgument):
             return await ctx.channel.send(f"{ctx.author.mention} 入力エラー")
         raise error
