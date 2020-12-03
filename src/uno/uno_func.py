@@ -47,14 +47,14 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "・ゲームから離脱させる → メンション !Drop (モデレーターのみ)\n" \
        "・ゲームを中止する → !Cancel (過半数の同意が必要)"
 
-# 0は各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
+# 0とディスカードオールは各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
 Card = []
 Color = ["赤", "青", "緑", "黄"]
-Number = [str(i) for i in range(10)] + ["スキップ", "リバース", "ドロー2"]
-for n1 in Color:
-    for n2 in Number:
-        Card.append(f"{n1}{n2}")
-Card = (Card * 2)[4:] + ["ワイルド", "ドロー4"] * 4
+Number = [str(i) for i in range(10)] + ["スキップ", "リバース", "ドロー2", "ディスカードオール","ディスカードオール","ディスカードオール"]
+for n1 in Number:
+    for n2 in Color:
+        Card.append(f"{n2}{n1}")
+Card = (Card * 2)[4:-4] + ["ワイルド", "ドロー4"] * 4
 
 
 def translate_input(word):
@@ -78,6 +78,8 @@ def translate_input(word):
             trans2 = "リバース"
         elif trans2 in ["+2", "d2", "draw2", "ダブルピース"]:
             trans2 = "ドロー2"
+        elif trans2 in ["da", "discardall", "ディス", "修造"]:
+            trans2 = "ディスカードオール"
         return f"{trans1}{trans2}"
 
 
@@ -236,3 +238,13 @@ def calculate_penalty(cards):
             penalty += 4
 
     return penalty
+
+
+def remove_color_card(color, hand):
+    color_id = Color.index(color) + 1
+    hand_tmp = copy.copy(hand)
+    for card in hand:
+        if card_to_id(card) // 100 == color_id:
+            hand_tmp.remove(card)
+
+    return hand_tmp

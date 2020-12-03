@@ -169,7 +169,7 @@ async def run_uno(bot, guild, ctx):
 
     while True:
         # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
-        i, bet_flag, get_flag, drop_flag = cnt % len(all_data), False, False, False
+        i, bet_flag, get_flag, drop_flag, bet_card = cnt % len(all_data), False, False, False, ""
         # 参加者のIDリスト
         all_player = [all_data[j][0] for j in range(len(all_data))]
         # 制限時間設定
@@ -305,10 +305,10 @@ async def run_uno(bot, guild, ctx):
                     break
                 else:
                     # 出せるカードかチェック
-                    error = uf.check_card(card[-1], uf.string_to_card(input), all_data[i][1], penalty)
+                    bet_card = uf.string_to_card(input)
+                    error = uf.check_card(card[-1], bet_card, all_data[i][1], penalty)
                     if error is None:
                         # 出したカードを山場に追加
-                        bet_card = uf.string_to_card(input)
                         card += bet_card
                         # 場札 & 手札更新(送信)
                         for j in bet_card:
@@ -321,7 +321,7 @@ async def run_uno(bot, guild, ctx):
                                 time_cut += 1
                         await send_card(i, 0, True)
                         # ドロー2/4のペナルティー枚数計算
-                        penalty += uf.calculate_penalty(uf.string_to_card(input))
+                        penalty += uf.calculate_penalty(bet_card)
                         bet_flag = True
                         break
                     else:
@@ -353,6 +353,19 @@ async def run_uno(bot, guild, ctx):
                 elif color.author.id == all_data[i][0]:
                     await ctx.send(f"{bot.get_user(all_data[i][0]).mention} そんな色はありません", delete_after=5.0)
             await msg.delete()
+        # ディスカードオール処理
+        if card[-1][1:] == "ディスカードオール" and bet_flag:
+            colors = [f"{bet_card[j][0]}色" for j in range(len(bet_card))]
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} "
+                           f"{', '.join(colors)} のカードを全て捨てます", delete_after=10.0)
+            for j in range(len(bet_card)):
+                all_data[i][1] = uf.remove_color_card(bet_card[j][0], all_data[i][1])
+            # 全部カードが無くなった場合
+            if not all_data[i][1]:
+                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号上がりとなるので2枚追加します", delete_after=10.0)
+                await send_card(i, 2, True)
+            else:
+                await send_card(i, 0, False)
         # 上がり
         if not all_data[i][1] and not all_data[i][3][0]:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -375,12 +388,12 @@ async def run_uno(bot, guild, ctx):
             all_data[i][3] = [False, None]
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
-            skip_n = len(uf.string_to_card(input))
+            skip_n = len(bet_card)
             await ctx.send(f"{2 * skip_n - 1}人スキップします", delete_after=10.0)
             cnt += 2 * skip_n - 1
         # リバース処理
         elif card[-1][1:] == "リバース" and bet_flag:
-            reverse_n = len(uf.string_to_card(input))
+            reverse_n = len(bet_card)
             await ctx.send(f"{reverse_n}回リバースします", delete_after=10.0)
             if reverse_n % 2 == 1:
                 # リバースを出した人のリバースされた配列中の位置を代入
