@@ -406,6 +406,7 @@ async def run_uno(bot, guild, ctx):
             random.shuffle(all_data)
         # ターンエンド → 次のプレイヤーへ
         cnt += 1
+        # print(f"{guild.get_member(all_data[i][0]).display_name} : {all_data[i][1]}")
 
     # 点数計算
     all_name, stc = [], ""
