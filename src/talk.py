@@ -20,8 +20,8 @@ async def run_send(bot, guild, ctx, to_id, *msg):
         try:
             await bot.get_user(id).send(" ".join(msg))
         except AttributeError:
-            return await ctx.send(f"{ctx.author.mention} 入力エラー", delete_after=10)
-    await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=10)
+            return await ctx.send(f"{ctx.author.mention} 入力エラー", delete_after=5)
+    await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=5)
 
 
 class Talk(commands.Cog):
