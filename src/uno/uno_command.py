@@ -134,7 +134,6 @@ async def run_uno(bot, guild, ctx):
     except IndexError:
         initial_num = 7
 
-    await ctx.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
@@ -163,7 +162,7 @@ async def run_uno(bot, guild, ctx):
                 ok_player.append(reply.author.id)
         if len(ok_player) == len(all_player):
             break
-    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, uf.first_card(), 0, None, None, None, 0
+    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, [uf.number_card()], 0, None, None, None, 0
     start_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     shutil.copy(mi.AREA_PASS, mi.AREA_TEMP_PASS)
     mi.make_area(card[-1])
@@ -496,6 +495,11 @@ class Uno(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, DiscordServerError) or isinstance(error, ac.ClientOSError):
             return await ctx.channel.send("サーバーエラーが発生しました")
+
+    @commands.command()
+    @commands.has_any_role(cs.Administrator, cs.Moderator)
+    async def rule(self, ctx):
+        await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
 
     @commands.command()
     @commands.has_role(cs.Visitor)

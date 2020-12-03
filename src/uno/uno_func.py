@@ -132,7 +132,7 @@ def id_to_card(id):
         return "ドロー4"
 
 
-def first_card():
+def number_card():
     while True:
         card = random.choice(Card)
         if card_to_id(card) % 100 <= 9:

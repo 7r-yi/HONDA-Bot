@@ -10,9 +10,10 @@ async def run_say(guild, ctx, channel_id, msg):
         return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください")
 
     try:
-        return await guild.get_channel(int(re.sub('[^0-9]', "", channel_id))).send(msg)
+        await guild.get_channel(int(re.sub('[^0-9]', "", channel_id))).send(msg)
     except AttributeError:
         return await ctx.send(f"{ctx.author.mention} 入力エラー")
+    await ctx.send(f"{ctx.author.mention} 送信しました")
 
 
 async def run_sendDM(bot, ctx, user_id, msg):
@@ -22,9 +23,10 @@ async def run_sendDM(bot, ctx, user_id, msg):
         return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください")
 
     try:
-        return await bot.get_user(int(re.sub('[^0-9]', "", user_id))).send(msg)
+        await bot.get_user(int(re.sub('[^0-9]', "", user_id))).send(msg)
     except AttributeError:
         return await ctx.send(f"{ctx.author.mention} 入力エラー")
+    await ctx.send(f"{ctx.author.mention} 送信しました")
 
 
 class Talk(commands.Cog):
