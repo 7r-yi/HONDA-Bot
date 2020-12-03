@@ -6,32 +6,22 @@ import re
 import constant as cs
 
 
-# 特定のテキストチャンネルにて発言させる
-async def run_say(guild, ctx, channel_id, *msg):
-    if channel_id is None:
-        return await ctx.send(f"{ctx.author.mention} 送信先チャンネルをメンションしてください", delete_after=5)
+# メンション先にメッセージを送信する
+async def run(guild, ctx, to_id, *msg):
+    if to_id is None:
+        return await ctx.send(f"{ctx.author.mention} 送信先をメンションしてください", delete_after=10)
     elif not msg:
-        return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください", delete_after=5)
+        return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください", delete_after=10)
 
+    id = int(re.sub('[^0-9]', "", to_id))
     try:
-        await guild.get_channel(int(re.sub('[^0-9]', "", channel_id))).send(" ".join(msg))
+        await guild.get_channel(id).send(" ".join(msg))
     except AttributeError:
-        return await ctx.send(f"{ctx.author.mention} 入力エラー", delete_after=5)
-    await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=5)
-
-
-# 特定のユーザーにDMを送る
-async def run_sendDM(bot, ctx, user_id, *msg):
-    if user_id is None:
-        return await ctx.send(f"{ctx.author.mention} 送信先ユーザーをメンションしてください", delete_after=5)
-    elif not msg:
-        return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください", delete_after=5)
-
-    try:
-        await bot.get_user(int(re.sub('[^0-9]', "", user_id))).send(" ".join(msg))
-    except AttributeError:
-        return await ctx.send(f"{ctx.author.mention} 入力エラー", delete_after=5)
-    await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=5)
+        try:
+            await bot.get_user(id).send(" ".join(msg))
+        except AttributeError:
+            return await ctx.send(f"{ctx.author.mention} 入力エラー", delete_after=10)
+    await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=10)
 
 
 class Talk(commands.Cog):
@@ -51,18 +41,8 @@ class Talk(commands.Cog):
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
-    async def say(self, ctx, channel_id=None, *msg):
-        await run_say(self.bot.get_guild(cs.Server), ctx, channel_id, *msg)
-
-    @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator)
-    async def sdm(self, ctx, user_id=None, *msg):
-        await run_sendDM(self.bot, ctx, user_id, *msg)
-
-    @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator)
-    async def senddm(self, ctx, user_id=None, *msg):
-        await run_sendDM(self.bot, ctx, user_id, *msg)
+    async def send(self, ctx, to_id=None, *msg):
+        await run(self.bot.get_guild(cs.Server), ctx, to_id, *msg)
 
 
 def setup(bot):

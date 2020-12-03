@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.errors import Forbidden, DiscordServerError
+from discord.errors import Forbidden, DiscordServerError, HTTPException
 import aiohttp.client_exceptions as ac
 import asyncio
 import asyncio.exceptions
@@ -524,10 +524,12 @@ class Uno(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, DiscordServerError) or isinstance(error, ac.ClientOSError):
             await ctx.channel.send("サーバーエラーが発生しました")
+        elif isinstance(error, HTTPException):
+            await ctx.channel.send(f"{ctx.author.mention} メッセージの送信に失敗しました")
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
-    async def rule(self, ctx):
+    async def unorule(self, ctx):
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
 
     @commands.command()

@@ -5,6 +5,9 @@ from datetime import datetime
 import constant as cs
 from multi_func import get_role, role_check_admin, role_check_mode
 
+Question = {}
+Answer = {}
+
 
 async def run_quizentry(bot, ctx, num):
     def ng_check(ctx_wait):
@@ -29,7 +32,7 @@ async def run_quizentry(bot, ctx, num):
             await ctx.send("問題の登録を中断しました")
             return
         else:
-            cs.Question[f"Q{i + 1}"] = reply.content
+            Question[f"Q{i + 1}"] = reply.content
             await ctx.send(f"{i + 1}問目の問題文を登録しました\n解答を入力してください")
             reply = await bot.wait_for('message', check=ng_check)
             if reply.content.lower() == "back" and i >= 1:
@@ -39,14 +42,14 @@ async def run_quizentry(bot, ctx, num):
                 await ctx.send("問題の登録を中断しました")
                 return
             else:
-                cs.Answer[f"A{i + 1}"] = reply.content
+                Answer[f"A{i + 1}"] = reply.content
                 await ctx.send(f"{i + 1}問目の解答を登録しました")
                 i += 1
     await ctx.send(f"全ての問題の登録が完了しました")
 
 
 async def run_quizlineup(bot, ctx):
-    if len(cs.Question) != 0:
+    if len(Question) != 0:
         await ctx.send("クイズの問題を表示します. よろしいですか？(Yes/No)")
         while True:
             reply = await bot.wait_for('message')
@@ -54,8 +57,8 @@ async def run_quizlineup(bot, ctx):
                 break
         if reply.content.lower() == "yes":
             await ctx.send("登録済み問題一覧")
-            stc = [f"[Q{i + 1}] {cs.Question[f'Q{i + 1}']}\n→ {cs.Answer[f'A{i + 1}']}\n"
-                   for i in range(len(cs.Question))]
+            stc = [f"[Q{i + 1}] {Question[f'Q{i + 1}']}\n→ {Answer[f'A{i + 1}']}\n"
+                   for i in range(len(Question))]
             await ctx.send(f"```{''.join(stc)}```")
         else:
             await ctx.send("キャンセルしました")
@@ -64,13 +67,14 @@ async def run_quizlineup(bot, ctx):
 
 
 async def run_quizreset(bot, ctx):
+    global Question, Answer
     await ctx.send("クイズの問題を全消去します. よろしいですか？(Yes/No)")
     while True:
         reply = await bot.wait_for('message')
         if role_check_admin(reply):
             break
     if reply.content.lower() == "yes":
-        cs.Question, cs.Answer = {}, {}
+        Question, Answer = {}, {}
         await ctx.send("消去しました")
     else:
         await ctx.send("キャンセルしました")
@@ -79,7 +83,7 @@ async def run_quizreset(bot, ctx):
 async def run_quizstart(bot, guild, ctx, num):
     if num <= 0:
         await ctx.send("問題数を入力してください")
-    elif not 1 <= num <= len(cs.Question):
+    elif not 1 <= num <= len(Question):
         await ctx.send("登録されている問題数に対して入力が間違っています")
         return
 
@@ -91,23 +95,23 @@ async def run_quizstart(bot, guild, ctx, num):
         await ctx.send(f"問題**{i + 1}**/{num} **(1位 +{point[0] * mag[i]}点,  "
                        f"2位 +{point[1] * mag[i]}点,  3位 +{point[2] * mag[i]}点)** (制限時間1分)")
         await asyncio.sleep(3)
-        await ctx.send(f"{cs.Question[f'Q{i + 1}']}")
+        await ctx.send(f"{Question[f'Q{i + 1}']}")
         j, flag, winner, start = 1, False, [], datetime.now()
         while 0 <= j <= 3:
             reply = await bot.wait_for('message')
             elap = (start - datetime.now()).seconds
-            if reply.content == cs.Answer[f'A{i + 1}'] and reply.channel.id == cs.Quiz_room:
+            if reply.content == Answer[f'A{i + 1}'] and reply.channel.id == cs.Quiz_room:
                 if reply.author.id not in winner:
                     winner.append(reply.author.id)
                     j, flag = j + 1, True
             elif (reply.content.lower() == "!skip" and role_check_admin(reply)) or elap > 60:
-                await ctx.send(f"問題{i + 1}はスキップされました (正解 : {cs.Answer[f'A{i + 1}']})")
+                await ctx.send(f"問題{i + 1}はスキップされました (正解 : {Answer[f'A{i + 1}']})")
                 j, flag = -1, False
             elif reply.content.lower() == "!cancel" and role_check_admin(reply):
                 await ctx.send(f"クイズを中断しました")
                 return
         if flag:
-            await ctx.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {cs.Answer[f'A{i + 1}']})")
+            await ctx.send(f"正解者が出揃ったので問題{i + 1}を終了します (正解 : {Answer[f'A{i + 1}']})")
         if len(winner) != 0:
             stc = [f"{k + 1}位 : {bot.get_user(winner[k]).display_name} (+{point[k] * mag[i]}点)\n"
                    for k in range(len(winner))]

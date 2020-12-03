@@ -1,7 +1,3 @@
-Joiner = []
-Question = {}
-Answer = {}
-
 Shichi = 193407417256640512
 Honda = 359330668112642059
 Server = 764419309610598420
