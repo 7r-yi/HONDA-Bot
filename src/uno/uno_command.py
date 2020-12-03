@@ -355,7 +355,7 @@ async def run_uno(bot, guild, ctx):
             await msg.delete()
         # ディスカードオール処理
         if card[-1][1:] == "ディスカードオール" and bet_flag:
-            colors = [f"{bet_card[j][0]}色" for j in range(len(bet_card))]
+            colors = set([f"{bet_card[j][0]}色" for j in range(len(bet_card))])
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} "
                            f"{', '.join(colors)} のカードを全て捨てます", delete_after=10.0)
             for j in range(len(bet_card)):
