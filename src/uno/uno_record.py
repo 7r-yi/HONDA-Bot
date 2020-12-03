@@ -37,11 +37,14 @@ def calculate_point(card):
     pts = 0
     for i in card:
         id = uno_func.card_to_id(i)
-        if id % 100 <= 9 and id < 500:  # 数字カードはその数字の点数
+        # 数字カードはその数字の点数, 記号カードは20点, ディスカードオールは30点, ワイルドカードは50点
+        if id % 100 <= 9:
             pts -= id % 100
-        elif id < 500:  # 記号カードは20点
+        elif id % 100 == 13:
+            pts -= 30
+        elif id < 500:
             pts -= 20
-        else:  # ワイルドカードは50点
+        else:
             pts -= 50
 
     return pts
