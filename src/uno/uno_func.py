@@ -171,7 +171,7 @@ def check_card(before, after, hand, penalty):
     hand_tmp, card = copy.copy(hand), ""
 
     # カード全出し
-    if after == hand and len(hand) >= 2:
+    if sorted(after) == sorted(hand) and len(hand) >= 2:
         return "複数枚出しで上がることは出来ません"
 
     # 出すカードを手札から全て削除 → エラーを吐いたら持ってないカードあり
