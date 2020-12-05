@@ -166,13 +166,8 @@ def sort_card(cards):
 
 
 def check_card(before, after, hand, penalty):
-    before = card_to_id(before)
-    first = card_to_id(after[0])
+    before, first = card_to_id(before), card_to_id(after[0])
     hand_tmp, card = copy.copy(hand), ""
-
-    # カード全出し
-    if sorted(after) == sorted(hand) and len(hand) >= 2:
-        return "複数枚出しで上がることは出来ません"
 
     # 出すカードを手札から全て削除 → エラーを吐いたら持ってないカードあり
     try:
@@ -185,6 +180,10 @@ def check_card(before, after, hand, penalty):
             return f"{card} は持っていません"
         else:
             return f"{card} ってカードは存在しませんよ(笑)"
+
+    # カード全出し
+    if hand_tmp == [] and len(hand) >= 2:
+        return "複数枚出しで上がることは出来ません"
 
     # 出したカードの全ての記号が一致するか判定
     if all([first % 100 == card_to_id(i) % 100 for i in after]):
