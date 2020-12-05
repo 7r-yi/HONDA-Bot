@@ -154,8 +154,8 @@ class Zyanken(commands.Cog):
     async def on_ready(self):
         _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
         zf.Former_winner, zf.Former_loser = winner, loser
-        self.role_update.start()
-        self.data_auto_save.start()
+        # self.role_update.start()
+        # self.data_auto_save.start()
 
     # 定期的にWinner/Loserロール更新
     @tasks.loop(minutes=30)
