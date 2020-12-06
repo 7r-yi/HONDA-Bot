@@ -367,10 +367,6 @@ async def run_uno(bot, guild, ctx):
                 await send_card(i, 2, True)
             else:
                 await send_card(i, 0, False)
-        # 観戦機能ON時は手札を表示(5分間)
-        if WATCH_FLAG is not None:
-            msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
-            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # 上がり
         if not all_data[i][1] and not all_data[i][3][0]:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} YOU WIN!")
@@ -391,6 +387,10 @@ async def run_uno(bot, guild, ctx):
         # UNOフラグを降ろす
         if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]
+        # 観戦機能ON時は手札を表示(5分間)
+        if WATCH_FLAG is not None:
+            msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
+            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
             skip_n = len(bet_card)
