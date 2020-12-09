@@ -23,7 +23,8 @@ WATCH_FLAG = None
 
 
 # ゲーム終了処理 (画像やロール削除)
-def uno_end(guild, image_flag=False, new_flag=False):
+async def uno_end(guild, image_flag=False, new_flag=False):
+    role_AP = get_role(guild, cs.All_Player)
     if image_flag:
         os.remove(mi.AREA_TEMP_PASS)
     for member in role_AP.members:
@@ -113,7 +114,7 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send(f"{reply.author.mention} 開始者以外は締め切れません", delete_after=5)
         elif reply.content == "!cancel" and reply.author.id in all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
-                uno_end(guild, False, False)
+                await uno_end(guild, False, False)
                 await ctx.send("中止しました")
                 return
             else:
@@ -292,7 +293,7 @@ async def run_uno(bot, guild, ctx):
                         cnt_ng += 1
                         ng_player.append(confirm.author.id)
                     if cnt_cancel >= len(all_player) // 2 + 1:
-                        uno_end(guild, True, False)
+                        await uno_end(guild, True, False)
                         await ctx.send(f"{role_AP.mention} ゲームを中止しました")
                         return
                     elif cnt_ng >= len(all_player) // 2 + 1:
@@ -448,11 +449,11 @@ async def run_uno(bot, guild, ctx):
     # ゲーム終了処理 (画像やロール削除)
     await ctx.send(f"```\n★ゲーム結果\n\n{stc}```{role_AP.mention} 結果を記録してゲームを終了しました")
     ur.data_save(sort_data, all_name)
-    uno_end(guild, True, True)
+    await uno_end(guild, True, True)
 
 
 # プレイヤーのUNO戦績を表示
-async def run_watchgame(bot, ctx):
+async def run_watchgame(ctx):
     global WATCH_FLAG
     if WATCH_FLAG is None:
         WATCH_FLAG = ctx.channel.id
@@ -527,12 +528,12 @@ class Uno(commands.Cog):
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def wg(self, ctx):
-        await run_watchgame(self.bot, ctx)
+        await run_watchgame(ctx)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def watchgame(self, ctx):
-        await run_watchgame(self.bot, ctx)
+        await run_watchgame(ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
@@ -541,7 +542,7 @@ class Uno(commands.Cog):
             await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            uno_end(self.bot.get_guild(cs.Server), True, False)
+            await uno_end(self.bot.get_guild(cs.Server), True, False)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
@@ -550,7 +551,7 @@ class Uno(commands.Cog):
             await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            uno_end(self.bot.get_guild(cs.Server), True, False)
+            await uno_end(self.bot.get_guild(cs.Server), True, False)
 
     @commands.command()
     @commands.has_role(cs.UNO)
