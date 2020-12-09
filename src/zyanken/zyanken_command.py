@@ -10,6 +10,18 @@ from multi_func import get_role, role_check_mode
 from . import zyanken_func as zf
 
 
+async def run_setpercentage(ctx, num):
+    if ctx.channel.id != cs.Zyanken_room:
+        return
+    elif not num.isdecimal():
+        return await ctx.send(f"{ctx.author.mention} 勝利する確率を数字のみで入力してください", delete_after=10)
+    elif 0 <= float(num) <= 100:
+        return await ctx.send(f"{ctx.author.mention} 0～100で入力してください(小数点以下2桁まで)", delete_after=10)
+
+    zf.ZData[str(user)]["percentage"] = round(float(num), 2)
+    await ctx.send(f"{ctx.author.mention} 勝利 : {num:g}%, 敗北 : {(100 - num):g}% に設定しました", delete_after=10)
+
+
 async def run_noreply(guild, ctx, name):
     if ctx.channel.id != cs.Zyanken_room:
         return
@@ -20,11 +32,11 @@ async def run_noreply(guild, ctx, name):
         if name.lower() == member.display_name.lower():
             if str(member.id) not in zf.No_reply:
                 zf.No_reply.append(str(member.id))
-                await ctx.send(f"{guild.get_member(member.id).mention} 返信を無効にしました")
+                await ctx.send(f"{guild.get_member(member.id).mention} 返信を無効にしました", delete_after=10)
             else:
-                await ctx.send(f"{ctx.author.mention} 既に返信が無効になっています")
+                await ctx.send(f"{ctx.author.mention} 既に返信が無効になっています", delete_after=10)
             return
-    await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
+    await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした", delete_after=10)
 
 
 async def run_noreplycancel(guild, ctx, name):
@@ -37,11 +49,11 @@ async def run_noreplycancel(guild, ctx, name):
         if name.lower() == member.display_name.lower():
             if str(member.id) in zf.No_reply:
                 zf.No_reply.remove(str(member.id))
-                await ctx.send(f"{guild.get_member(member.id).mention} 返信を有効にしました")
+                await ctx.send(f"{guild.get_member(member.id).mention} 返信を有効にしました", delete_after=10)
             else:
-                await ctx.send(f"{ctx.author.mention} 既に返信は有効になっています")
+                await ctx.send(f"{ctx.author.mention} 既に返信は有効になっています", delete_after=10)
             return
-    await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした")
+    await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした", delete_after=10)
 
 
 async def run_stats(bot, guild, ctx, name):
@@ -68,7 +80,7 @@ async def run_stats(bot, guild, ctx, name):
             break
 
     if data is None and id is None:
-        return await ctx.send(f"{ctx.author.mention} データが記録されていません")
+        return await ctx.send(f"{ctx.author.mention} データが記録されていません", delete_after=10)
 
     embed = discord.Embed(title=user, color=0x4169E1)
     embed.set_author(name='Stats', icon_url=bot.get_user(id).avatar_url)
@@ -152,8 +164,9 @@ class Zyanken(commands.Cog):
     # 現在のWinner/Loserロールを取得
     @commands.Cog.listener()
     async def on_ready(self):
-        _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
-        zf.Former_winner, zf.Former_loser = winner, loser
+        pass
+        # _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
+        # zf.Former_winner, zf.Former_loser = winner, loser
         # self.role_update.start()
         # self.data_auto_save.start()
 
@@ -205,6 +218,16 @@ class Zyanken(commands.Cog):
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
+    async def sp(self, ctx, num=""):
+        await run_setpercentage(ctx, num)
+
+    @commands.command()
+    @commands.has_role(cs.Zyanken)
+    async def setpercentage(self, ctx, num=""):
+        await run_setpercentage(ctx, num)
+
+    @commands.command()
+    @commands.has_role(cs.Zyanken)
     async def nr(self, ctx, name=None):
         await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
 
@@ -233,6 +256,7 @@ class Zyanken(commands.Cog):
     async def stats(self, ctx, name=None):
         await run_stats(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
+    """
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def rk(self, ctx, type="winsmax", num=999):
@@ -242,6 +266,7 @@ class Zyanken(commands.Cog):
     @commands.has_role(cs.Zyanken)
     async def ranking(self, ctx, type="winsmax", num=999):
         await run_ranking(self.bot.get_guild(cs.Server), ctx, type, num)
+    """
 
     @commands.command()
     @commands.has_role(cs.Administrator)

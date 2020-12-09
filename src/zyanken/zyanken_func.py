@@ -55,7 +55,7 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    if random.randint(1, 2) == 1:  # 勝率95%
+    if random.randint(1, 10000) <= zf.ZData[str(user)]["percentage"] * 100:
         win = True
         img_pass = 'src/zyanken/image/YOU WIN.jpg'
         emoji2 = "🎉"
@@ -88,7 +88,7 @@ def honda_to_zyanken(my_hand, user):
 
     if str(user) not in ZData:
         ZData[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
-                            "keep": {"cnt": 0, "max": 0}}
+                            "keep": {"cnt": 0, "max": 0}, "percentage": 50}
     if win:
         ZData[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
         ZData[str(user)]["keep"]["cnt"] += 1
