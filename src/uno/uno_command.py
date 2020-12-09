@@ -22,6 +22,18 @@ from . import uno_record as ur
 WATCH_FLAG = None
 
 
+# ゲーム終了処理 (画像やロール削除)
+def uno_end(guild, image_flag=False, new_flag=False):
+    if image_flag:
+        os.remove(mi.AREA_TEMP_PASS)
+    for member in role_AP.members:
+        # 新規プレイヤーにはUNOロール付与
+        if new_flag and cs.UNO not in [roles.id for roles in member.roles]:
+            await member.add_roles(get_role(guild, cs.UNO))
+        await member.remove_roles(role_AP)
+    uf.UNO_start = False
+
+
 # UNOゲーム実行処理
 async def run_uno(bot, guild, ctx):
     # 手札を送信する(n: ユーザー指定変数, times: 新たに追加される手札の枚数, send_flag: 追加カードの分を送信するか)
@@ -101,9 +113,7 @@ async def run_uno(bot, guild, ctx):
                 await ctx.send(f"{reply.author.mention} 開始者以外は締め切れません", delete_after=5)
         elif reply.content == "!cancel" and reply.author.id in all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
-                for member in role_AP.members:
-                    await member.remove_roles(role_AP)
-                uf.UNO_start = False
+                uno_end(guild, False, False)
                 await ctx.send("中止しました")
                 return
             else:
@@ -282,10 +292,7 @@ async def run_uno(bot, guild, ctx):
                         cnt_ng += 1
                         ng_player.append(confirm.author.id)
                     if cnt_cancel >= len(all_player) // 2 + 1:
-                        os.remove(mi.AREA_TEMP_PASS)
-                        for member in role_AP.members:
-                            await member.remove_roles(role_AP)
-                        uf.UNO_start = False
+                        uno_end(guild, True, False)
                         await ctx.send(f"{role_AP.mention} ゲームを中止しました")
                         return
                     elif cnt_ng >= len(all_player) // 2 + 1:
@@ -390,7 +397,7 @@ async def run_uno(bot, guild, ctx):
         # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
             msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
-            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
+            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=10)
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
             skip_n = len(bet_card)
@@ -441,22 +448,22 @@ async def run_uno(bot, guild, ctx):
     # ゲーム終了処理 (画像やロール削除)
     await ctx.send(f"```\n★ゲーム結果\n\n{stc}```{role_AP.mention} 結果を記録してゲームを終了しました")
     ur.data_save(sort_data, all_name)
-    os.remove(mi.AREA_TEMP_PASS)
-    for member in role_AP.members:
-        # 新規プレイヤーにはUNOロール付与
-        if cs.UNO not in [roles.id for roles in member.roles]:
-            await member.add_roles(get_role(guild, cs.UNO))
-        await member.remove_roles(role_AP)
-    uf.UNO_start = False
+    uno_end(guild, True, True)
 
 
 # プレイヤーのUNO戦績を表示
-async def run_watchgame(ctx):
+async def run_watchgame(bot, ctx):
     global WATCH_FLAG
     if WATCH_FLAG is None:
         WATCH_FLAG = ctx.channel.id
         await ctx.send(f"{ctx.author.mention} UNOの観戦を開始します")
     else:
+        messages = await bot.get_channel(WATCH_FLAG).history(limit=100).flatten()
+        for message in messages:
+            if "UNOの観戦を開始します" in message.content:
+                break
+            elif message.author.bot:
+                await message.delete()
         WATCH_FLAG = None
         await ctx.send(f"{ctx.author.mention} UNOの観戦を終了します")
 
@@ -518,15 +525,6 @@ class Uno(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # サーバーエラー
-    @commands.Cog.listener(name='on_command_error')
-    @commands.guild_only()
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, DiscordServerError) or isinstance(error, ac.ClientOSError):
-            await ctx.channel.send("サーバーエラーが発生しました")
-        elif isinstance(error, HTTPException):
-            await ctx.channel.send(f"{ctx.author.mention} メッセージの送信に失敗しました")
-
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def unorule(self, ctx):
@@ -535,22 +533,30 @@ class Uno(commands.Cog):
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def wg(self, ctx):
-        await run_watchgame(ctx)
+        await run_watchgame(self.bot, ctx)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def watchgame(self, ctx):
-        await run_watchgame(ctx)
+        await run_watchgame(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def us(self, ctx):
-        await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+        try:
+            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+        except DiscordServerError or ac.ClientOSError:
+            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
+            uno_end(self.bot.get_guild(cs.Server), True, False)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def unostart(self, ctx):
-        await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+        try:
+            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+        except DiscordServerError or ac.ClientOSError:
+            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
+            uno_end(self.bot.get_guild(cs.Server), True, False)
 
     @commands.command()
     @commands.has_role(cs.UNO)
