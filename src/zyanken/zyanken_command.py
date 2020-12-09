@@ -11,19 +11,21 @@ from . import zyanken_func as zf
 
 
 async def run_setpercentage(ctx, num):
-    if ctx.channel.id != cs.Zyanken_room:
+    if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
-    elif not num.isdecimal():
+    try:
+        num = round(float(num), 2)
+        if not 0 <= float(num) <= 100:
+            return await ctx.send(f"{ctx.author.mention} 0～100で入力してください(小数点以下2桁まで)", delete_after=10)
+    except ValueError:
         return await ctx.send(f"{ctx.author.mention} 勝利する確率を数字のみで入力してください", delete_after=10)
-    elif 0 <= float(num) <= 100:
-        return await ctx.send(f"{ctx.author.mention} 0～100で入力してください(小数点以下2桁まで)", delete_after=10)
 
-    zf.ZData[str(user)]["percentage"] = round(float(num), 2)
+    zf.ZData[str(ctx.author.id)]["percentage"] = num
     await ctx.send(f"{ctx.author.mention} 勝利 : {num:g}%, 敗北 : {(100 - num):g}% に設定しました", delete_after=10)
 
 
 async def run_noreply(guild, ctx, name):
-    if ctx.channel.id != cs.Zyanken_room:
+    if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
     if name is None:
@@ -40,7 +42,7 @@ async def run_noreply(guild, ctx, name):
 
 
 async def run_noreplycancel(guild, ctx, name):
-    if ctx.channel.id != cs.Zyanken_room:
+    if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
     if name is None:
@@ -164,20 +166,19 @@ class Zyanken(commands.Cog):
     # 現在のWinner/Loserロールを取得
     @commands.Cog.listener()
     async def on_ready(self):
-        pass
         # _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
         # zf.Former_winner, zf.Former_loser = winner, loser
         # self.role_update.start()
-        # self.data_auto_save.start()
+        self.data_auto_save.start()
 
     # 定期的にWinner/Loserロール更新
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=60)
     async def role_update(self):
         _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
         await update_roles(self.bot.get_guild(cs.Server), winner, loser)
 
     # 定期的にデータをオートセーブ
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=10)
     async def data_auto_save(self):
         with open(zf.RECORD_PASS, 'r') as f:
             before_zdata = json.load(f)
