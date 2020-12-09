@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.errors import Forbidden, DiscordServerError, HTTPException
+from discord.errors import Forbidden, DiscordServerError
 import aiohttp.client_exceptions as ac
 import asyncio
 import asyncio.exceptions
@@ -397,7 +397,7 @@ async def run_uno(bot, guild, ctx):
         # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
             msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
-            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=10)
+            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
             skip_n = len(bet_card)
@@ -458,12 +458,6 @@ async def run_watchgame(bot, ctx):
         WATCH_FLAG = ctx.channel.id
         await ctx.send(f"{ctx.author.mention} UNOの観戦を開始します")
     else:
-        messages = await bot.get_channel(WATCH_FLAG).history(limit=100).flatten()
-        for message in messages:
-            if "UNOの観戦を開始します" in message.content:
-                break
-            elif message.author.bot:
-                await message.delete()
         WATCH_FLAG = None
         await ctx.send(f"{ctx.author.mention} UNOの観戦を終了します")
 
