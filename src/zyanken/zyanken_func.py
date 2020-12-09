@@ -55,7 +55,11 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
-    if random.randint(1, 10000) <= ZData[str(user)]["percentage"] * 100:
+    try:
+        per = ZData[str(user)]["percentage"]
+    except KeyError:
+        per = 50
+    if random.randint(1, 10000) <= per * 100:
         win = True
         img_pass = 'src/zyanken/image/YOU WIN.jpg'
         emoji2 = "🎉"
