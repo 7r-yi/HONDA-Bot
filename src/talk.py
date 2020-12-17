@@ -8,7 +8,7 @@ import constant as cs
 
 # メンション先にメッセージを送信する
 async def run_send(bot, guild, ctx, to_id, *msg):
-    if to_id is None:
+    if to_id is None or re.sub('[^0-9]', "", to_id) == "":
         return await ctx.send(f"{ctx.author.mention} 送信先をメンションしてください", delete_after=10)
     elif not msg:
         return await ctx.send(f"{ctx.author.mention} 送信メッセージを入力してください", delete_after=10)
