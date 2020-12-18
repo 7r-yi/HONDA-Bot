@@ -25,14 +25,15 @@ FREE_FLAG = False
 
 # ゲーム終了処理 (画像やロール削除)
 async def uno_end(guild, all_player, image_flag=False, new_flag=False):
+    global FREE_FLAG
     if image_flag:
         os.remove(mi.AREA_TEMP_PASS)
-    for player in all_player:
-        # 新規プレイヤーにはUNOロール付与
-        if new_flag and cs.UNO not in [roles.id for roles in guild.get_member(player).roles]:
-            await guild.get_member(player).add_roles(get_role(guild, cs.UNO))
+    if not FREE_FLAG:
+        for player in all_player:
+            # 新規プレイヤーにはUNOロール付与
+            if new_flag and cs.UNO not in [roles.id for roles in guild.get_member(player).roles]:
+                await guild.get_member(player).add_roles(get_role(guild, cs.UNO))
     uf.UNO_start = False
-    global FREE_FLAG
     FREE_FLAG = False
 
 
@@ -518,7 +519,6 @@ class Uno(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def unorule(self, ctx):
         await ctx.channel.send(f"ルール設定や手札の出し方など↓```{uf.Rule}```")
 
@@ -537,10 +537,10 @@ class Uno(commands.Cog):
         global FREE_FLAG
         FREE_FLAG = True
         try:
-            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+            await run_uno(self.bot, self.bot.get_guild(698208344896176168), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(cs.Server), all_player, True, False)
+            await uno_end(self.bot.get_guild(698208344896176168), all_player, True, False)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
