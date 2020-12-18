@@ -236,7 +236,7 @@ async def run_uno(bot, guild, ctx):
                     # 自分のUNOフラグが立っている場合
                     if all_data[j][3][0]:
                         all_data[j][3] = [False, None]
-                        await ctx.send(f"{all_mention()}\n{reply.author.mention}がUNOを宣言しました")
+                        await ctx.send(f"{all_mention()}\n{reply.author.mention} がUNOを宣言しました")
                     # 手札が2枚以上ある場合
                     elif len(all_data[j][1]) >= 2:
                         await ctx.send(f"{reply.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10)
@@ -247,7 +247,7 @@ async def run_uno(bot, guild, ctx):
                 all_player.append(reply.author.id)
                 all_data.append([reply.author.id, [], None, [False, None]])
                 await send_card(-1, initial_num, False)
-                await ctx.send(f"{all_mention()}\n{reply.author.mention}が途中参加しました")
+                await ctx.send(f"{all_mention()}\n{reply.author.mention} が途中参加しました")
                 cnt = i
             # ゲームから棄権する
             elif "!drop" in input and reply.author.id in all_player:
@@ -256,7 +256,7 @@ async def run_uno(bot, guild, ctx):
                     if role_check_mode(reply) or FREE_FLAG:
                         j = uf.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
-                            await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention}を棄権させました")
+                            await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention} を棄権させました")
                             cnt = i - 1 if j < i else i
                             drop_name = guild.get_member(all_data[j][0]).display_name
                             ur.add_penalty(all_data[j][0], drop_name, all_data[j][1])
@@ -268,7 +268,7 @@ async def run_uno(bot, guild, ctx):
                         await ctx.send(f"{reply.author.mention}  {role_M.mention}でないと棄権させられません")
                 # 自分が棄権する
                 elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
-                    await ctx.send(f"{all_mention()}\n{reply.author.mention}が棄権しました")
+                    await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
                     j = uf.search_player(reply.author.id, all_data)
                     cnt = i - 1 if j < i else i
                     ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
