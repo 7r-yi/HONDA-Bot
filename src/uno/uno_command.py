@@ -20,6 +20,7 @@ from . import make_image as mi
 from . import uno_record as ur
 
 WATCH_FLAG = None
+FREE_FLAG = False
 
 
 # ゲーム終了処理 (画像やロール削除)
@@ -31,6 +32,8 @@ async def uno_end(guild, all_player, image_flag=False, new_flag=False):
         if new_flag and cs.UNO not in [roles.id for roles in guild.get_member(player).roles]:
             await guild.get_member(player).add_roles(get_role(guild, cs.UNO))
     uf.UNO_start = False
+    global FREE_FLAG
+    FREE_FLAG = False
 
 
 # UNOゲーム実行処理
@@ -76,7 +79,7 @@ async def run_uno(bot, guild, ctx):
         return ng_check(ctx_wait) and ctx_wait.author.id in all_player
 
     # 既にUNO実行中の場合はゲームを開始しない
-    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]):
+    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not FREE_FLAG:
         return
     elif uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中です")
@@ -105,7 +108,7 @@ async def run_uno(bot, guild, ctx):
             await ctx.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=15)
         elif input in ["!e", "!end"] and all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
-                if len(all_player) >= 2 or role_check_admin(ctx):
+                if len(all_player) >= 2 or role_check_admin(ctx) or FREE_FLAG:
                     break
                 else:
                     await ctx.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5)
@@ -250,7 +253,7 @@ async def run_uno(bot, guild, ctx):
             elif "!drop" in input and reply.author.id in all_player:
                 # 棄権者を指定
                 if len(all_data) > 2 and len(reply.raw_mentions) == 1:
-                    if role_check_mode(reply):
+                    if role_check_mode(reply) or FREE_FLAG:
                         j = uf.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
                             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention}を棄権させました")
@@ -427,7 +430,7 @@ async def run_uno(bot, guild, ctx):
         stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
 
     # 10人以上参加 & 初期手札7~10枚の時、Winner/Loserロール付与 & 結果出力
-    if 10 <= len(all_data) and 7 <= initial_num <= 10:
+    if 10 <= len(all_data) and 7 <= initial_num <= 10 and not FREE_FLAG:
         end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
         await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.Winner))
         await guild.get_member(sort_data[-1][0]).add_roles(get_role(guild, cs.Loser))
@@ -443,7 +446,8 @@ async def run_uno(bot, guild, ctx):
 
     # ゲーム終了処理 (画像やロール削除)
     await ctx.send(f"{all_mention()}\n```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
-    ur.data_save(sort_data, all_name)
+    if not FREE_FLAG:
+        ur.data_save(sort_data, all_name)
     await uno_end(guild, all_player, True, True)
 
 
@@ -496,10 +500,8 @@ async def run_record(bot, guild, ctx, name):
 
 # BotとのDMを全削除
 async def run_cleardm(bot, ctx):
-    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]):
-        return
     # UNOプレイ中の場合はコマンド実行不可
-    elif cs.All_Player in [roles.id for roles in ctx.author.roles]:
+    if uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} UNOプレイ中は削除できません", delete_after=5)
 
     msg = await ctx.send(f"{ctx.author.mention} BotとのDMを削除中...")
@@ -531,6 +533,16 @@ class Uno(commands.Cog):
         await run_watchgame(ctx)
 
     @commands.command()
+    async def unofree(self, ctx):
+        global FREE_FLAG
+        FREE_FLAG = True
+        try:
+            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+        except DiscordServerError or ac.ClientOSError:
+            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
+            await uno_end(self.bot.get_guild(cs.Server), all_player, True, False)
+
+    @commands.command()
     @commands.has_role(cs.Visitor)
     async def us(self, ctx):
         try:
@@ -559,12 +571,10 @@ class Uno(commands.Cog):
         await run_record(self.bot, self.bot.get_guild(cs.Server), ctx, name)
 
     @commands.command()
-    @commands.has_role(cs.UNO)
     async def cdm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
     @commands.command()
-    @commands.has_role(cs.UNO)
     async def cleardm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
