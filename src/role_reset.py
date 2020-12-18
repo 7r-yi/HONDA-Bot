@@ -13,11 +13,9 @@ async def run(guild, ctx, role_name):
         rm_role = get_role(guild, cs.Loser)
     elif role_name in ["zyanken", "z"]:
         rm_role = get_role(guild, cs.Zyanken)
-    elif role_name in ["allplayer", "ap"]:
-        rm_role = get_role(guild, cs.All_Player)
     else:
         return await ctx.send(f"{ctx.author.mention} RoleNameを入力してください\n"
-                              ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser / Zyanken / AllPlayer")
+                              ">>> **_ReSet RoleName**\nRoleName = Participant / Winner / Loser / Zyanken")
 
     for member in rm_role.members:
         await member.remove_roles(rm_role)
