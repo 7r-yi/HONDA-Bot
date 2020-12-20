@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.errors import Forbidden, DiscordServerError
+from discord.errors import Forbidden, DiscordServerError, HTTPException
 import aiohttp.client_exceptions as ac
 import asyncio
 import asyncio.exceptions
@@ -39,8 +39,20 @@ async def uno_end(guild, all_player, image_flag=False, new_flag=False):
     NOW_PLAYING = []
 
 
+# ゲーム終了処理 (画像やロール削除)
+async def run_uno_config(bot, ctx):
+    try:
+        await run_uno(bot, ctx)
+    except DiscordServerError or ac.ClientOSError:
+        await ctx.channel.send("サーバーエラーが発生しました\nゲームを終了します")
+        await uno_end(bot.get_guild(ctx.guild.id), [], True, False)
+    except HTTPException:
+        await ctx.channel.send("手札の枚数が超過し過ぎなためエラーが発生しました\nゲームを終了します")
+        await uno_end(bot.get_guild(ctx.guild.id), [], False, False)
+
+
 # UNOゲーム実行処理
-async def run_uno(bot, guild, ctx):
+async def run_uno(bot, ctx):
     def all_mention():
         return " ".join([guild.get_member(all_player[i]).mention for i in range(len(all_player))])
 
@@ -90,6 +102,7 @@ async def run_uno(bot, guild, ctx):
 
     uf.UNO_start = True
     uf.Card = uf.Card_Normal
+    guild = bot.get_guild(ctx.guild.id)
     await ctx.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                    "参加する方は `!Join` と入力してください ( `!Drop` で参加取り消し, `!End` で締め切り, `!Cancel` で中止)")
     all_player = [ctx.author.id]
@@ -141,12 +154,12 @@ async def run_uno(bot, guild, ctx):
             continue
         elif not input.isdecimal():
             await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-        elif 2 <= int(input) <= 30:
+        elif 2 <= int(input) <= 50:
             if reply.author.id not in ok_player:
                 want_nums.append(int(input))
                 ok_player.append(reply.author.id)
         else:
-            await ctx.send(f"{reply.author.mention} 2～30枚以内で指定してください", delete_after=5)
+            await ctx.send(f"{reply.author.mention} 2～50枚以内で指定してください", delete_after=5)
         if len(ok_player) == len(all_player):
             break
     try:
@@ -172,19 +185,19 @@ async def run_uno(bot, guild, ctx):
             continue
         if input.lower() == "!no":
             no_player.append(reply.author.id)
-            continue
         elif input.count("[") == 0:
             continue
+        else:
+            error = uf.template_check(input)
+            if error is None:
+                await ctx.send("カードの枚数を変更しました")
+                FREE_FLAG = True
+                break
+            else:
+                await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
         if len(no_player) >= len(all_player) // 2 + 1:
             await ctx.send("カードの枚数を変更せずに進めます")
             break
-        error = uf.template_check(input)
-        if error is None:
-            await ctx.send("カードの枚数を変更しました")
-            FREE_FLAG = True
-            break
-        else:
-            await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
 
     random.shuffle(all_player)
     NOW_PLAYING = all_player
@@ -577,29 +590,17 @@ class Uno(commands.Cog):
     async def unofree(self, ctx):
         global FREE_FLAG
         FREE_FLAG = True
-        try:
-            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
-        except DiscordServerError or ac.ClientOSError:
-            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
+        await run_uno_config(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def us(self, ctx):
-        try:
-            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
-        except DiscordServerError or ac.ClientOSError:
-            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
+        await run_uno_config(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def unostart(self, ctx):
-        try:
-            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
-        except DiscordServerError or ac.ClientOSError:
-            await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
+        await run_uno_config(self.bot, ctx)
 
     @commands.command()
     @commands.has_role(cs.UNO)
