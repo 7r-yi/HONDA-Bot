@@ -63,6 +63,7 @@ for n1 in Number:
     for n2 in Color:
         Card.append(f"{n2}{n1}")
 Card = (Card * 2)[4:-4] + ["ワイルド", "ドロー4"] * 4
+Card_Normal = Card
 
 
 def template_check(stc):

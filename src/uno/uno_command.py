@@ -89,6 +89,7 @@ async def run_uno(bot, guild, ctx):
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中です")
 
     uf.UNO_start = True
+    uf.Card = uf.Card_Normal
     await ctx.send("UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                    "参加する方は `!Join` と入力してください ( `!Drop` で参加取り消し, `!End` で締め切り, `!Cancel` で中止)")
     all_player = [ctx.author.id]
@@ -133,7 +134,7 @@ async def run_uno(bot, guild, ctx):
     while True:
         try:
             reply = await bot.wait_for('message', check=ng_check, timeout=30 - (datetime.now() - ask_start).seconds)
-            input = jaconv.z2h(reply.content, ascii=True, digit=True)
+            input = jaconv.z2h(reply.content, digit=True)
         except asyncio.exceptions.TimeoutError:
             break
         if reply.author.id not in all_player:
@@ -163,13 +164,13 @@ async def run_uno(bot, guild, ctx):
     while True:
         try:
             reply = await bot.wait_for('message', check=ng_check, timeout=120 - (datetime.now() - ask_start).seconds)
-            input = jaconv.z2h(reply.content, digit=True)
+            input = jaconv.z2h(reply.content, ascii=True, digit=True)
         except asyncio.exceptions.TimeoutError:
             await ctx.send("カードの枚数を変更せずに進めます")
             break
         if reply.author.id not in all_player:
             continue
-        if input == "!no":
+        if input.lower() == "!no":
             no_player.append(reply.author.id)
         elif input.count("[") == 0:
             continue
