@@ -249,9 +249,12 @@ async def run_uno(bot, ctx):
                               f"__現在の場札のカード : {card[-1]}__", file=discord.File(mi.AREA_TEMP_PASS))
         msg2 = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} の番です (制限時間{time:g}秒)")
         # 記号しか無いかチェック
-        if all([uf.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます", delete_after=10)
-            await send_card(i, 2, True)
+        while True:
+            if all([uf.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
+                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加されます", delete_after=10)
+                await send_card(i, 2, True)
+            else:
+                break
         # カード入力処理
         start = datetime.now()
         while True:
