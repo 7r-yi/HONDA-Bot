@@ -169,10 +169,9 @@ async def run_uno(bot, ctx):
 
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
     await ctx.send(f"{all_mention()}\nカードの確率設定を変更しますか？\n"
-                   f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
-                   f"変更しない場合は `!NO` と入力 (過半数以上で成立) \n"
-                   f"※カード設定を変更した場合は、結果は記録に反映されません (制限時間120秒)\nテンプレート↓")
-    await ctx.send(uf.Card_Template)
+                   f"変更する場合は、テンプレをコピーし[]内の数字を変更して送信\n変更しない場合は `!NO` と入力 (過半数以上で成立)\n"
+                   f"※カード設定を変更した場合は、結果は記録に反映されません (制限時間120秒)")
+    await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
     no_player, ask_start = [], datetime.now()
     while True:
         try:
