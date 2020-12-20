@@ -169,6 +169,8 @@ async def run_uno(bot, guild, ctx):
             continue
         if input == "!no":
             no_player.append(reply.author.id)
+        elif input.count("[") == 0:
+            continue
         if len(no_player) >= len(all_player) // 2 + 1:
             await ctx.send("カードの枚数を変更せずに進めます")
             break
