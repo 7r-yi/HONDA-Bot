@@ -21,11 +21,12 @@ from . import uno_record as ur
 
 WATCH_FLAG = None
 FREE_FLAG = False
+NOW_PLAYING = []
 
 
 # ゲーム終了処理 (画像やロール削除)
 async def uno_end(guild, all_player, image_flag=False, new_flag=False):
-    global FREE_FLAG
+    global FREE_FLAG, NOW_PLAYING
     if image_flag:
         os.remove(mi.AREA_TEMP_PASS)
     if not FREE_FLAG:
@@ -35,6 +36,7 @@ async def uno_end(guild, all_player, image_flag=False, new_flag=False):
                 await guild.get_member(player).add_roles(get_role(guild, cs.UNO))
     uf.UNO_start = False
     FREE_FLAG = False
+    NOW_PLAYING = []
 
 
 # UNOゲーム実行処理
@@ -80,7 +82,7 @@ async def run_uno(bot, guild, ctx):
         return ng_check(ctx_wait) and ctx_wait.author.id in all_player
 
     # 既にUNO実行中の場合はゲームを開始しない
-    global FREE_FLAG
+    global FREE_FLAG, NOW_PLAYING
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not FREE_FLAG:
         return
     elif uf.UNO_start:
@@ -131,7 +133,7 @@ async def run_uno(bot, guild, ctx):
     while True:
         try:
             reply = await bot.wait_for('message', check=ng_check, timeout=30 - (datetime.now() - ask_start).seconds)
-            input = jaconv.z2h(reply.content, digit=True)
+            input = jaconv.z2h(reply.content, ascii=True, digit=True)
         except asyncio.exceptions.TimeoutError:
             break
         if reply.author.id not in all_player:
@@ -155,7 +157,7 @@ async def run_uno(bot, guild, ctx):
     await ctx.send(f"{all_mention()}\nカードの確率設定を変更できます\n"
                    f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
                    f"過半数以上が `!NO` と送信すると、カード設定を変更しないでゲームを進めます (制限時間120秒)\n"
-                   f"※カード設定を変更した場合は、ゲーム結果は記録されません\n\n"
+                   f"※カード設定を変更した場合は、結果は記録に反映されません\n\n"
                    f"テンプレート↓{uf.Card_Template}")
     no_player, ask_start = [], datetime.now()
     while True:
@@ -183,6 +185,7 @@ async def run_uno(bot, guild, ctx):
             await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
 
     random.shuffle(all_player)
+    NOW_PLAYING = all_player
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
     for i in range(len(all_player)):
@@ -278,6 +281,7 @@ async def run_uno(bot, guild, ctx):
             elif input in ["!j", "!join"] and reply.author.id not in all_player:
                 all_player.append(reply.author.id)
                 all_data.append([reply.author.id, [], None, [False, None]])
+                NOW_PLAYING.append(reply.author.id)
                 await send_card(-1, initial_num, False)
                 await ctx.send(f"{all_mention()}\n{reply.author.mention} が途中参加しました")
                 cnt = i
@@ -292,6 +296,7 @@ async def run_uno(bot, guild, ctx):
                             cnt = i - 1 if j < i else i
                             drop_name = guild.get_member(all_data[j][0]).display_name
                             ur.add_penalty(all_data[j][0], drop_name, all_data[j][1])
+                            NOW_PLAYING.remove(all_data[j][0])
                             all_data.pop(j)
                             drop_flag = True
                             break
@@ -303,7 +308,8 @@ async def run_uno(bot, guild, ctx):
                     await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
                     j = uf.search_player(reply.author.id, all_data)
                     cnt = i - 1 if j < i else i
-                    ur.add_penalty(all_data[j][0], guild.get_member(all_data[j][0]).display_name, all_data[j][1])
+                    ur.add_penalty(reply.author.id, guild.get_member(reply.author.id).display_name, all_data[j][1])
+                    NOW_PLAYING.remove(reply.author.id)
                     all_data.pop(j)
                     drop_flag = True
                     break
@@ -535,7 +541,7 @@ async def run_record(bot, guild, ctx, name):
 # BotとのDMを全削除
 async def run_cleardm(bot, ctx):
     # UNOプレイ中の場合はコマンド実行不可
-    if uf.UNO_start:
+    if ctx.author.id in NOW_PLAYING:
         return await ctx.send(f"{ctx.author.mention} UNOプレイ中は削除できません", delete_after=5)
 
     msg = await ctx.send(f"{ctx.author.mention} BotとのDMを削除中...")
