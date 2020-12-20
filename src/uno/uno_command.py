@@ -155,10 +155,10 @@ async def run_uno(bot, guild, ctx):
         initial_num = 7
 
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
-    await ctx.send(f"{all_mention()}\nカードの確率設定を変更できます\n"
+    await ctx.send(f"{all_mention()}\nカードの確率設定を変更しますか？\n"
                    f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
-                   f"過半数以上が `!NO` と送信すると、カード設定を変更しないでゲームを進めます (制限時間120秒)\n"
-                   f"※カード設定を変更した場合は、結果は記録に反映されません\n\n"
+                   f"変更しない場合は `!NO` と入力 (過半数以上で成立) \n"
+                   f"※カード設定を変更した場合は、結果は記録に反映されません (制限時間120秒)\n\n"
                    f"テンプレート↓{uf.Card_Template}")
     no_player, ask_start = [], datetime.now()
     while True:
@@ -172,6 +172,7 @@ async def run_uno(bot, guild, ctx):
             continue
         if input.lower() == "!no":
             no_player.append(reply.author.id)
+            continue
         elif input.count("[") == 0:
             continue
         if len(no_player) >= len(all_player) // 2 + 1:
