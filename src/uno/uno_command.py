@@ -158,8 +158,8 @@ async def run_uno(bot, guild, ctx):
     await ctx.send(f"{all_mention()}\nカードの確率設定を変更しますか？\n"
                    f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
                    f"変更しない場合は `!NO` と入力 (過半数以上で成立) \n"
-                   f"※カード設定を変更した場合は、結果は記録に反映されません (制限時間120秒)\n\n"
-                   f"テンプレート↓{uf.Card_Template}")
+                   f"※カード設定を変更した場合は、結果は記録に反映されません (制限時間120秒)\nテンプレート↓")
+    await ctx.send(uf.Card_Template)
     no_player, ask_start = [], datetime.now()
     while True:
         try:
@@ -489,7 +489,7 @@ async def run_uno(bot, guild, ctx):
         ur.data_save(sort_data, all_name)
         await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
     else:
-        await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```ゲームを終了しました")
+        await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```ゲームを終了しました(結果は反映されません)")
     await uno_end(guild, all_player, True, True)
 
 
