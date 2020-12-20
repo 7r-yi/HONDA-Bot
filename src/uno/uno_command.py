@@ -154,13 +154,13 @@ async def run_uno(bot, guild, ctx):
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
     await ctx.send(f"{all_mention()}\nカードの確率設定を変更できます\n"
                    f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
-                   f"過半数以上が `!NO` と送信すると、カード設定を変更しないでゲームを進めます (制限時間60秒)\n"
+                   f"過半数以上が `!NO` と送信すると、カード設定を変更しないでゲームを進めます (制限時間120秒)\n"
                    f"※カード設定を変更した場合は、ゲーム結果は記録されません\n\n"
                    f"テンプレート↓{uf.Card_Template}")
     no_player, ask_start = [], datetime.now()
     while True:
         try:
-            reply = await bot.wait_for('message', check=ng_check, timeout=60 - (datetime.now() - ask_start).seconds)
+            reply = await bot.wait_for('message', check=ng_check, timeout=120 - (datetime.now() - ask_start).seconds)
             input = jaconv.z2h(reply.content, digit=True)
         except asyncio.exceptions.TimeoutError:
             await ctx.send("カードの枚数を変更せずに進めます")
