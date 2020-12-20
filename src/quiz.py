@@ -80,13 +80,14 @@ async def run_quizreset(bot, ctx):
         await ctx.send("キャンセルしました")
 
 
-async def run_quizstart(bot, guild, ctx, num):
+async def run_quizstart(bot, ctx, num):
     if num <= 0:
         await ctx.send("問題数を入力してください")
     elif not 1 <= num <= len(Question):
         await ctx.send("登録されている問題数に対して入力が間違っています")
         return
 
+    guild = bot.get_guild(ctx.guild.id)
     result, point, mag = {}, [4, 2, 1], []
     mag = [3 if i + 1 == num else 1 if (i + 1) % 5 != 0 else 2 for i in range(num)]
     await ctx.send("クイズを開始します")
@@ -187,12 +188,12 @@ class Quiz(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Administrator)
     async def qs(self, ctx, num=0):
-        await run_quizstart(self.bot, self.bot.get_guild(cs.Server), ctx, num)
+        await run_quizstart(self.bot, ctx, num)
 
     @commands.command()
     @commands.has_role(cs.Administrator)
     async def quizstart(self, ctx, num=0):
-        await run_quizstart(self.bot, self.bot.get_guild(cs.Server), ctx, num)
+        await run_quizstart(self.bot, ctx, num)
 
 
 def setup(bot):

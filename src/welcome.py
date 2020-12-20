@@ -21,7 +21,7 @@ class Welcome(commands.Cog):
             password = f"_join {time.strftime('%Y/%m/%d')}"
             if ctx.content == password:
                 await ctx.delete()
-                await ctx.author.add_roles(get_role(self.bot.get_guild(cs.Server), cs.Visitor))
+                await ctx.author.add_roles(get_role(self.bot.get_guild(ctx.guild.id), cs.Visitor))
                 await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
             else:
                 await ctx.delete(delay=5.0)

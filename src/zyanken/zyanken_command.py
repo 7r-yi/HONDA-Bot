@@ -28,6 +28,7 @@ async def run_noreply(guild, ctx, name):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
+    guild = bot.get_guild(ctx.guild.id)
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     for member in get_role(guild, cs.Zyanken).members:
@@ -45,6 +46,7 @@ async def run_noreplycancel(guild, ctx, name):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
+    guild = bot.get_guild(ctx.guild.id)
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     for member in get_role(guild, cs.Zyanken).members:
@@ -63,6 +65,7 @@ async def run_stats(bot, guild, ctx, name):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
+    guild = bot.get_guild(ctx.guild.id)
     if name is None:
         name = guild.get_member(ctx.author.id).display_name
     elif len(re.sub('[^0-9]', "", name)) == 18:
@@ -166,7 +169,7 @@ class Zyanken(commands.Cog):
     # 現在のWinner/Loserロールを取得
     @commands.Cog.listener()
     async def on_ready(self):
-        # _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
+        # _, _, winner, loser = zf.ranking_output(self.bot.get_guild(ctx.guild.id), type="winsmax")
         # zf.Former_winner, zf.Former_loser = winner, loser
         # self.role_update.start()
         self.data_auto_save.start()
@@ -174,8 +177,8 @@ class Zyanken(commands.Cog):
     # 定期的にWinner/Loserロール更新
     @tasks.loop(minutes=60)
     async def role_update(self):
-        _, _, winner, loser = zf.ranking_output(self.bot.get_guild(cs.Server), type="winsmax")
-        await update_roles(self.bot.get_guild(cs.Server), winner, loser)
+        _, _, winner, loser = zf.ranking_output(self.bot.get_guild(ctx.guild.id), type="winsmax")
+        await update_roles(self.bot.get_guild(ctx.guild.id), winner, loser)
 
     # 定期的にデータをオートセーブ
     @tasks.loop(minutes=10)
@@ -213,7 +216,7 @@ class Zyanken(commands.Cog):
                 await ctx.add_reaction(emoji2)
                 await ctx.channel.send(f"{ctx.author.mention} {hand}\n{msg}", file=discord.File(img), delete_after=5)
             if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
-                guild = self.bot.get_guild(cs.Server)
+                guild = self.bot.get_guild(ctx.guild.id)
                 await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
             break
 
@@ -230,43 +233,43 @@ class Zyanken(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def nr(self, ctx, name=None):
-        await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreply(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def noreply(self, ctx, name=None):
-        await run_noreply(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreply(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def nrc(self, ctx, name=None):
-        await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreplycancel(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def noreplycancel(self, ctx, name=None):
-        await run_noreplycancel(self.bot.get_guild(cs.Server), ctx, name)
+        await run_noreplycancel(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def st(self, ctx, name=None):
-        await run_stats(self.bot, self.bot.get_guild(cs.Server), ctx, name)
+        await run_stats(self.bot, self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def stats(self, ctx, name=None):
-        await run_stats(self.bot, self.bot.get_guild(cs.Server), ctx, name)
+        await run_stats(self.bot, self.bot, ctx, name)
 
     """
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def rk(self, ctx, type="winsmax", num=999):
-        await run_ranking(self.bot.get_guild(cs.Server), ctx, type, num)
+        await run_ranking(self.bot.get_guild(ctx.guild.id), ctx, type, num)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def ranking(self, ctx, type="winsmax", num=999):
-        await run_ranking(self.bot.get_guild(cs.Server), ctx, type, num)
+        await run_ranking(self.bot.get_guild(ctx.guild.id), ctx, type, num)
     """
 
     @commands.command()

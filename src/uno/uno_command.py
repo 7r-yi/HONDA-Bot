@@ -137,12 +137,12 @@ async def run_uno(bot, guild, ctx):
             continue
         elif not input.isdecimal():
             await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-        elif 2 <= int(input) <= 100:
+        elif 2 <= int(input) <= 30:
             if reply.author.id not in ok_player:
                 want_nums.append(int(input))
                 ok_player.append(reply.author.id)
         else:
-            await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5)
+            await ctx.send(f"{reply.author.mention} 2～30枚以内で指定してください", delete_after=5)
         if len(ok_player) == len(all_player):
             break
     try:
@@ -151,6 +151,31 @@ async def run_uno(bot, guild, ctx):
         initial_num = 7
 
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
+    await ctx.send(f"{all_mention()}\n最後に、カードの確率設定を変更できます\n"
+                   f"変更する場合は、テンプレに沿って[]内の数字を変更して誰か1人が送信\n"
+                   f"過半数以上が `!NO` と送信するとカード設定を変更しないで進める (制限時間60秒)\nテンプレート↓{uf.Card_Template}")
+    no_player, ask_start = [], datetime.now()
+    while True:
+        try:
+            reply = await bot.wait_for('message', check=ng_check, timeout=60 - (datetime.now() - ask_start).seconds)
+            input = jaconv.z2h(reply.content, digit=True)
+        except asyncio.exceptions.TimeoutError:
+            await ctx.send("カードの枚数を変更せずに進めます")
+            break
+        if reply.author.id not in all_player:
+            continue
+        if input == "!no":
+            no_player.append(reply.author.id)
+        if len(no_player) >= len(all_player) // 2 + 1:
+            await ctx.send("カードの枚数を変更せずに進めます")
+            break
+        check = uf.template_check(input)
+        if check:
+            await ctx.send("カードの枚数を変更しました")
+            break
+        else:
+            await ctx.send(f"{reply.author.mention} 入力エラー\n{check}", delete_after=10)
+
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
@@ -446,7 +471,7 @@ async def run_uno(bot, guild, ctx):
         await bot.get_channel(cs.Result).send(embed=embed)
 
     # ゲーム終了処理 (画像やロール削除)
-    await ctx.send(f"{all_mention()}\n```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
+    await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
     if not FREE_FLAG:
         ur.data_save(sort_data, all_name)
     await uno_end(guild, all_player, True, True)
@@ -537,38 +562,38 @@ class Uno(commands.Cog):
         global FREE_FLAG
         FREE_FLAG = True
         try:
-            await run_uno(self.bot, self.bot.get_guild(698208344896176168), ctx)
+            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(698208344896176168), all_player, True, False)
+            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def us(self, ctx):
         try:
-            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(cs.Server), all_player, True, False)
+            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def unostart(self, ctx):
         try:
-            await run_uno(self.bot, self.bot.get_guild(cs.Server), ctx)
+            await run_uno(self.bot, self.bot.get_guild(ctx.guild.id), ctx)
         except DiscordServerError or ac.ClientOSError:
             await ctx.channel.send("サーバーエラーが発生しました\tゲームを終了します")
-            await uno_end(self.bot.get_guild(cs.Server), all_player, True, False)
+            await uno_end(self.bot.get_guild(ctx.guild.id), all_player, True, False)
 
     @commands.command()
     @commands.has_role(cs.UNO)
     async def rc(self, ctx, name=None):
-        await run_record(self.bot, self.bot.get_guild(cs.Server), ctx, name)
+        await run_record(self.bot, self.bot.get_guild(ctx.guild.id), ctx, name)
 
     @commands.command()
     @commands.has_role(cs.UNO)
     async def record(self, ctx, name=None):
-        await run_record(self.bot, self.bot.get_guild(cs.Server), ctx, name)
+        await run_record(self.bot, self.bot.get_guild(ctx.guild.id), ctx, name)
 
     @commands.command()
     async def cdm(self, ctx):

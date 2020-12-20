@@ -3,6 +3,7 @@ import copy
 import re
 
 UNO_start = False
+
 Rule = "★ハウスルール(基本的なものは除く)\n" \
        "1. 同じ数字/記号なら1ターンに何枚でも出せる (例 : 青1 → 青0, 緑0, 黄0)\n" \
        "1-2. 最初に出すカードは、直前の場札に対して出せるカードでないといけない\n" \
@@ -49,6 +50,11 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "・ゲームから離脱させる → メンション !Drop (モデレーターのみ)\n" \
        "・ゲームを中止する → !Cancel (過半数の同意が必要)"
 
+Card_Template = "```・数字の0 : 各色[1]枚ずつ\n・数字の7 : 各色[2]枚ずつ\n・数字の1～6, 8～9 : 各色[2]枚ずつ\n" \
+                "・スキップ : 各色[2]枚ずつ\n・リバース : 各色[2]枚ずつ\n" \
+                "・ドロー2 : 各色[2]枚ずつ\n・ディスカードオール : 各色[1]枚ずつ\n" \
+                "・ワイルド : 全部で[4]枚\n・ドロー4 : 全部で[4]枚```"
+
 # 0とディスカードオールは各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
 Card = []
 Color = ["赤", "青", "緑", "黄"]
@@ -57,6 +63,43 @@ for n1 in Number:
     for n2 in Color:
         Card.append(f"{n2}{n1}")
 Card = (Card * 2)[4:-4] + ["ワイルド", "ドロー4"] * 4
+
+
+def template_check(stc):
+    stc = stc.replace("]", "[")
+    if stc.count("[") != 18:
+        return "データ数が間違っていたり、[]で囲まれていない箇所があるかもしれません"
+
+    data = stc.split("[")
+    card_num = []
+    for i in range(9):
+        if not data[i * 2 + 1].isdecimal():
+            return "[]内が数字のみとなっていない箇所があります"
+        elif not 0 <= int(data[i * 2 + 1]) <= 100:
+            return "枚数設定の可能な範囲は、それぞれ0～100枚です"
+        card_num.append(int(data[i * 2 + 1]))
+    if all([card_num[i] == 0 for i in range(3)]):
+        return "数字カードを全て0枚に設定することは出来ません"
+
+    # カードの枚数設定に応じて新カードを生成
+    mark = ["0", "7", "9", "スキップ", "リバース", "ドロー2", "ディスカードオール", "ワイルド", "ドロー4"]
+    marks, new_card = [], []
+    for i in range(7):
+        for j in range(card_num[i]):
+            marks.appened(mark[i])
+    for i in range(card_num[2]):
+        marks += [str(j) for j in range(1, 7)] + ["8"]
+    for n in marks:
+        for m in Color:
+            new_card.append(f"{m}{n}")
+    for i in range(-1, -3, -1):
+        for j in range(card_num[i]):
+            new_card.append(mark[i])
+
+    global Card
+    Card = new_card
+
+    return True
 
 
 def translate_input(word):

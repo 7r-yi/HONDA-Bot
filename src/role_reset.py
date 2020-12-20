@@ -3,7 +3,8 @@ import constant as cs
 from multi_func import get_role
 
 
-async def run(guild, ctx, role_name):
+async def run(bot, ctx, role_name):
+    guild = bot.get_guild(ctx.guild.id)
     if role_name in ["participant", "p"]:
         rm_role = get_role(guild, cs.Participant)
         cs.Joiner = []
@@ -29,12 +30,12 @@ class RoleReset(commands.Cog):
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def rs(self, ctx, role_name=""):
-        await run(self.bot.get_guild(cs.Server), ctx, role_name)
+        await run(self.bot, ctx, role_name)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def reset(self, ctx, role_name=""):
-        await run(self.bot.get_guild(cs.Server), ctx, role_name)
+        await run(self.bot, ctx, role_name)
 
 
 def setup(bot):

@@ -31,10 +31,11 @@ async def run_drop(ctx):
 
 
 # 参加者を削除する
-async def run_remove(guild, ctx, name):
+async def run_remove(bot, ctx, name):
     if name is None:
         return await ctx.send("ユーザー名を入力してください", delete_after=10)
 
+    guild = bot.get_guild(ctx.guild.id)
     for member in get_role(guild, cs.Visitor).members:
         if name.lower() == member.display_name.lower():
             if str(member.id) in Joiner:
@@ -58,13 +59,14 @@ async def run_list(bot, ctx):
 
 
 # 参加希望者の抽選を行う
-async def run_pickup(guild, ctx, num):
+async def run_pickup(bot, ctx, num):
     global Joiner
     if ctx.channel.id != cs.Recruit:
         return
     elif len(Joiner) < num or num <= 0:
         return await ctx.send("正しい人数を入力してください", delete_after=10)
 
+    guild = bot.get_guild(ctx.guild.id)
     role_P = get_role(guild, cs.Participant)
     pick_num = sorted(random.sample(list(range(len(Joiner))), num))  # 抽選を行う
     stc = [f"{i + 1}. {guild.get_member(Joiner[pick_num[i]]).display_name}\n"
@@ -103,12 +105,12 @@ class Stream(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Administrator)
     async def rm(self, ctx, name=None):
-        await run_remove(self.bot.get_guild(cs.Server), ctx, name)
+        await run_remove(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Administrator)
     async def remove(self, ctx, name=None):
-        await run_remove(self.bot.get_guild(cs.Server), ctx, name)
+        await run_remove(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
@@ -123,12 +125,12 @@ class Stream(commands.Cog):
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
     async def pu(self, ctx, num=0):
-        await run_pickup(self.bot.get_guild(cs.Server), ctx, num)
+        await run_pickup(self.bot, ctx, num)
 
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def pickup(self, ctx, num=0):
-        await run_pickup(self.bot.get_guild(cs.Server), ctx, num)
+        await run_pickup(self.bot, ctx, num)
 
 
 def setup(bot):
