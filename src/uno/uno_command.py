@@ -80,6 +80,7 @@ async def run_uno(bot, guild, ctx):
         return ng_check(ctx_wait) and ctx_wait.author.id in all_player
 
     # 既にUNO実行中の場合はゲームを開始しない
+    global FREE_FLAG
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not FREE_FLAG:
         return
     elif uf.UNO_start:
@@ -125,7 +126,7 @@ async def run_uno(bot, guild, ctx):
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
 
     await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました")
-    await ctx.send(f"{all_mention()}\n次に、初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
+    await ctx.send(f"{all_mention()}\n初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
     want_nums, ok_player, ask_start = [], [], datetime.now()
     while True:
         try:
@@ -151,9 +152,11 @@ async def run_uno(bot, guild, ctx):
         initial_num = 7
 
     await ctx.send(f"初期手札を{initial_num}枚に設定しました")
-    await ctx.send(f"{all_mention()}\n最後に、カードの確率設定を変更できます\n"
-                   f"変更する場合は、テンプレに沿って[]内の数字を変更して誰か1人が送信\n"
-                   f"過半数以上が `!NO` と送信するとカード設定を変更しないで進める (制限時間60秒)\nテンプレート↓{uf.Card_Template}")
+    await ctx.send(f"{all_mention()}\nカードの確率設定を変更できます\n"
+                   f"変更する場合は、テンプレに沿って[]内の数字を変更し、参加者の内1人が送信してください\n"
+                   f"過半数以上が `!NO` と送信すると、カード設定を変更しないでゲームを進めます (制限時間60秒)\n"
+                   f"※カード設定を変更した場合は、ゲーム結果は記録されません\n\n"
+                   f"テンプレート↓{uf.Card_Template}")
     no_player, ask_start = [], datetime.now()
     while True:
         try:
@@ -169,12 +172,13 @@ async def run_uno(bot, guild, ctx):
         if len(no_player) >= len(all_player) // 2 + 1:
             await ctx.send("カードの枚数を変更せずに進めます")
             break
-        check = uf.template_check(input)
-        if check:
+        error = uf.template_check(input)
+        if error is None:
             await ctx.send("カードの枚数を変更しました")
+            FREE_FLAG = True
             break
         else:
-            await ctx.send(f"{reply.author.mention} 入力エラー\n{check}", delete_after=10)
+            await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
 
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
@@ -279,7 +283,7 @@ async def run_uno(bot, guild, ctx):
             elif "!drop" in input and reply.author.id in all_player:
                 # 棄権者を指定
                 if len(all_data) > 2 and len(reply.raw_mentions) == 1:
-                    if role_check_mode(reply) or FREE_FLAG:
+                    if role_check_mode(reply):
                         j = uf.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
                             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention} を棄権させました")
@@ -471,9 +475,11 @@ async def run_uno(bot, guild, ctx):
         await bot.get_channel(cs.Result).send(embed=embed)
 
     # ゲーム終了処理 (画像やロール削除)
-    await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
     if not FREE_FLAG:
         ur.data_save(sort_data, all_name)
+        await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
+    else:
+        await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```ゲームを終了しました")
     await uno_end(guild, all_player, True, True)
 
 

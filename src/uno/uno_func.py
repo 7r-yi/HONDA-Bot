@@ -86,7 +86,7 @@ def template_check(stc):
     marks, new_card = [], []
     for i in range(7):
         for j in range(card_num[i]):
-            marks.appened(mark[i])
+            marks.append(mark[i])
     for i in range(card_num[2]):
         marks += [str(j) for j in range(1, 7)] + ["8"]
     for n in marks:
@@ -95,11 +95,10 @@ def template_check(stc):
     for i in range(-1, -3, -1):
         for j in range(card_num[i]):
             new_card.append(mark[i])
-
     global Card
     Card = new_card
 
-    return True
+    return None
 
 
 def translate_input(word):
