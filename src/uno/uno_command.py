@@ -170,12 +170,12 @@ async def run_uno(bot, ctx, type):
                 continue
             elif not input.isdecimal():
                 await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-            elif 2 <= int(input) <= 20 or FREE_FLAG:
+            elif 2 <= int(input) <= 50 or FREE_FLAG:
                 if reply.author.id not in ok_player:
                     want_nums.append(int(input))
                     ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.mention} 2～20枚以内で指定してください", delete_after=5)
+                await ctx.send(f"{reply.author.mention} 2～50枚以内で指定してください", delete_after=5)
             if len(ok_player) == len(all_player):
                 break
         try:
