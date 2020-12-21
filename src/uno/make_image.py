@@ -9,9 +9,11 @@ from src.uno import uno_command
 AREA_PASS = 'src/uno/base_image/Area.png'
 AREA_COPY_PASS = 'src/uno/base_image/Area_copy.png'
 AREA_SP_PASS = 'src/uno/base_image/Area_special.png'
+AREA_FREE_PASS = 'src/uno/base_image/Area_free.png'
 AREA_PASS_temp = AREA_PASS
 BG_PASS = 'src/uno/base_image/Background.png'
 BG_SP_PASS = 'src/uno/base_image/Background_special.png'
+BG_FREE_PASS = 'src/uno/base_image/Background_free.png'
 BG_PASS_temp = BG_PASS
 HAND_PASS = 'src/uno/base_image/hand.png'
 ALPHA_CARD_PASS = 'src/uno/base_image/card.png'

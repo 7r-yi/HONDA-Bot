@@ -111,6 +111,7 @@ async def run_uno(bot, ctx, type):
         mode_str = "特殊ルールモードで"
     elif type.lower() in ["f", "free"]:
         FREE_FLAG = True
+        mi.AREA_PASS, mi.BG_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS
         mode_str = "フリープレイモードで"
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not FREE_FLAG:
         return await ctx.send(f"{ctx.author.mention} ここでは実行できません", delete_after=5)
