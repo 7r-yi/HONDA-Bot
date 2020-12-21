@@ -7,8 +7,12 @@ from src.uno import uno_func
 from src.uno import uno_command
 
 AREA_PASS = 'src/uno/base_image/Area.png'
-AREA_TEMP_PASS = 'src/uno/base_image/Area_tmp.png'
+AREA_COPY_PASS = 'src/uno/base_image/Area_copy.png'
+AREA_SP_PASS = 'src/uno/base_image/Area_special.png'
+AREA_PASS_temp = AREA_PASS
 BG_PASS = 'src/uno/base_image/Background.png'
+BG_SP_PASS = 'src/uno/base_image/Background_special.png'
+BG_PASS_temp = BG_PASS
 HAND_PASS = 'src/uno/base_image/hand.png'
 ALPHA_CARD_PASS = 'src/uno/base_image/card.png'
 
@@ -98,9 +102,9 @@ def make_area(card):
     # 貼り付ける位置をランダムで指定
     gap_w, gap_h = random.randint(-300, 100), random.randint(-150, 50)
     # カードを場に重ねる
-    area_img = Image.open(AREA_TEMP_PASS)
+    area_img = Image.open(AREA_COPY_PASS)
     card_img = Image.open(ALPHA_CARD_PASS)
     area_img.paste(card_img, (190 + gap_w, 85 + gap_h), card_img)
-    area_img.save(AREA_TEMP_PASS)
+    area_img.save(AREA_COPY_PASS)
     # 一旦出力した画像を削除
     os.remove(ALPHA_CARD_PASS)

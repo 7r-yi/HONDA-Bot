@@ -24,7 +24,7 @@ async def run_setpercentage(ctx, num):
     await ctx.send(f"{ctx.author.mention} 勝利 : {num:g}%, 敗北 : {(100 - num):g}% に設定しました", delete_after=10)
 
 
-async def run_noreply(guild, ctx, name):
+async def run_noreply(bot, ctx, name):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
@@ -42,7 +42,7 @@ async def run_noreply(guild, ctx, name):
     await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした", delete_after=10)
 
 
-async def run_noreplycancel(guild, ctx, name):
+async def run_noreplycancel(bot, ctx, name):
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
 
@@ -60,7 +60,7 @@ async def run_noreplycancel(guild, ctx, name):
     await ctx.send(f"{ctx.author.mention} ユーザーが見つかりませんでした", delete_after=10)
 
 
-async def run_stats(bot, guild, ctx, name):
+async def run_stats(bot, ctx, name):
     # じゃんけん会場のみ反応(モデレーター以外)
     if ctx.channel.id != cs.Zyanken_room and not role_check_mode(ctx):
         return
@@ -253,12 +253,12 @@ class Zyanken(commands.Cog):
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def st(self, ctx, name=None):
-        await run_stats(self.bot, self.bot, ctx, name)
+        await run_stats(self.bot, ctx, name)
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def stats(self, ctx, name=None):
-        await run_stats(self.bot, self.bot, ctx, name)
+        await run_stats(self.bot, ctx, name)
 
     """
     @commands.command()
