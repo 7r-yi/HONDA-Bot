@@ -203,8 +203,8 @@ async def run_uno(bot, ctx, type):
             else:
                 await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
 
-    random.shuffle(all_player)
     NOW_PLAYING = all_player
+    random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
     for i in range(len(all_player)):
