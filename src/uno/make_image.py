@@ -45,8 +45,8 @@ def make_hand(card):
     bg_h, bg_w, _ = bg_img.shape
     h, w, _ = card_img[0].shape
     num, mag = len(card_img), 1.0
-    # 枚数に応じて横に並べる枚数を4～12枚に調整
-    MAX = 4 if np.ceil(num / 2) < 4 else 10 if np.ceil(num / 3) > 10 else int(np.ceil(num / 3))
+    # 枚数に応じて横に並べる枚数を調整
+    MAX = 4 if num / 2 < 4 else int(num / 3) if num / 3 <= 10 else int(num / np.sqrt(num))
     # 並べた時に見切れないように、枚数に応じてカードの画像サイズを縮小
     while True:
         # 画像同士の余白は最低 縦[40/枚数+1]px、横[70/枚数+1]px 空ける

@@ -45,9 +45,6 @@ async def run_uno_config(bot, ctx, type):
     except DiscordServerError or ac.ClientOSError:
         await ctx.channel.send("サーバーエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), [], True, False)
-    except HTTPException:
-        await ctx.channel.send("手札の枚数が超過しているためエラーが発生しました\nゲームを終了します")
-        await uno_end(bot.get_guild(ctx.guild.id), [], False, False)
     except:
         await ctx.channel.send("何らかのエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), [], False, False)
@@ -75,6 +72,8 @@ async def run_uno(bot, ctx, type):
             else:
                 card_msg = f"追加カード↓```{uf.card_to_string(uf.sort_card(add_card))}```"
             card_msg += f"現在の手札↓```{uf.card_to_string(all_data[n][1])}```"
+            if len(card_msg) > 2000:
+                card_msg = "現在の手札↓```文字数制限(2000文字)を超過しているため、文字で送信できません```"
             all_data[n][2] = await bot.get_user(all_data[n][0]).send(card_msg, file=discord.File(mi.HAND_PASS))
             os.remove(mi.HAND_PASS)
         else:
@@ -175,12 +174,12 @@ async def run_uno(bot, ctx, type):
                 continue
             elif not input.isdecimal():
                 await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-            elif 2 <= int(input) <= 100:
+            elif 2 <= int(input) <= 1000:
                 if reply.author.id not in ok_player:
                     want_nums.append(int(input))
                     ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5)
+                await ctx.send(f"{reply.author.mention} 2～1000枚以内で指定してください", delete_after=5)
             if len(ok_player) == len(all_player):
                 break
         try:
@@ -189,16 +188,22 @@ async def run_uno(bot, ctx, type):
             initial_num = 7
         await ctx.send(f"初期手札を{initial_num}枚に設定しました")
 
-        await ctx.send(f"カードの確率設定を変更します\nテンプレをコピーした後、[]内の数字を変更して送信してください")
+        await ctx.send(f"カードの確率設定を変更します\n"
+                       f"テンプレをコピーした後、[]内の数字を変更して送信してください\n変更しない場合は `!No` と入力してください")
         await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
         while True:
             reply = await bot.wait_for('message', check=ng_check)
-            input = jaconv.z2h(reply.content, digit=True)
-            if reply.author.id not in all_player or input.count("[") == 0:
+            input = jaconv.z2h(reply.content, ascii=True, digit=True)
+            if reply.author.id not in all_player:
+                continue
+            elif input.lower() == "!no":
+                await ctx.send("カードの確率はデフォルトのままで進行します")
+                break
+            elif input.count("[") == 0:
                 continue
             error = uf.template_check(input)
             if error is None:
-                await ctx.send(f"カードの確率設定を変更しました")
+                await ctx.send("カードの確率設定を変更しました")
                 break
             else:
                 await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)

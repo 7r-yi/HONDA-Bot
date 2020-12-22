@@ -35,10 +35,9 @@ class Talk(commands.Cog):
     async def on_message(self, ctx):
         if ctx.author.bot or type(ctx.channel) != discord.DMChannel:
             return
-        name = self.bot.get_guild(ctx.guild.id).get_member(ctx.author.id)
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        msg = f"{name.mention}が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
-        await self.bot.get_channel(cs.Mod_room).send(msg)
+        msg = f"{ctx.author} が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
+        await self.bot.get_channel(cs.Test_room).send(msg)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
