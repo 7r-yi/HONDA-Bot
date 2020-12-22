@@ -20,7 +20,6 @@ from . import make_image as mi
 from . import uno_record as ur
 
 WATCH_FLAG = None
-FREE_FLAG = False
 NOW_PLAYING = []
 
 
@@ -99,21 +98,24 @@ async def run_uno(bot, ctx, type):
     if uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中なので開始出来ません", delete_after=5)
 
-    global NOW_PLAYING, FREE_FLAG
-    normal_flag, FREE_FLAG, special_flag, mode_str = False, False, False, ""
-    uf.Card, mi.AREA_PASS, mi.BG_PASS = uf.Card_Normal, mi.AREA_PASS_temp, mi.BG_PASS_temp
+    global NOW_PLAYING
+    normal_flag, special_flag, mode_str = False, False, ""
+    uf.Card = uf.Card_Normal
+    mi.AREA_PASS, mi.BG_PASS, mi.CARD_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp, mi.CARD_PASS_temp
     if type.lower() in ["n", "normal"]:
         normal_flag = True
-        mode_str = "通常ルールモードで"
+        mode_str = "ノーマルモードで"
     elif type.lower() in ["s", "special"]:
         special_flag = True
         mi.AREA_PASS, mi.BG_PASS = mi.AREA_SP_PASS, mi.BG_SP_PASS
         mode_str = "特殊ルールモードで"
     elif type.lower() in ["f", "free"]:
-        FREE_FLAG = True
-        mi.AREA_PASS, mi.BG_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS
+        special_flag = True
+        mi.AREA_PASS, mi.BG_PASS, mi.CARD_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS, mi.CARD_NORMAL_PASS
         mode_str = "フリープレイモードで"
-    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not FREE_FLAG:
+    else:
+        return await ctx.send(f"{ctx.author.mention} そんなモードはありません", delete_after=5)
+    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not special_flagG:
         return await ctx.send(f"{ctx.author.mention} ここでは実行できません", delete_after=5)
 
     uf.UNO_start = True
@@ -141,7 +143,7 @@ async def run_uno(bot, ctx, type):
             await ctx.send(f"```現在の参加者リスト\n{''.join(stc)}```", delete_after=15)
         elif input in ["!e", "!end"] and all_player:
             if ctx.author.id == reply.author.id or role_check_mode(ctx):
-                if len(all_player) >= 2 or role_check_admin(ctx) or FREE_FLAG:
+                if len(all_player) >= 2 or role_check_admin(ctx) or special_flag:
                     break
                 else:
                     await ctx.send(f"{reply.author.mention} 2人以上でないと開始出来ません", delete_after=5)
@@ -157,7 +159,10 @@ async def run_uno(bot, ctx, type):
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
     await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました")
 
-    if not normal_flag:
+    if normal_flag:
+        initial_num = 7
+        await ctx.send(f"通常モードで開始したため、初期手札{initial_num}枚、カードの確率はデフォルトとなります")
+    else:
         await ctx.send(f"{all_mention()}\n初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
         want_nums, ok_player, ask_start = [], [], datetime.now()
         while True:
@@ -170,38 +175,33 @@ async def run_uno(bot, ctx, type):
                 continue
             elif not input.isdecimal():
                 await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-            elif 2 <= int(input) <= 50 or FREE_FLAG:
+            elif 2 <= int(input) <= 100:
                 if reply.author.id not in ok_player:
                     want_nums.append(int(input))
                     ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.mention} 2～50枚以内で指定してください", delete_after=5)
+                await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5)
             if len(ok_player) == len(all_player):
                 break
         try:
             initial_num = collections.Counter(want_nums).most_common()[0][0]
         except IndexError:
             initial_num = 7
-        await ctx.send(f"初期手札を{initial_num}枚に設定しました")
+        await ctx.send(f"{all_mention()}\n初期手札を{initial_num}枚に設定しました")
 
-        if FREE_FLAG or special_flag:
-            await ctx.send(f"{all_mention()}\nカードの確率設定を変更します\n"
-                           f"テンプレをコピーした後、[]内の数字を変更して送信してください")
-            await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
-            while True:
-                reply = await bot.wait_for('message', check=ng_check)
-                input = jaconv.z2h(reply.content, digit=True)
-                if reply.author.id not in all_player or input.count("[") == 0:
-                    continue
-                error = uf.template_check(input)
-                if error is None:
-                    await ctx.send("カードの確率設定を変更しました")
-                    break
-                else:
-                    await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
-    else:
-        initial_num = 7
-        await ctx.send(f"通常モードで開始したため、初期手札{initial_num}枚、カードの確率はデフォルトとなります")
+        await ctx.send(f"カードの確率設定を変更します\nテンプレをコピーした後、[]内の数字を変更して送信してください")
+        await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
+        while True:
+            reply = await bot.wait_for('message', check=ng_check)
+            input = jaconv.z2h(reply.content, digit=True)
+            if reply.author.id not in all_player or input.count("[") == 0:
+                continue
+            error = uf.template_check(input)
+            if error is None:
+                await ctx.send(f"{all_mention()}\nカードの確率設定を変更しました")
+                break
+            else:
+                await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
 
     random.shuffle(all_player)
     NOW_PLAYING = all_player
@@ -308,12 +308,12 @@ async def run_uno(bot, ctx, type):
             elif "!drop" in input and reply.author.id in all_player:
                 # 棄権者を指定
                 if len(all_data) > 2 and len(reply.raw_mentions) == 1:
-                    if role_check_mode(reply) or FREE_FLAG or special_flag:
+                    if role_check_mode(reply) or special_flag:
                         j = uf.search_player(reply.raw_mentions[0], all_data)
                         if j is not None:
                             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention} を棄権させました")
                             cnt = i - 1 if j < i else i
-                            if FREE_FLAG or special_flag:
+                            if special_flag:
                                 drop_name = guild.get_member(all_data[j][0]).display_name
                                 ur.add_penalty(all_data[j][0], drop_name, all_data[j][1])
                             NOW_PLAYING.remove(all_data[j][0])
@@ -328,7 +328,7 @@ async def run_uno(bot, ctx, type):
                     await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
                     j = uf.search_player(reply.author.id, all_data)
                     cnt = i - 1 if j < i else i
-                    if FREE_FLAG or special_flag:
+                    if special_flag:
                         ur.add_penalty(reply.author.id, guild.get_member(reply.author.id).display_name, all_data[j][1])
                     NOW_PLAYING.remove(reply.author.id)
                     all_data.pop(j)
@@ -489,7 +489,7 @@ async def run_uno(bot, ctx, type):
         stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
 
     # ゲーム終了処理 (画像やロール削除)
-    if not FREE_FLAG or special_flag:
+    if not special_flag:
         # 10人以上参加 & 初期手札7~10枚の時、Winner/Loserロール付与 & 結果出力
         if 10 <= len(all_data) and 7 <= initial_num <= 10:
             end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
@@ -593,11 +593,11 @@ class Uno(commands.Cog):
         await run_watchgame(ctx)
 
     @commands.command()
-    async def us(self, ctx, type=""):
+    async def us(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
 
     @commands.command()
-    async def unostart(self, ctx, type=""):
+    async def unostart(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
 
     @commands.command()

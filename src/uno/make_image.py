@@ -4,7 +4,6 @@ import os
 import numpy as np
 from PIL import Image
 from src.uno import uno_func
-from src.uno import uno_command
 
 AREA_PASS = 'src/uno/base_image/Area.png'
 AREA_COPY_PASS = 'src/uno/base_image/Area_copy.png'
@@ -17,24 +16,22 @@ BG_FREE_PASS = 'src/uno/base_image/Background_free.png'
 BG_PASS_temp = BG_PASS
 HAND_PASS = 'src/uno/base_image/hand.png'
 ALPHA_CARD_PASS = 'src/uno/base_image/card.png'
+CARD_PASS = 'src/uno/card_image/original'
+CARD_NORMAL_PASS = 'src/uno/card_image/normal'
+CARD_PASS_temp = CARD_PASS
 
 
 def id_to_pass(id):
-    if uno_command.FREE_FLAG:
-        card_type = "normal"
-    else:
-        card_type = "original"
-
     if 100 <= id < 200:
-        return f"src/uno/card_image/{card_type}/Red_{id % 100}.png"
+        return f"{CARD_PASS}/Red_{id % 100}.png"
     elif 200 <= id < 300:
-        return f"src/uno/card_image/{card_type}/Blue_{id % 200}.png"
+        return f"{CARD_PASS}/Blue_{id % 200}.png"
     elif 300 <= id < 400:
-        return f"src/uno/card_image/{card_type}/Green_{id % 300}.png"
+        return f"{CARD_PASS}/Green_{id % 300}.png"
     elif 400 <= id < 500:
-        return f"src/uno/card_image/{card_type}/Yellow_{id % 400}.png"
+        return f"{CARD_PASS}/Yellow_{id % 400}.png"
     else:  # 531 <= id <= 534 → 30
-        return f"src/uno/card_image/{card_type}/Black_{id // 10 % 10 * 10}.png"
+        return f"{CARD_PASS}/Black_{id // 10 % 10 * 10}.png"
 
 
 def make_hand(card):
