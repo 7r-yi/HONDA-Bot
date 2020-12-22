@@ -160,12 +160,9 @@ async def run_uno(bot, ctx, type):
             else:
                 await ctx.send(f"{reply.author.mention} 開始を宣言した人以外は実行できません", delete_after=5)
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
-    await ctx.send(f"```プレイヤーリスト\n\n{''.join(stc)}```締め切りました")
+    await ctx.send(f"締め切りました```プレイヤーリスト\n\n{''.join(stc)}```")
 
-    if normal_flag:
-        initial_num = 7
-        await ctx.send(f"通常モードで開始したため、初期手札{initial_num}枚、カードの確率はデフォルトとなります")
-    else:
+    if not normal_flag:
         await ctx.send(f"{all_mention()}\n初期手札の枚数を多数決で決定します\n各自希望する枚数を入力してください (制限時間30秒)")
         want_nums, ok_player, ask_start = [], [], datetime.now()
         while True:
@@ -190,7 +187,7 @@ async def run_uno(bot, ctx, type):
             initial_num = collections.Counter(want_nums).most_common()[0][0]
         except IndexError:
             initial_num = 7
-        await ctx.send(f"{all_mention()}\n初期手札を{initial_num}枚に設定しました")
+        await ctx.send(f"初期手札を{initial_num}枚に設定しました")
 
         await ctx.send(f"カードの確率設定を変更します\nテンプレをコピーした後、[]内の数字を変更して送信してください")
         await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
@@ -201,10 +198,13 @@ async def run_uno(bot, ctx, type):
                 continue
             error = uf.template_check(input)
             if error is None:
-                await ctx.send(f"{all_mention()}\nカードの確率設定を変更しました")
+                await ctx.send(f"カードの確率設定を変更しました")
                 break
             else:
                 await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
+    else:
+        initial_num = 7
+        await ctx.send(f"ノーマルモードで開始したため、初期手札{initial_num}枚、カードの確率はデフォルトとなります")
 
     NOW_PLAYING = all_player
     random.shuffle(all_player)
