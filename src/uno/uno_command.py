@@ -5,6 +5,7 @@ import aiohttp.client_exceptions as ac
 import asyncio
 import asyncio.exceptions
 import os
+import traceback
 import shutil
 import copy
 import random
@@ -50,6 +51,8 @@ async def run_uno_config(bot, ctx, type):
     except:
         await ctx.channel.send("何らかのエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), [], False, False)
+        # エラー内容の出力
+        print(traceback.format_exc())
 
 
 # UNOゲーム実行処理
