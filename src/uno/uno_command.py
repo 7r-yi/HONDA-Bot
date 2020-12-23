@@ -207,6 +207,7 @@ async def run_uno(bot, ctx, type):
                 break
             else:
                 await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
+
         await ctx.send(f"カードの色の数を1～4色に変更できます\n数字を入力してください (変更しない場合は4)")
         while True:
             reply = await bot.wait_for('message', check=ng_check)
