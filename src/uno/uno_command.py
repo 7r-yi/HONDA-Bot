@@ -387,7 +387,7 @@ async def run_uno(bot, ctx, type):
                     if error is None:
                         # 出したカードを山場に追加
                         card += bet_card
-                        # 場札 & 手札更新(送信)
+                        # 場札更新
                         for j in bet_card:
                             # 出したカードを手札から削除
                             all_data[i][1].remove(j)
@@ -396,7 +396,9 @@ async def run_uno(bot, ctx, type):
                             # 7が出されたらタイム減少
                             if uf.card_to_id(j) % 100 == 7:
                                 time_cut += 1
-                        await send_card(i, 0, True)
+                        # ディスカードオールの場合は後で手札更新
+                        if uf.card_to_id(bet_card[0]) % 100 != 13:
+                            await send_card(i, 0, False)
                         # ドロー2/4のペナルティー枚数計算
                         penalty += uf.calculate_penalty(bet_card)
                         bet_flag = True
@@ -465,6 +467,8 @@ async def run_uno(bot, ctx, type):
         # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
             msg = f"{guild.get_member(all_data[i][0]).display_name}【{uf.card_to_string(all_data[i][1])}】"
+            if len(msg) > 2000:
+                msg = f"{guild.get_member(all_data[i][0]).display_name}【文字数制限を超過しているため表示できません】"
             await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
         elif card[-1][1:] == "スキップ" and bet_flag:
