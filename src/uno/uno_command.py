@@ -117,7 +117,7 @@ async def run_uno(bot, ctx, type):
         mode_str = "フリープレイモードで"
     else:
         return await ctx.send(f"{ctx.author.mention} そんなモードはありません", delete_after=5)
-    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not special_flagG:
+    if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not special_flag:
         return await ctx.send(f"{ctx.author.mention} ここでは実行できません", delete_after=5)
 
     uf.UNO_start = True
@@ -497,7 +497,7 @@ async def run_uno(bot, ctx, type):
         stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
 
     # ゲーム終了処理 (画像やロール削除)
-    if not special_flag:
+    if normal_flag:
         # 10人以上参加 & 初期手札7~10枚の時、Winner/Loserロール付与 & 結果出力
         if 10 <= len(all_data) and 7 <= initial_num <= 10:
             end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
@@ -517,7 +517,11 @@ async def run_uno(bot, ctx, type):
         await uno_end(guild, all_player, True, True)
     else:
         await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```ゲームを終了しました(結果は反映されません)")
-        await uno_end(guild, all_player, True, False)
+        # フリープレイ時はUNOロールを付与しない
+        if mi.AREA_PASS == mi.AREA_SP_PASS:
+            await uno_end(guild, all_player, True, True)
+        else:
+            await uno_end(guild, all_player, True, False)
 
 
 # プレイヤーのUNO戦績を表示
@@ -545,7 +549,7 @@ async def run_record(bot, guild, ctx, name):
             pass
 
     msg = await ctx.send(f"{name}のデータを検索中...")
-    for member in get_role(guild, cs.UNO).members:
+    for member in get_role(guild, cs.Visitor).members:
         if name.lower() == member.display_name.lower():
             data, player, url = ur.record_output(member.id)
             user, id = member.display_name, member.id

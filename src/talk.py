@@ -37,7 +37,7 @@ class Talk(commands.Cog):
             return
         time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
         msg = f"{ctx.author} が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
-        await self.bot.get_channel(cs.Test_room).send(msg)
+        await self.bot.get_channel(cs.Mod_room).send(msg)
 
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
