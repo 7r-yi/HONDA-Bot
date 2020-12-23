@@ -215,6 +215,7 @@ async def run_uno(bot, ctx, type):
     random.shuffle(all_player)
     # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
     all_data = [[id, [], None, [False, None]] for id in all_player]
+    msg = await ctx.send("カード配り中...")
     for i in range(len(all_player)):
         try:
             await send_card(i, initial_num, False)
@@ -223,6 +224,7 @@ async def run_uno(bot, ctx, type):
                            f"許可してから途中参加してください")
             all_player.pop(i)
             all_data.pop(i)
+    await msg.delete()
     stc = [f"{i + 1}. {guild.get_member(all_player[i]).display_name}\n" for i in range(len(all_player))]
     await ctx.send(f"カードを配りました、各自BotからのDMを確認してください\nゲームの進行順は以下のようになります```{''.join(stc)}```")
 
