@@ -459,7 +459,7 @@ async def run_uno(bot, ctx, type):
         # ペナルティーを受ける
         if penalty > 0 and not bet_flag:
             # ドローの場合
-            if 540 <= uf.card_to_id(card[-1]) <= 544:
+            if 540 <= uf.card_to_id(card[-1]) <= 544 or uf.card_to_id(card[-1]) % 100 == 12:
                 await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加します", delete_after=10)
                 await send_card(i, penalty, True)
                 penalty, cnt, = 0, cnt - 1
