@@ -479,7 +479,6 @@ async def run_uno(bot, ctx, type):
             if 540 <= uf.card_to_id(card[-1]) <= 544 or uf.card_to_id(card[-1]) % 100 == 12:
                 await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加します", delete_after=10)
                 await send_card(i, penalty, True)
-                penalty, cnt, = 0, cnt - 1
             # ドボンの場合
             else:
                 await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i - 1][0]).mention}以外の全員に"
@@ -487,7 +486,7 @@ async def run_uno(bot, ctx, type):
                 for j in range(len(all_player)):
                     if all_data[i - 1][0] != all_player[j]:
                         await send_card(j, penalty, True)
-                penalty, cnt, = 0, cnt - 1
+            penalty, cnt, = 0, cnt - 1
         # UNOフラグを降ろす
         if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]
