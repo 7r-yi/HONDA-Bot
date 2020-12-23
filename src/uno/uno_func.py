@@ -109,9 +109,9 @@ def translate_input(word):
         return "ワイルド"
     elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
         return "ドロー4"
-    elif word in ["+1", "d1", "dobon1"]:
+    elif word in ["+1", "d1", "dobon1", "にゃんま1"]:
         return "ドボン1"
-    elif word in ["+2", "d2", "dobon2"]:
+    elif word in ["+2", "d2", "dobon2", "にゃんま2"]:
         return "ドボン2"
     else:
         trans1, trans2 = word[0], word[1:]
