@@ -211,7 +211,7 @@ async def run_uno(bot, ctx, type):
         await ctx.send(f"カードの色の数を1～4色に変更できます\n数字を入力してください (変更しない場合は4)")
         while True:
             reply = await bot.wait_for('message', check=ng_check)
-            input = jaconv.z2h(reply.content, ascii=True, digit=True)
+            input = jaconv.z2h(reply.content, digit=True)
             if reply.author.id not in all_player:
                 continue
             elif not input.isdecimal():
