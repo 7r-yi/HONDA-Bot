@@ -188,7 +188,7 @@ async def run_uno(bot, ctx, type):
             initial_num = 7
         await ctx.send(f"初期手札を{initial_num}枚に設定しました")
 
-        await ctx.send(f"カードの確率設定を変更します\n"
+        await ctx.send(f"カードの確率設定を変更できます\n"
                        f"テンプレをコピーした後、[]内の数字を変更して送信してください\n変更しない場合は `!No` と入力してください")
         await ctx.send(f"テンプレート↓\n{uf.Card_Template}")
         while True:
@@ -207,6 +207,19 @@ async def run_uno(bot, ctx, type):
                 break
             else:
                 await ctx.send(f"{reply.author.mention} 入力エラー\n{error}", delete_after=10)
+        await ctx.send(f"カードの色の数を1~4色に変更できます\n数字を入力してください (変更しない場合は4)")
+        while True:
+            reply = await bot.wait_for('message', check=ng_check)
+            input = jaconv.z2h(reply.content, ascii=True, digit=True)
+            if reply.author.id not in all_player:
+                continue
+            elif not input.isdecimal():
+                await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
+                continue
+            for i in range(4 - int(input)):
+                uf.Card = uf.remove_color_card(uf.Color[-1 - i], uf.Card)
+            await ctx.send(f"カードの色の数を{input}色に設定しました")
+            break
     else:
         initial_num = 7
         await ctx.send(f"ノーマルモードで開始したため、初期手札{initial_num}枚、カードの確率はデフォルトとなります")
