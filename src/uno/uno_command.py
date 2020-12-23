@@ -426,7 +426,7 @@ async def run_uno(bot, ctx, type):
         if drop_flag:
             continue
         # ワイルドカードを出した後の色指定
-        if uf.card_to_id(card[-1]) >= 500 and bet_flag:
+        if 500 <= uf.card_to_id(card[-1]) and bet_flag:
             msg = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
             start = datetime.now()
@@ -482,13 +482,12 @@ async def run_uno(bot, ctx, type):
                 penalty, cnt, = 0, cnt - 1
             # ドボンの場合
             else:
-                i -= 1
-                await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i][0]).mention}以外の全員に"
+                await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i - 1][0]).mention}以外の全員に"
                                f"ペナルティーで{penalty}枚追加します", delete_after=10)
                 for j in range(len(all_player)):
-                    if all_data[i][0] != all_player[j]:
+                    if all_data[i - 1][0] != all_player[j]:
                         await send_card(j, penalty, True)
-                penalty, cnt, i = 0, cnt - 1, i + 1
+                penalty, cnt, = 0, cnt - 1
         # UNOフラグを降ろす
         if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]
@@ -499,21 +498,19 @@ async def run_uno(bot, ctx, type):
                 msg = f"{guild.get_member(all_data[i][0]).display_name}【文字数制限を超過しているため表示できません】"
             await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
-        elif card[-1][1:] == "スキップ" and bet_flag:
-            skip_n = len(bet_card)
-            await ctx.send(f"{2 * skip_n - 1}人スキップします", delete_after=10)
-            cnt += 2 * skip_n - 1
+        elif uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
+            await ctx.send(f"{2 * len(bet_card) - 1}人スキップします", delete_after=10)
+            cnt += 2 * len(bet_card) - 1
         # リバース処理
-        elif card[-1][1:] == "リバース" and bet_flag:
-            reverse_n = len(bet_card)
-            await ctx.send(f"{reverse_n}回リバースします", delete_after=10)
-            if reverse_n % 2 == 1:
+        elif uf.card_to_id(card[-1]) % 100 == 11 and bet_flag:
+            await ctx.send(f"{len(bet_card)}回リバースします", delete_after=10)
+            if len(bet_card) % 2 == 1:
                 # リバースを出した人のリバースされた配列中の位置を代入
                 tmp = copy.copy(all_data[i][0])
                 all_data.reverse()
                 cnt = uf.search_player(tmp, all_data)
         # ワイルドカードで順番シャッフル
-        elif "ワイルド" in card[-1] and bet_flag:
+        elif 530 <= uf.card_to_id(card[-1]) <= 534 and bet_flag:
             await ctx.send(f"{all_mention()}\n順番がシャッフルされました", delete_after=10)
             random.shuffle(all_data)
         # ターンエンド → 次のプレイヤーへ
