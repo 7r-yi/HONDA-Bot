@@ -399,7 +399,7 @@ async def run_uno(bot, ctx, type):
                         # ディスカードオールの場合は後で手札更新
                         if uf.card_to_id(bet_card[0]) % 100 != 13:
                             await send_card(i, 0, False)
-                        # ドロー2/4のペナルティー枚数計算
+                        # ドロー/ドボンのペナルティー枚数計算
                         penalty += uf.calculate_penalty(bet_card)
                         bet_flag = True
                         break
@@ -409,7 +409,7 @@ async def run_uno(bot, ctx, type):
         if drop_flag:
             continue
         # ワイルドカードを出した後の色指定
-        if card[-1] in ["ワイルド", "ドロー4"] and bet_flag:
+        if uf.card_to_id(card[-1]) >= 500 and bet_flag:
             msg = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
             start = datetime.now()
@@ -432,7 +432,7 @@ async def run_uno(bot, ctx, type):
                     await ctx.send(f"{bot.get_user(all_data[i][0]).mention} そんな色はありません", delete_after=5)
             await msg.delete()
         # ディスカードオール処理
-        if card[-1][1:] == "ディスカードオール" and bet_flag:
+        if uf.card_to_id(card[-1]) % 100 == 13 and bet_flag:
             colors = set([f"{bet_card[j][0]}色" for j in range(len(bet_card))])
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} "
                            f"{', '.join(colors)} のカードを全て捨てます", delete_after=10)
@@ -456,11 +456,22 @@ async def run_uno(bot, ctx, type):
         # 残り1枚になったらUNOフラグを立てる
         elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
             all_data[i][3] = [True, datetime.now()]
-        # ドロー2/4のペナルティーを受ける
+        # ペナルティーを受ける
         if penalty > 0 and not bet_flag:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加されました", delete_after=10)
-            await send_card(i, penalty, True)
-            penalty, cnt, = 0, cnt - 1
+            # ドローの場合
+            if 540 <= uf.card_to_id(card[-1]) <= 544:
+                await ctx.send(f"{bot.get_user(all_data[i][0]).mention} ペナルティーで{penalty}枚追加します", delete_after=10)
+                await send_card(i, penalty, True)
+                penalty, cnt, = 0, cnt - 1
+            # ドボンの場合
+            else:
+                i -= 1
+                await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i][0]).mention}以外の全員に"
+                               f"ペナルティーで{penalty}枚追加します", delete_after=10)
+                for j in range(len(all_player)):
+                    if all_data[i][0] != all_player[j]:
+                        await send_card(j, penalty, True)
+                penalty, cnt, i = 0, cnt - 1, i + 1
         # UNOフラグを降ろす
         if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]

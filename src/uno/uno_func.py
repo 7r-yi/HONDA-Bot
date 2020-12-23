@@ -23,17 +23,19 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
        "7-2. ドロー2/4を受けた後でもカードを出すことが出来る\n" \
        "8. ディスカードオールは、出したカードと同じ色の手札を全て捨てる\n" \
        "8-2. ディスカードオールで上がることは出来ない(カードを捨てた後に2枚追加)\n" \
-       "9. 山札から引けるのは1ターンで1枚まで\n" \
-       "9-2. 山札から1枚も引かずにパスすることは出来ない(ドロー2/4を受ける場合は除く)\n" \
-       "10. 記号で上がることは出来ない(記号しか残っていない時点で2枚追加)\n" \
-       "10-2. 手札が2枚以上の状態から、複数枚出しで一気に上がることは出来ない\n" \
-       "11. 誰か1人が上がったらその時点でゲームセット\n" \
-       "11-2. 数字カードは-その数字点、記号カードは-20点、ディスカードオールは-30点、ワイルドカードは-50点\n" \
-       "11-3. 1位は全員のマイナスポイント分をプラスで受け取れる\n\n\n" \
+       "9. ドボンカードは、ドボンカードのみで返すことが可能\n" \
+       "9-2. 返すごとに引かせる枚数が増加し、最後にドボンカードを出した人以外の全員が引く\n" \
+       "10. 山札から引けるのは1ターンで1枚まで\n" \
+       "10-2. 山札から1枚も引かずにパスすることは出来ない(ドロー2/4を受ける場合は除く)\n" \
+       "11. 記号で上がることは出来ない(記号しか残っていない時点で2枚追加)\n" \
+       "11-2. 手札が2枚以上の状態から、複数枚出しで一気に上がることは出来ない\n" \
+       "12. 誰か1人が上がったらその時点でゲームセット\n" \
+       "12-2. 数字カードは-その数字点、記号カードは-20点、ディスカードオールは-30点、ワイルドカードは-50点\n" \
+       "12-3. 1位は全員のマイナスポイント分をプラスで受け取れる\n\n\n" \
        "★カードの出し方 ※[]内は短縮形\n" \
        "・数字カード → 赤0 [R0], 青1 [B1], 緑2 [G2], 黄3 [Y3] など\n" \
        "・記号カード → 赤スキップ [RS], 青リバース [BR], 緑ドロー2 [G+2, GD2], 黄ディスカードオール[黄ディス, YDA] など\n" \
-       "・ワイルドカード → ワイルド [W], ドロー4 [+4, D4]\n\n" \
+       "・ワイルドカード → ワイルド [W], ドロー4 [+4, D4], ドボン1 [+1, D1], ドボン2 [+2, D2]\n\n" \
        "1. 複数枚出す時はカンマで区切る (例 : 赤0, 青0, 赤0, 緑0)\n" \
        "1-2. カンマ以外にも空白、読点、コンマなどでも可能\n" \
        "2. ワイルドカードを出す時は ワイルド or ドロー4 と入力する\n" \
@@ -53,7 +55,7 @@ Rule = "★ハウスルール(基本的なものは除く)\n" \
 Card_Template = "```・数字の0 : 各色[1]枚ずつ\n・数字の7 : 各色[2]枚ずつ\n・数字の1～6, 8～9 : 各色[2]枚ずつ\n" \
                 "・スキップ : 各色[2]枚ずつ\n・リバース : 各色[2]枚ずつ\n" \
                 "・ドロー2 : 各色[2]枚ずつ\n・ディスカードオール : 各色[1]枚ずつ\n" \
-                "・ワイルド : 全部で[4]枚\n・ドロー4 : 全部で[4]枚```"
+                "・ワイルド : 全部で[4]枚\n・ドロー4 : 全部で[4]枚\nドボン1 : 全部で[2]枚\nドボン2 : 全部で[2]枚```"
 
 # 0とディスカードオールは各色1枚ずつ、他は各色2枚ずつ、ワイルドカードは4枚ずつ
 Card = []
@@ -62,18 +64,18 @@ Number = [str(i) for i in range(10)] + ["スキップ", "リバース", "ドロ�
 for n1 in Number:
     for n2 in Color:
         Card.append(f"{n2}{n1}")
-Card = (Card * 2)[4:-4] + ["ワイルド", "ドロー4"] * 4
+Card = (Card * 2)[4:-4] + ["ワイルド", "ドロー4"] * 4 + ["ドボン1", "ドボン2"] * 2
 Card_Normal = Card
 
 
 def template_check(stc):
     stc = stc.replace("]", "[")
-    if stc.count("[") != 18:
+    if stc.count("[") != 22:
         return "データ数が間違っていたり、[]で囲まれていない箇所があるかもしれません"
 
     data = stc.split("[")
     card_num = []
-    for i in range(9):
+    for i in range(11):
         if not data[i * 2 + 1].isdecimal():
             return "[]内が数字のみとなっていない箇所があります"
         elif not 0 <= int(data[i * 2 + 1]) <= 100:
@@ -83,7 +85,7 @@ def template_check(stc):
         return "数字カードを全て0枚に設定することは出来ません"
 
     # カードの枚数設定に応じて新カードを生成
-    mark = ["0", "7", "9", "スキップ", "リバース", "ドロー2", "ディスカードオール", "ワイルド", "ドロー4"]
+    mark = ["0", "7", "9", "スキップ", "リバース", "ドロー2", "ディスカードオール", "ワイルド", "ドロー4", "ドボン1", "ドボン2"]
     marks, new_card = [], []
     for i in range(7):
         for j in range(card_num[i]):
@@ -93,7 +95,7 @@ def template_check(stc):
     for n in marks:
         for m in Color:
             new_card.append(f"{m}{n}")
-    for i in range(-1, -3, -1):
+    for i in range(-1, -5, -1):
         for j in range(card_num[i]):
             new_card.append(mark[i])
     global Card
@@ -107,6 +109,10 @@ def translate_input(word):
         return "ワイルド"
     elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
         return "ドロー4"
+    elif word in ["+1", "d1", "dobon1"]:
+        return "ドボン1"
+    elif word in ["+2", "d2", "dobon2"]:
+        return "ドボン2"
     else:
         trans1, trans2 = word[0], word[1:]
         if trans1 in ["r", "red"]:
@@ -150,7 +156,7 @@ def string_to_card(stc):
         return [translate_input(stc.strip())]
 
 
-# 赤100番台, 青200番台,　緑300番台, 黄400番台, ワイルド530～534, ドロー4 540～544
+# 赤100番台, 青200番台,　緑300番台, 黄400番台, ワイルド530～534, ドロー4 540～544, ドボン1 550～554, ドボン2 560～564
 def card_to_id(card):
     if "ワイルド" in card:
         for i in range(len(Color)):
@@ -162,6 +168,16 @@ def card_to_id(card):
             if card[0] == Color[i]:
                 return 540 + (i + 1)
         return 540
+    elif "ドボン1" in card:
+        for i in range(len(Color)):
+            if card[0] == Color[i]:
+                return 550 + (i + 1)
+        return 550
+    elif "ドボン2" in card:
+        for i in range(len(Color)):
+            if card[0] == Color[i]:
+                return 560 + (i + 1)
+        return 560
     else:
         for i in range(len(Color)):
             if card[0] == Color[i]:
@@ -175,8 +191,12 @@ def id_to_card(id):
         return f"{Color[id // 100 - 1]}{Number[id % 100]}"
     elif 530 <= id <= 534:
         return "ワイルド"
-    else:  # 540 <= id <= 544
+    elif 540 <= id <= 544:
         return "ドロー4"
+    elif 550 <= id <= 554:
+        return "ドボン1"
+    else:
+        return "ドボン2"
 
 
 def number_card():
@@ -235,6 +255,10 @@ def check_card(before, after, hand, penalty):
         # ドロー2/4以外が含まれているか判定
         if not all(["ドロー" in i for i in after]):
             return "ドロー2/4と一緒に出せるのは、ドロー2/4のみです"
+    elif "ドボン" in after[0]:
+        # ドボン1/2以外が含まれているか判定
+        if not all(["ドボン" in i for i in after]):
+            return "ドボン1/2と一緒に出せるのは、ドボン1/2のみです"
     else:
         return "出したカードの中に、他のカードと数字/記号が異なっているカードがあります"
 
@@ -246,6 +270,10 @@ def check_card(before, after, hand, penalty):
     elif 540 <= before <= 544 and penalty > 0:
         if not (before % 540 == first // 100 and first % 100 == 12) and first != 540:
             return "ドロー4には、色が合っているドロー2またはドロー4でしか返せません"
+    # 場のカードが効果継続中のドボン1/2の場合
+    elif 550 <= before <= 564 and penalty > 0:
+        if first != 550 and first != 560:
+            return "ドボン1/2には、ドボン1/2でしか返せません"
 
     # 場札と最初のカードの色が一致
     if before // 100 == first // 100:
@@ -280,6 +308,10 @@ def calculate_penalty(cards):
             penalty += 2
         elif card == "ドロー4":
             penalty += 4
+        elif card == "ドボン1":
+            penalty += 1
+        elif card == "ドボン2":
+            penalty += 2
 
     return penalty
 
