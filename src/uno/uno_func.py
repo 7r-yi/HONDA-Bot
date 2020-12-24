@@ -247,7 +247,7 @@ def check_card(before, after, hand, penalty):
     # NG上がり判定
     if hand_tmp == [] and len(hand) >= 2:
         return "複数枚出しで上がることは出来ません"
-    elif hand_tmp == [] and card_to_id(first) % 100 > 9:
+    elif hand_tmp == [] and first % 100 > 9:
         return "記号で上がることは出来ません"
 
     # 出したカードの全ての記号が一致するか判定

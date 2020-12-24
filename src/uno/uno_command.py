@@ -522,7 +522,10 @@ async def run_uno(bot, ctx, type):
     sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
-        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{uf.card_to_string(sort_data[i][1])}】\n\n"
+        last_card = uf.card_to_string(sort_data[i][1])
+        if len(last_card) > 300:
+            last_card = "多すぎるため表示出来ません"
+        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{last_card}】\n\n"
 
     # ゲーム終了処理 (画像やロール削除)
     if normal_flag:
