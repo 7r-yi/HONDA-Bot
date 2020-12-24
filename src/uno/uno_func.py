@@ -244,9 +244,11 @@ def check_card(before, after, hand, penalty):
         else:
             return f"{card} ってカードは存在しませんよ(笑)"
 
-    # カード全出し
+    # NG上がり判定
     if hand_tmp == [] and len(hand) >= 2:
         return "複数枚出しで上がることは出来ません"
+    elif hand_tmp == [] and card_to_id(first) % 100 > 9:
+        return "記号で上がることは出来ません"
 
     # 出したカードの全ての記号が一致するか判定
     if all([first % 100 == card_to_id(i) % 100 for i in after]):
