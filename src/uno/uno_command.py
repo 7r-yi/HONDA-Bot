@@ -329,7 +329,7 @@ async def run_uno(bot, ctx, type):
                 await ctx.send(f"{all_mention()}\n{reply.author.mention} が途中参加しました")
                 cnt = i
             # ゲームから棄権する
-            elif "!drop" in input and reply.author.id in all_player:
+            elif "!drop" in input and (reply.author.id in all_player or role_check_mode(reply)):
                 # 棄権者を指定
                 if len(all_data) > 2 and len(reply.raw_mentions) == 1:
                     if role_check_mode(reply) or special_flag:
@@ -345,19 +345,20 @@ async def run_uno(bot, ctx, type):
                             drop_flag = True
                             break
                     else:
-                        role_M = get_role(guild, cs.Moderator)
-                        await ctx.send(f"{reply.author.mention}  {role_M.mention}でないと棄権させられません")
+                        await ctx.send(f"{reply.author.mention} 棄権させられる権限がありません", delete_after=10)
                 # 自分が棄権する
                 elif len(all_data) > 2 and len(reply.raw_mentions) == 0:
-                    await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
                     j = uf.search_player(reply.author.id, all_data)
-                    cnt = i - 1 if j < i else i
-                    if special_flag:
-                        ur.add_penalty(reply.author.id, guild.get_member(reply.author.id).display_name, all_data[j][1])
-                    NOW_PLAYING.remove(reply.author.id)
-                    all_data.pop(j)
-                    drop_flag = True
-                    break
+                    if j is not None:
+                        await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
+                        cnt = i - 1 if j < i else i
+                        if special_flag:
+                            drop_name = guild.get_member(reply.author.id).display_name
+                            ur.add_penalty(reply.author.id, drop_name, all_data[j][1])
+                        NOW_PLAYING.remove(reply.author.id)
+                        all_data.pop(j)
+                        drop_flag = True
+                        break
                 else:
                     await ctx.send(f"{reply.author.mention} 2人以下の状態では棄権出来ません", delete_after=10)
             # ゲームを強制中止する
