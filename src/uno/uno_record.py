@@ -64,7 +64,6 @@ def add_penalty(id, name, card):
             # ペナルティー書き込み(-100点)
             data_row[2].value = int(data_row[2].value) - 100
             # ポイント書き込み
-            # ポイント書き込み
             for j in range(3, len(data[i]) + 1):
                 if not data_row[j].value:
                     data_row[j].value = pts

@@ -124,10 +124,19 @@ async def run_uno(bot, ctx, type):
     guild = bot.get_guild(ctx.guild.id)
     await ctx.send(f"{mode_str}UNOを開始します\n※必ずダイレクトメッセージの送信を許可にしてください\n"
                    "参加する方は `!Join` と入力してください ( `!Drop` で参加取り消し, `!End` で締め切り, `!Cancel` で中止)")
-    all_player = [ctx.author.id]
+    all_player, start = [ctx.author.id], datetime.now()
     while True:
-        reply = await bot.wait_for('message', check=ng_check)
-        input = jaconv.z2h(reply.content, ascii=True).lower()
+        try:
+            reply = await bot.wait_for('message', check=ng_check, timeout=3600 - (datetime.now() - start).seconds)
+            input = jaconv.z2h(reply.content, ascii=True).lower()
+        except asyncio.exceptions.TimeoutError:
+            await ctx.send(f"締め切らずに一定時間経過したので、自動的にUNOを終了しました\n")
+            if normal_flag:
+                await ctx.send(f"{ctx.author.mention} 放置ペナルティーとして-100点が与えられました")
+                drop_name = guild.get_member(ctx.author.id).display_name
+                ur.add_penalty(ctx.author.id, drop_name, [])
+            await uno_end(guild, all_player, False, False)
+            return
         if input in ["!j", "!join"]:
             if reply.author.id not in all_player:
                 all_player.append(reply.author.id)
@@ -411,9 +420,6 @@ async def run_uno(bot, ctx, type):
                             # 7が出されたらタイム減少
                             if uf.card_to_id(j) % 100 == 7:
                                 time_cut += 1
-                        # ディスカードオールの場合は後で手札更新
-                        if uf.card_to_id(bet_card[0]) % 100 != 13:
-                            await send_card(i, 0, False)
                         # ドロー/ドボンのペナルティー枚数計算
                         penalty += uf.calculate_penalty(bet_card)
                         bet_flag = True
@@ -459,18 +465,9 @@ async def run_uno(bot, ctx, type):
                 await send_card(i, 2, True)
             else:
                 await send_card(i, 0, False)
-        # 上がり
-        if not all_data[i][1] and not all_data[i][3][0]:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} YOU WIN!")
-            winner = i
-            break
-        # 手札は0枚になったがUNO宣言忘れ
-        elif not all_data[i][1] and all_data[i][3][0]:
-            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します", delete_after=10)
-            await send_card(i, 2, True)
-        # 残り1枚になったらUNOフラグを立てる
-        elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
-            all_data[i][3] = [True, datetime.now()]
+        # ディスカードオール以外の場合の手札更新
+        elif bet_flag:
+            await send_card(i, 0, False)
         # ペナルティーを受ける
         if penalty > 0 and not bet_flag:
             # ドローの場合
@@ -485,8 +482,20 @@ async def run_uno(bot, ctx, type):
                     if all_data[i - 1][0] != all_player[j]:
                         await send_card(j, penalty, True)
             penalty, cnt, = 0, cnt - 1
-        # UNOフラグを降ろす
-        if len(all_data[i][1]) >= 2 and all_data[i][3][0]:
+        # 手札が0枚となったので上がり
+        if not all_data[i][1] and not all_data[i][3][0]:
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} YOU WIN!")
+            winner = i
+            break
+        # 手札は0枚になったがUNOの宣言忘れ
+        elif not all_data[i][1]:
+            await ctx.send(f"{bot.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します", delete_after=10)
+            await send_card(i, 2, True)
+        # 残り1枚になったらUNOフラグを立てる
+        elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
+            all_data[i][3] = [True, datetime.now()]
+        # 残り2枚以上でUNOフラグが立っていたら降ろす
+        elif len(all_data[i][1]) >= 2 and all_data[i][3][0]:
             all_data[i][3] = [False, None]
         # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
@@ -495,7 +504,7 @@ async def run_uno(bot, ctx, type):
                 msg = f"{guild.get_member(all_data[i][0]).display_name}【文字数制限を超過しているため表示できません】"
             await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
-        elif uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
+        if uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
             await ctx.send(f"{2 * len(bet_card) - 1}人スキップします", delete_after=10)
             cnt += 2 * len(bet_card) - 1
         # リバース処理
