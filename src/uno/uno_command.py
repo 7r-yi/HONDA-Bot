@@ -42,7 +42,7 @@ async def uno_end(guild, all_player, image_flag=False, new_flag=False):
 async def run_uno_config(bot, ctx, type):
     try:
         await run_uno(bot, ctx, type)
-    except DiscordServerError or ac.ClientOSError:
+    except DiscordServerError or HTTPException or ac.ClientOSError:
         await ctx.channel.send("サーバーエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), [], True, False)
     except:
