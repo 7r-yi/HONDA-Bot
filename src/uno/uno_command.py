@@ -183,12 +183,12 @@ async def run_uno(bot, ctx, type):
                 continue
             elif not input.isdecimal():
                 await ctx.send(f"{reply.author.mention} 数字のみで入力してください", delete_after=5)
-            elif 2 <= int(input) <= 1000:
+            elif 2 <= int(input) <= 100:
                 if reply.author.id not in ok_player:
                     want_nums.append(int(input))
                     ok_player.append(reply.author.id)
             else:
-                await ctx.send(f"{reply.author.mention} 2～1000枚以内で指定してください", delete_after=5)
+                await ctx.send(f"{reply.author.mention} 2～100枚以内で指定してください", delete_after=5)
             if len(ok_player) == len(all_player):
                 break
         try:
@@ -289,6 +289,17 @@ async def run_uno(bot, ctx, type):
         msg1 = await ctx.send(f"```\n各プレイヤーの現在の手札枚数\n\n{''.join(stc)}```"
                               f"__現在の場札のカード : {card[-1]}__", file=discord.File(mi.AREA_COPY_PASS))
         msg2 = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} の番です (制限時間{time:g}秒)")
+        # 手札200枚を超えたら脱落
+        if len(all_data[i][1]) > 200 and special_flag:
+            await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i][0]).mention} 手札が200枚を超えたので脱落となります")
+            NOW_PLAYING.remove(all_data[i][0])
+            all_data.pop(i)
+            # 全員いなくなったらゲームを終了
+            if not all_data:
+                await ctx.send("プレイヤーが0人となったのでゲームを終了しました")
+                await uno_end(guild, [], True, False)
+                return
+            continue
         # 記号しか無い時は2枚追加(1度のみ)
         if all([uf.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加します", delete_after=10)
@@ -346,7 +357,7 @@ async def run_uno(bot, ctx, type):
                         if j is not None:
                             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[j][0]).mention} を棄権させました")
                             cnt = i - 1 if j < i else i
-                            if special_flag:
+                            if normal_flag:
                                 drop_name = guild.get_member(all_data[j][0]).display_name
                                 ur.add_penalty(all_data[j][0], drop_name, all_data[j][1])
                             NOW_PLAYING.remove(all_data[j][0])
@@ -361,7 +372,7 @@ async def run_uno(bot, ctx, type):
                     if j is not None:
                         await ctx.send(f"{all_mention()}\n{reply.author.mention} が棄権しました")
                         cnt = i - 1 if j < i else i
-                        if special_flag:
+                        if normal_flag:
                             drop_name = guild.get_member(reply.author.id).display_name
                             ur.add_penalty(reply.author.id, drop_name, all_data[j][1])
                         NOW_PLAYING.remove(reply.author.id)
