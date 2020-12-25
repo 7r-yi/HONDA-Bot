@@ -292,14 +292,14 @@ async def run_uno(bot, ctx, type):
         # 手札が200枚を超えたら脱落
         if len(all_data[i][1]) > 200 and special_flag:
             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i][0]).mention} 手札が200枚を超えたので脱落となります")
-            NOW_PLAYING.remove(all_data[i][0])
-            all_data.pop(i)
-            # 全員いなくなったらゲームを終了
-            if not all_data:
+            if len(all_player) == 1:
                 await ctx.send("プレイヤーが0人となったのでゲームを終了しました")
-                await uno_end(guild, [], True, False)
+                await uno_end(guild, all_player, True, False)
                 return
-            continue
+            else:
+                NOW_PLAYING.remove(all_data[i][0])
+                all_data.pop(i)
+                continue
         # 記号しか無い時は2枚追加(1度のみ)
         if all([uf.card_to_id(j) % 100 > 9 for j in all_data[i][1]]):
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} 記号残りなので2枚追加します", delete_after=10)
