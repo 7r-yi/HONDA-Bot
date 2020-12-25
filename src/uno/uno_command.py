@@ -289,7 +289,7 @@ async def run_uno(bot, ctx, type):
         msg1 = await ctx.send(f"```\n各プレイヤーの現在の手札枚数\n\n{''.join(stc)}```"
                               f"__現在の場札のカード : {card[-1]}__", file=discord.File(mi.AREA_COPY_PASS))
         msg2 = await ctx.send(f"{bot.get_user(all_data[i][0]).mention} の番です (制限時間{time:g}秒)")
-        # 手札200枚を超えたら脱落
+        # 手札が200枚を超えたら脱落
         if len(all_data[i][1]) > 200 and special_flag:
             await ctx.send(f"{all_mention()}\n{bot.get_user(all_data[i][0]).mention} 手札が200枚を超えたので脱落となります")
             NOW_PLAYING.remove(all_data[i][0])
