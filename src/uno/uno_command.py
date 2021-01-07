@@ -656,10 +656,12 @@ class Uno(commands.Cog):
         await run_watchgame(ctx)
 
     @commands.command()
+    @commands.guild_only()
     async def us(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
 
     @commands.command()
+    @commands.guild_only()
     async def unostart(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
 
