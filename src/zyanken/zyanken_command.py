@@ -181,7 +181,7 @@ class Zyanken(commands.Cog):
         await update_roles(self.bot.get_guild(ctx.guild.id), winner, loser)
 
     # 定期的にデータをオートセーブ
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=300)
     async def data_auto_save(self):
         with open(zf.RECORD_PASS, 'r') as f:
             before_zdata = json.load(f)
