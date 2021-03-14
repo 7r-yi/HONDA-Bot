@@ -181,7 +181,7 @@ class Zyanken(commands.Cog):
         await update_roles(self.bot.get_guild(ctx.guild.id), winner, loser)
 
     # 定期的にデータをオートセーブ
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=30)
     async def data_auto_save(self):
         with open(zf.RECORD_PASS, 'r') as f:
             before_zdata = json.load(f)
@@ -219,11 +219,13 @@ class Zyanken(commands.Cog):
             if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
                 guild = self.bot.get_guild(ctx.guild.id)
                 await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
+            """
             if emoji2 == "🎉" and len(zf.Former_winner) <= 5:
                 guild = self.bot.get_guild(ctx.guild.id)
                 await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Winner))
                 if ctx.author.id not in zf.Former_winner:
                     zf.Former_winner.append(ctx.author.id)
+            """
             break
 
     """

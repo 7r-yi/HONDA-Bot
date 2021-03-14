@@ -5,7 +5,7 @@ import constant as cs
 
 
 File_backup = None
-Former_winner = [699612508763193425, 497107026380587048]
+Former_winner = []
 Former_loser = []
 RECORD_PASS = 'src/zyanken/zyanken_record.json'
 REPLY_PASS = 'src/zyanken/no_reply_user.txt'
@@ -91,10 +91,12 @@ def honda_to_zyanken(my_hand, user):
         ZData[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
                             "keep": {"cnt": 0, "max": 0}}
     
+    """
     user_data = stats_output(user)
     if user_data[0] + user_data[1] >= 200:
         pass
-    elif win:
+    """
+    if win:
         ZData[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
         ZData[str(user)]["keep"]["cnt"] += 1
         if ZData[str(user)]["keep"]["cnt"] > ZData[str(user)]["keep"]["max"]:

@@ -549,8 +549,8 @@ async def run_uno(bot, ctx, type):
 
     # ゲーム終了処理 (画像やロール削除)
     if normal_flag:
-        # 10人以上参加時はWinner/Loserロール付与 & 結果出力
-        if 10 <= len(all_data):
+        # 7人以上参加時はWinner/Loserロール付与 & 結果出力
+        if 7 <= len(all_data):
             end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
             await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.Winner))
             await guild.get_member(sort_data[-1][0]).add_roles(get_role(guild, cs.Loser))
