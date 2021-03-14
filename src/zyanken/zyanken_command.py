@@ -87,7 +87,7 @@ async def run_stats(bot, ctx, name):
     if data is None and id is None:
         return await ctx.send(f"{ctx.author.mention} データが記録されていません", delete_after=10)
 
-    embed = discord.Embed(title=user, color=0x4169E1)
+    embed = discord.Embed(title=user, color=0xFFFF00)
     embed.set_author(name='Stats', icon_url=bot.get_user(id).avatar_url)
     embed.set_thumbnail(url=data[6])
     embed.add_field(name="勝率", value=f"{data[2]:.02f}% ({data[0] + data[1]}戦 {data[0]}勝{data[1]}敗)", inline=False)
@@ -181,7 +181,7 @@ class Zyanken(commands.Cog):
         await update_roles(self.bot.get_guild(ctx.guild.id), winner, loser)
 
     # 定期的にデータをオートセーブ
-    @tasks.loop(minutes=300)
+    @tasks.loop(minutes=10)
     async def data_auto_save(self):
         with open(zf.RECORD_PASS, 'r') as f:
             before_zdata = json.load(f)
@@ -211,6 +211,7 @@ class Zyanken(commands.Cog):
             if hand not in jaconv.hira2kata(jaconv.h2z(ctx.content)):
                 continue
             img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken(hand, ctx.author.id)
+            # img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken_breaktime(hand, ctx.author.id)
             if str(ctx.author.id) not in zf.No_reply:
                 await ctx.add_reaction(emoji1)
                 await ctx.add_reaction(emoji2)
@@ -218,8 +219,14 @@ class Zyanken(commands.Cog):
             if cs.Zyanken not in [roles.id for roles in ctx.author.roles]:
                 guild = self.bot.get_guild(ctx.guild.id)
                 await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Zyanken))
+            if emoji2 == "🎉" and len(zf.Former_winner) <= 5:
+                guild = self.bot.get_guild(ctx.guild.id)
+                await guild.get_member(ctx.author.id).add_roles(get_role(guild, cs.Winner))
+                if ctx.author.id not in zf.Former_winner:
+                    zf.Former_winner.append(ctx.author.id)
             break
 
+    """
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def sp(self, ctx, num=""):
@@ -229,6 +236,7 @@ class Zyanken(commands.Cog):
     @commands.has_role(cs.Zyanken)
     async def setpercentage(self, ctx, num=""):
         await run_setpercentage(ctx, num)
+    """
 
     @commands.command()
     @commands.has_role(cs.Zyanken)

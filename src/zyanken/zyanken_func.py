@@ -1,10 +1,11 @@
 import random
 import json
 from operator import itemgetter
-import constant
+import constant as cs
+
 
 File_backup = None
-Former_winner = []
+Former_winner = [699612508763193425, 497107026380587048]
 Former_loser = []
 RECORD_PASS = 'src/zyanken/zyanken_record.json'
 REPLY_PASS = 'src/zyanken/no_reply_user.txt'
@@ -55,6 +56,63 @@ def hiragana_to_alpha(hand):
 
 
 def honda_to_zyanken(my_hand, user):
+    if random.randint(1, 1000) <= 3:
+        win = True
+        img_pass = 'src/zyanken/image/YOU WIN.jpg'
+        emoji2 = "🎉"
+    else:
+        win = False
+        img_pass = 'src/zyanken/image/YOU LOSE.jpg'
+        emoji2 = "👎"
+
+    if my_hand == "グー":
+        if win:
+            honda_hand = "チョキ"
+            emoji1 = "✌"
+        else:
+            honda_hand = "パー"
+            emoji1 = "✋"
+    elif my_hand == "チョキ":
+        if win:
+            honda_hand = "パー"
+            emoji1 = "✋"
+        else:
+            honda_hand = "グー"
+            emoji1 = "✊"
+    else:  # my_hand == "パー"
+        if win:
+            honda_hand = "グー"
+            emoji1 = "✊"
+        else:
+            honda_hand = "チョキ"
+            emoji1 = "✌"
+
+    if str(user) not in ZData:
+        ZData[str(user)] = {"win": {"r": 0, "s": 0, "p": 0}, "lose": {"r": 0, "s": 0, "p": 0},
+                            "keep": {"cnt": 0, "max": 0}}
+    
+    user_data = stats_output(user)
+    if user_data[0] + user_data[1] >= 200:
+        pass
+    elif win:
+        ZData[str(user)]["win"][hiragana_to_alpha(my_hand)] += 1
+        ZData[str(user)]["keep"]["cnt"] += 1
+        if ZData[str(user)]["keep"]["cnt"] > ZData[str(user)]["keep"]["max"]:
+            ZData[str(user)]["keep"]["max"] = ZData[str(user)]["keep"]["cnt"]
+        ZData[str(cs.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(cs.Honda)]["keep"]["cnt"] = 0
+    else:
+        ZData[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
+        ZData[str(user)]["keep"]["cnt"] = 0
+        ZData[str(cs.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(cs.Honda)]["keep"]["cnt"] += 1
+        if ZData[str(cs.Honda)]["keep"]["cnt"] > ZData[str(cs.Honda)]["keep"]["max"]:
+            ZData[str(cs.Honda)]["keep"]["max"] = ZData[str(cs.Honda)]["keep"]["cnt"]
+
+    return img_pass, honda_hand, honda_word(win), emoji1, emoji2
+
+
+def honda_to_zyanken_breaktime(my_hand, user):
     try:
         per = ZData[str(user)]["percentage"]
     except KeyError:
@@ -98,15 +156,15 @@ def honda_to_zyanken(my_hand, user):
         ZData[str(user)]["keep"]["cnt"] += 1
         if ZData[str(user)]["keep"]["cnt"] > ZData[str(user)]["keep"]["max"]:
             ZData[str(user)]["keep"]["max"] = ZData[str(user)]["keep"]["cnt"]
-        ZData[str(constant.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
-        ZData[str(constant.Honda)]["keep"]["cnt"] = 0
+        ZData[str(cs.Honda)]["lose"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(cs.Honda)]["keep"]["cnt"] = 0
     else:
         ZData[str(user)]["lose"][hiragana_to_alpha(my_hand)] += 1
         ZData[str(user)]["keep"]["cnt"] = 0
-        ZData[str(constant.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
-        ZData[str(constant.Honda)]["keep"]["cnt"] += 1
-        if ZData[str(constant.Honda)]["keep"]["cnt"] > ZData[str(constant.Honda)]["keep"]["max"]:
-            ZData[str(constant.Honda)]["keep"]["max"] = ZData[str(constant.Honda)]["keep"]["cnt"]
+        ZData[str(cs.Honda)]["win"][hiragana_to_alpha(honda_hand)] += 1
+        ZData[str(cs.Honda)]["keep"]["cnt"] += 1
+        if ZData[str(cs.Honda)]["keep"]["cnt"] > ZData[str(cs.Honda)]["keep"]["max"]:
+            ZData[str(cs.Honda)]["keep"]["max"] = ZData[str(cs.Honda)]["keep"]["cnt"]
 
     return img_pass, honda_hand, honda_word(win), emoji1, emoji2
 
@@ -121,8 +179,11 @@ def stats_output(id):
     for i in range(3):
         cnt_lose += lose_data[i]
 
-    win_rate = cnt_win / (cnt_win + cnt_lose) * 100
-    if win_rate <= 50:
+    try:
+        win_rate = cnt_win / (cnt_win + cnt_lose) * 100
+    except ZeroDivisionError:
+        win_rate = 0.0
+    if win_rate <= 0:
         url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
     else:
         url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
