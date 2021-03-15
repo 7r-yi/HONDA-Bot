@@ -20,7 +20,10 @@ async def run_setpercentage(ctx, num):
     except ValueError:
         return await ctx.send(f"{ctx.author.mention} 勝利する確率を数字のみで入力してください", delete_after=10)
 
-    zf.ZData[str(ctx.author.id)]["percentage"] = num
+    try:
+        zf.ZData[str(ctx.author.id)]["percentage"] = num
+    except KeyError:
+        return await ctx.send(f"{ctx.author.mention} データが記録されていない状態では確率を設定できません", delete_after=10)
     await ctx.send(f"{ctx.author.mention} 勝利 : {num:g}%, 敗北 : {(100 - num):g}% に設定しました", delete_after=10)
 
 
@@ -76,8 +79,11 @@ async def run_stats(bot, ctx, name):
     data, user, id = None, None, None
     for member in get_role(guild, cs.Zyanken).members:
         if name.lower() == member.display_name.lower():
-            data = zf.stats_output(member.id)
-            user, id = member.display_name, member.id
+            try:
+                data = zf.stats_output(member.id)
+                user, id = member.display_name, member.id
+            except KeyError:
+                pass
             break
         elif name == "ケイスケホンダ":
             data = zf.stats_output(cs.Honda)
@@ -210,8 +216,8 @@ class Zyanken(commands.Cog):
             # グー,チョキ,パーの順に文字が含まれているか検索
             if hand not in jaconv.hira2kata(jaconv.h2z(ctx.content)):
                 continue
-            img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken(hand, ctx.author.id)
-            # img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken_breaktime(hand, ctx.author.id)
+            # img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken(hand, ctx.author.id)
+            img, hand, msg, emoji1, emoji2 = zf.honda_to_zyanken_breaktime(hand, ctx.author.id)
             if str(ctx.author.id) not in zf.No_reply:
                 await ctx.add_reaction(emoji1)
                 await ctx.add_reaction(emoji2)
@@ -228,7 +234,6 @@ class Zyanken(commands.Cog):
             """
             break
 
-    """
     @commands.command()
     @commands.has_role(cs.Zyanken)
     async def sp(self, ctx, num=""):
@@ -238,7 +243,6 @@ class Zyanken(commands.Cog):
     @commands.has_role(cs.Zyanken)
     async def setpercentage(self, ctx, num=""):
         await run_setpercentage(ctx, num)
-    """
 
     @commands.command()
     @commands.has_role(cs.Zyanken)
