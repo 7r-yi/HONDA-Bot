@@ -245,9 +245,9 @@ def check_card(before, after, hand, penalty):
             return f"{card} ってカードは存在しませんよ(笑)"
 
     # NG上がり判定
-    if hand_tmp == [] and len(hand) >= 2:
-        return "複数枚出しで上がることは出来ません"
-    elif hand_tmp == [] and first % 100 > 9:
+    # if hand_tmp == [] and len(hand) >= 2:
+        # return "複数枚出しで上がることは出来ません"
+    if hand_tmp == [] and first % 100 > 9:
         return "記号で上がることは出来ません"
 
     # 出したカードの全ての記号が一致するか判定
@@ -293,6 +293,18 @@ def check_card(before, after, hand, penalty):
         return "場札のカードと、最初に出すカードの色が一致していません"
 
     return None
+
+
+def check_win(cards):
+    check_id = card_to_id(cards[0]) % 100
+    if check_id > 9:
+        return False
+
+    for card in cards:
+        if card_to_id(card) % 100 != check_id:
+            return False
+
+    return True
 
 
 def search_player(player, all_data):

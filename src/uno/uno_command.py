@@ -335,8 +335,8 @@ async def run_uno(bot, ctx, type):
                     if all_data[j][3][0]:
                         all_data[j][3] = [False, None]
                         await ctx.send(f"{all_mention()}\n{reply.author.mention} がUNOを宣言しました")
-                    # 手札が2枚以上ある場合
-                    elif len(all_data[j][1]) >= 2:
+                    # まだ上がれない手札の場合
+                    elif not uf.check_win(all_data[j][1]):
                         await ctx.send(f"{reply.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10)
                     else:
                         await ctx.send(f"{reply.author.mention} 既にUNOと宣言済みです", delete_after=10)
@@ -502,11 +502,11 @@ async def run_uno(bot, ctx, type):
         elif not all_data[i][1]:
             await ctx.send(f"{bot.get_user(all_data[i][0]).mention} UNO宣言忘れのペナルティーで2枚追加します", delete_after=10)
             await send_card(i, 2, True)
-        # 残り1枚になったらUNOフラグを立てる
-        elif len(all_data[i][1]) == 1 and not all_data[i][3][0]:
+        # 上がれる手札になったらUNOフラグを立てる
+        elif uf.check_win(all_data[i][1]):
             all_data[i][3] = [True, datetime.now()]
-        # 残り2枚以上でUNOフラグが立っていたら降ろす
-        elif len(all_data[i][1]) >= 2 and all_data[i][3][0]:
+        # 上がれない手札だったらUNOフラグを降ろす
+        elif not uf.check_win(all_data[i][1]):
             all_data[i][3] = [False, None]
         # 観戦機能ON時は手札を表示(5分間)
         if WATCH_FLAG is not None:
