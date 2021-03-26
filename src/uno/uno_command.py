@@ -587,6 +587,9 @@ async def run_uno(bot, ctx, type):
                 embed.add_field(name=f"{i + 1}位 ({sort_data[i][4]}点)", value=f"{all_name[i]}")
             embed.add_field(name=f"最下位 ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
             await bot.get_channel(cs.Result).send(embed=embed)
+            role_W, role_L = get_role(guild, cs.Winner), get_role(guild, cs.Loser)
+            await bot.get_channel(cs.Result).send(f"{role_W.mention} : {guild.get_member(sort_data[0][0]).mention}\n"
+                                                  f"{role_L.mention} : {guild.get_member(sort_data[-1][0]).mention}")
         ur.data_save(sort_data, all_name)
         await ctx.send(f"{all_mention()}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
         await uno_end(guild, all_player, True, True)
