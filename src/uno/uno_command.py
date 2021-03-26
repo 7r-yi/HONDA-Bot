@@ -562,14 +562,14 @@ async def run_uno(bot, ctx, type):
     for i in range(len(all_data)):
         all_data[i].append(ur.calculate_point(all_data[i][1]))
     # 1位には他ユーザーの合計得点をプラス
-    all_data[winner][4] = sum([all_data[i][4] for i in range(len(all_data))]) * -1
-    sort_data = sorted(all_data, key=lambda x: x[4], reverse=True)
+    all_data[winner][5] = sum([all_data[i][5] for i in range(len(all_data))]) * -1
+    sort_data = sorted(all_data, key=lambda x: x[5], reverse=True)
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
         last_card = uf.card_to_string(sort_data[i][1])
         if len(last_card) > 300:
             last_card = "多すぎるため表示出来ません"
-        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][4]:+}pts)\n残り手札【{last_card}】\n\n"
+        stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][5]:+}pts)\n残り手札【{last_card}】\n\n"
 
     # ゲーム終了処理 (画像やロール削除)
     if normal_flag:
@@ -582,10 +582,10 @@ async def run_uno(bot, ctx, type):
             embed = discord.Embed(color=0xff0000)
             embed.set_author(name='Results', icon_url='https://i.imgur.com/F2oH0Bu.png')
             embed.set_thumbnail(url='https://i.imgur.com/JHRshwi.png')
-            embed.add_field(name=f"優勝 ({sort_data[0][4]:+}点)", value=f"{all_name[0]}", inline=False)
+            embed.add_field(name=f"優勝 ({sort_data[0][5]:+}点)", value=f"{all_name[0]}", inline=False)
             for i in range(1, len(sort_data) - 1):
-                embed.add_field(name=f"{i + 1}位 ({sort_data[i][4]}点)", value=f"{all_name[i]}")
-            embed.add_field(name=f"最下位 ({sort_data[-1][4]}点)", value=f"{all_name[-1]}")
+                embed.add_field(name=f"{i + 1}位 ({sort_data[i][5]}点)", value=f"{all_name[i]}")
+            embed.add_field(name=f"最下位 ({sort_data[-1][5]}点)", value=f"{all_name[-1]}")
             await bot.get_channel(cs.Result).send(embed=embed)
             role_W, role_L = get_role(guild, cs.Winner), get_role(guild, cs.Loser)
             await bot.get_channel(cs.Result).send(f"{role_W.mention} : {guild.get_member(sort_data[0][0]).mention}\n"
