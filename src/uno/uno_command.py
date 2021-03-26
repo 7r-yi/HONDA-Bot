@@ -239,8 +239,8 @@ async def run_uno(bot, ctx, type):
 
     NOW_PLAYING = all_player
     random.shuffle(all_player)
-    # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間]] × 人数分
-    all_data = [[id, [], None, [False, None]] for id in all_player]
+    # all_data == [id, 手札リスト, DM変数, [UNOフラグ, フラグが立った時間], パスペナルティー回数] × 人数分
+    all_data = [[id, [], None, [False, None], 0] for id in all_player]
     msg = await ctx.send("カード配り中...")
     for i in range(len(all_player)):
         try:
@@ -279,7 +279,9 @@ async def run_uno(bot, ctx, type):
         # 制限時間設定
         time = len(all_data[i][1]) * 5 + 5
         time = 30 if time < 30 else 60 if time > 60 else time
-        time, time_cut = round(time / 3 ** time_cut, 1), 0
+        time, time_cut = round(time / 4 ** time_cut, 1), 0
+        # UNO指摘間違いリセット
+        all_data[i][4] = int(all_data[i][4])
         # 場札更新の際に以前のメッセージを削除
         if msg1 is not None:
             await msg1.delete()
@@ -307,6 +309,11 @@ async def run_uno(bot, ctx, type):
         # カード入力処理
         start = datetime.now()
         while True:
+            # パスペナルティーが残っている場合
+            if all_data[i][4] >= 1:
+                all_data[i][4] -= 1
+                await turn_pass("ペナルティーが課せられているので、このターンは強制的に")
+                break
             try:
                 reply = await bot.wait_for('message', check=ng_check, timeout=time - (datetime.now() - start).seconds)
                 input = jaconv.z2h(jaconv.h2z(reply.content), kana=False, ascii=True, digit=True).lower()
@@ -315,8 +322,14 @@ async def run_uno(bot, ctx, type):
                 break
             # UNOの指摘/宣言
             if "!uno" in input and reply.author.id in all_player:
+                # ケイスケホンダに指摘
+                if cs.Honda in reply.raw_mentions:
+                    j = uf.search_player(reply.author.id, all_data)
+                    all_data[j][4] += 2
+                    await ctx.send(f"{reply.author.mention} "
+                                   f"気安く話しかけてきた不敬罪として、次のあなたのターンを2回パスします", delete_after=15)
                 # 他プレイヤーへの指摘
-                if len(reply.raw_mentions) == 1:
+                elif len(reply.raw_mentions) == 1:
                     j = uf.search_player(reply.raw_mentions[0], all_data)
                     if j is not None:
                         # UNOフラグが立ってから10秒以上経過
@@ -326,8 +339,19 @@ async def run_uno(bot, ctx, type):
                                            f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10)
                             await send_card(j, 2, True)
                         else:
-                            await ctx.send(f"{reply.author.mention} "
-                                           f"今は、そのユーザーへのUNOの指摘は無効となっています", delete_after=10)
+                            j = uf.search_player(reply.author.id, all_data)
+                            if all_data[j][4] == 0:
+                                all_data[j][4] += 0.5
+                                await ctx.send(f"{reply.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
+                                               f"(次自分のターンが来るまでに、もう1度間違った指摘を行うとペナルティーとなります)",
+                                               delete_after=15)
+                            elif all_data[j][4] == 0.5:
+                                all_data[j][4] += 0.5
+                                await ctx.send(f"{reply.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
+                                               f"指摘間違いペナルティーとして、次のあなたのターンを1回パスします",
+                                               delete_after=15)
+                            else:
+                                await ctx.send(f"{reply.author.mention} あなたは現在UNOの指摘は出来ません", delete_after=10)
                 # 自分の宣言
                 else:
                     j = uf.search_player(reply.author.id, all_data)
@@ -343,7 +367,7 @@ async def run_uno(bot, ctx, type):
             # 途中参加
             elif input in ["!j", "!join"] and reply.author.id not in all_player:
                 all_player.append(reply.author.id)
-                all_data.append([reply.author.id, [], None, [False, None]])
+                all_data.append([reply.author.id, [], None, [False, None], 0])
                 NOW_PLAYING.append(reply.author.id)
                 await send_card(-1, initial_num, False)
                 await ctx.send(f"{all_mention()}\n{reply.author.mention} が途中参加しました")

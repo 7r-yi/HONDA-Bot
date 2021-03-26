@@ -1,5 +1,6 @@
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound, BadArgument, MissingRole, MissingAnyRole, NoPrivateMessage
+import random
 import constant as cs
 from multi_func import role_check_mode
 
@@ -19,6 +20,15 @@ class Sub(commands.Cog):
             return
         await ctx.delete()
         await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=5)
+
+    # Botにメンションしたら返答
+    @commands.Cog.listener(name='on_message')
+    @commands.guild_only()
+    @commands.has_role(cs.Visitor)
+    async def on_message(self, ctx):
+        if cs.Honda in ctx.raw_mentions and not ctx.author.bot:
+            reply = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "不敬罪ですよ"]
+            await ctx.channel.send(f"{ctx.author.mention} {reply[random.randint(0, 4)]}", delete_after=5)
 
     # コマンド入力ミスのエラーを表示させない
     @commands.Cog.listener(name='on_command_error')

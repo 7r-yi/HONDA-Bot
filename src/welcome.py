@@ -19,7 +19,12 @@ class Welcome(commands.Cog):
         if ctx.channel.id == cs.Gate and not ctx.author.bot:
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
             password = f"_join {time.strftime('%Y/%m/%d')}"
-            if ctx.content == password:
+            with open('src/reject_user.txt', 'r') as f:
+                reject_ids = f.read().splitlines()
+            if str(ctx.author.id) in reject_ids:
+                await ctx.delete()
+                await ctx.channel.send(f'{ctx.author.mention} コマンド実行権限がありません', delete_after=5.0)
+            elif ctx.content == password:
                 await ctx.delete()
                 await ctx.author.add_roles(get_role(self.bot.get_guild(ctx.guild.id), cs.Visitor))
                 await ctx.channel.send(f"{ctx.author.mention} 参加しました ({time.strftime('%Y/%m/%d %H:%M')})")
@@ -35,9 +40,8 @@ class Welcome(commands.Cog):
     @commands.Cog.listener(name='on_member_remove')
     async def on_member_remove(self, member):
         if cs.Visitor in [role.id for role in member.roles]:
-            await member.ban(delete_message_days=0)
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
-            await self.bot.get_channel(cs.Gate).send(f"{member.mention}({member}) を削除しました ({time})")
+            await self.bot.get_channel(cs.Gate).send(f"{member.mention}({member}) が離脱しました ({time})")
         # データを削除
         if str(member.id) in zf.ZData:
             zf.ZData.pop(str(member.id))
