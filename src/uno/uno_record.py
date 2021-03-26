@@ -104,7 +104,7 @@ def data_save(all_data, all_name):
                 # ポイント書き込み
                 for k in range(3, len(data[j]) + 1):
                     if not data_row[k].value:
-                        data_row[k].value = all_data[i][4]
+                        data_row[k].value = all_data[i][5]
                         break
                 sheet.update_cells(data_row, value_input_option='USER_ENTERED')
                 break
@@ -118,7 +118,7 @@ def data_save(all_data, all_name):
                 # ペナルティー書き込み(0点)
                 data_row[2].value = 0
                 # ポイント書き込み
-                data_row[3].value = all_data[i][4]
+                data_row[3].value = all_data[i][5]
                 sheet.update_cells(data_row, value_input_option='USER_ENTERED')
                 times += 1
                 break
