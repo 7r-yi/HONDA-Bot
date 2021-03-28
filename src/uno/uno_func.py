@@ -116,13 +116,13 @@ def translate_input(word):
         return "ドボン2"
     else:
         trans1, trans2 = word[0], word[1:]
-        if trans1 in ["r", "red"]:
+        if trans1 == "r":
             trans1 = "赤"
-        elif trans1 in ["b", "blue"]:
+        elif trans1 == "b":
             trans1 = "青"
-        elif trans1 in ["g", "green"]:
+        elif trans1 == "g":
             trans1 = "緑"
-        elif trans1 in ["y", "yellow"]:
+        elif trans1 == "y":
             trans1 = "黄"
         if trans2 in ["s", "skip"]:
             trans2 = "スキップ"
