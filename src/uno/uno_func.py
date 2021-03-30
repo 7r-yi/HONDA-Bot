@@ -130,7 +130,7 @@ def translate_input(word):
             trans2 = "リバース"
         elif trans2 in ["+2", "d2", "draw2", "ダブルピース"]:
             trans2 = "ドロー2"
-        elif trans2 in ["da", "discardall", "ディス", "修造"]:
+        elif trans2 in ["da", "discardall", "修造", "松岡修造"]:
             trans2 = "ディスカードオール"
         return f"{trans1}{trans2}"
 
