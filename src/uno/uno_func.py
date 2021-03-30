@@ -106,7 +106,7 @@ def template_check(stc):
 
 
 def translate_input(word):
-    if word in ["w", "wild", "ドリラー"]:
+    if word in ["w", "wild", "ヒカキン", "hikakin"]:
         return "ワイルド"
     elif word in ["+4", "d4", "draw4", "ケイスケホンダ"]:
         return "ドロー4"
