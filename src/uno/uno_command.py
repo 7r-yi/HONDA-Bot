@@ -677,12 +677,15 @@ class Uno(commands.Cog):
     @commands.guild_only()
     @commands.has_role(cs.Visitor)
     async def on_message(self, ctx):
+        if not ALL_DATA:
+            return
         if ctx.channel.id not in [cs.UNO_room, cs.Test_room] or ctx.author.bot:
             return
+
         inputs = jaconv.z2h(jaconv.h2z(ctx.content), kana=False, ascii=True, digit=True).lower()
         if "!uno" in inputs and ctx.author.id in ALL_PLAYER:
             await declaration_uno(self.bot, ctx)
-        elif inputs in ["!j", "!join"] and ctx.author.id not in ALL_PLAYER and ALL_DATA != []:
+        elif inputs in ["!j", "!join"] and ctx.author.id not in ALL_PLAYER:
             await joining_uno(self.bot, ctx)
 
     @commands.command()
