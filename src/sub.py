@@ -28,7 +28,6 @@ class Sub(commands.Cog):
     async def on_message(self, ctx):
         if cs.Honda in ctx.raw_mentions and not ctx.author.bot:
             reply = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "不敬罪ですよ"]
-            await ctx.delete(delay=5)
             await ctx.channel.send(f"{ctx.author.mention} {reply[random.randint(0, 4)]}", delete_after=5)
 
     # コマンド入力ミスのエラーを表示させない

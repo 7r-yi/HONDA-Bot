@@ -103,7 +103,7 @@ async def run_uno(bot, ctx, type):
     global NOW_PLAYING
     normal_flag, special_flag, mode_str = False, False, ""
     uf.Card = uf.Card_Normal
-    mi.AREA_PASS, mi.BG_PASS, mi.CARD_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp, mi.CARD_PASS_temp
+    mi.AREA_PASS, mi.BG_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp
     if type.lower() in ["n", "normal"]:
         normal_flag = True
         mode_str = "ノーマルモードで"
@@ -113,7 +113,7 @@ async def run_uno(bot, ctx, type):
         mode_str = "特殊ルールモードで"
     elif type.lower() in ["f", "free"]:
         special_flag = True
-        mi.AREA_PASS, mi.BG_PASS, mi.CARD_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS, mi.CARD_NORMAL_PASS
+        mi.AREA_PASS, mi.BG_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS
         mode_str = "フリープレイモードで"
     else:
         return await ctx.send(f"{ctx.author.mention} そんなモードはありません", delete_after=5)

@@ -16,9 +16,7 @@ BG_FREE_PASS = 'src/uno/base_image/Background_free.png'
 BG_PASS_temp = BG_PASS
 HAND_PASS = 'src/uno/base_image/hand.png'
 ALPHA_CARD_PASS = 'src/uno/base_image/card.png'
-CARD_PASS = 'src/uno/card_image/original'
-CARD_NORMAL_PASS = 'src/uno/card_image/normal'
-CARD_PASS_temp = CARD_PASS
+CARD_PASS = 'src/uno/card_image/'
 
 
 def id_to_pass(id):
@@ -30,8 +28,8 @@ def id_to_pass(id):
         return f"{CARD_PASS}/Green_{id % 300}.png"
     elif 400 <= id < 500:
         return f"{CARD_PASS}/Yellow_{id % 400}.png"
-    else:  # 531 <= id <= 534 → 30
-        return f"{CARD_PASS}/Black_{id // 10 % 10 * 10}.png"
+    else:
+        return f"{CARD_PASS}/Black_{id - 500}.png"
 
 
 def make_hand(card):
