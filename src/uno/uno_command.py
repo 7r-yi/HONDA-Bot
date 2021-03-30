@@ -682,7 +682,7 @@ class Uno(commands.Cog):
         inputs = jaconv.z2h(jaconv.h2z(ctx.content), kana=False, ascii=True, digit=True).lower()
         if "!uno" in inputs and ctx.author.id in ALL_PLAYER:
             await declaration_uno(self.bot, ctx)
-        elif inputs in ["!j", "!join"] and ctx.author.id not in ALL_PLAYER:
+        elif inputs in ["!j", "!join"] and ctx.author.id not in ALL_PLAYER and ALL_DATA != []:
             await joining_uno(self.bot, ctx)
 
     @commands.command()
