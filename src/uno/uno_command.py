@@ -327,7 +327,7 @@ async def run_uno(bot, ctx, type):
                     j = uf.search_player(reply.author.id, all_data)
                     all_data[j][4] += 2
                     await ctx.send(f"{reply.author.mention} "
-                                   f"気安く話しかけてきた不敬罪として、次のあなたのターンを2回パスします", delete_after=15)
+                                   f"気安く話しかけてきた不敬罪として、次のあなたのターンを2回パスします", delete_after=10)
                 # 他プレイヤーへの指摘
                 elif len(reply.raw_mentions) == 1:
                     j = uf.search_player(reply.raw_mentions[0], all_data)
@@ -344,12 +344,12 @@ async def run_uno(bot, ctx, type):
                                 all_data[j][4] += 0.5
                                 await ctx.send(f"{reply.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
                                                f"(次自分のターンが来るまでに、もう1度間違った指摘を行うとペナルティーとなります)",
-                                               delete_after=15)
+                                               delete_after=10)
                             elif all_data[j][4] == 0.5:
                                 all_data[j][4] += 0.5
                                 await ctx.send(f"{reply.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
                                                f"指摘間違いペナルティーとして、次のあなたのターンを1回パスします",
-                                               delete_after=15)
+                                               delete_after=10)
                             else:
                                 await ctx.send(f"{reply.author.mention} あなたは現在UNOの指摘は出来ません", delete_after=10)
                 # 自分の宣言
@@ -450,8 +450,6 @@ async def run_uno(bot, ctx, type):
                         for j in bet_card:
                             # 出したカードを手札から削除
                             all_data[i][1].remove(j)
-                            # 場札更新
-                            mi.make_area(j)
                             # 7が出されたらタイム減少
                             if uf.card_to_id(j) % 100 == 7:
                                 time_cut += 1
@@ -486,6 +484,7 @@ async def run_uno(bot, ctx, type):
                     break
                 elif color.author.id == all_data[i][0]:
                     await ctx.send(f"{bot.get_user(all_data[i][0]).mention} そんな色はありません", delete_after=5)
+            bet_card[-1] = card[-1]
             await msg.delete()
         # ディスカードオール処理
         if uf.card_to_id(card[-1]) % 100 == 13 and bet_flag:
@@ -554,6 +553,9 @@ async def run_uno(bot, ctx, type):
         elif 530 <= uf.card_to_id(card[-1]) <= 534 and bet_flag:
             await ctx.send(f"{all_mention()}\n順番がシャッフルされました", delete_after=10)
             random.shuffle(all_data)
+        # 場札更新
+        if bet_flag:
+            [mi.make_area(j) for j in bet_card]
         # ターンエンド → 次のプレイヤーへ
         cnt += 1
 
