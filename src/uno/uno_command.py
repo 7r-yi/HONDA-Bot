@@ -677,7 +677,7 @@ class Uno(commands.Cog):
     @commands.guild_only()
     @commands.has_role(cs.Visitor)
     async def on_message(self, ctx):
-        # UNOプレイ中でない時は無反応
+        # UNOプレイ中でない時は反応しない
         if not ALL_DATA:
             return
         if ctx.channel.id not in [cs.UNO_room, cs.Test_room] or ctx.author.bot:
