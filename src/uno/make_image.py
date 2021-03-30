@@ -16,7 +16,7 @@ BG_FREE_PASS = 'src/uno/base_image/Background_free.png'
 BG_PASS_temp = BG_PASS
 HAND_PASS = 'src/uno/base_image/hand.png'
 ALPHA_CARD_PASS = 'src/uno/base_image/card.png'
-CARD_PASS = 'src/uno/card_image/'
+CARD_PASS = 'src/uno/card_image'
 
 
 def id_to_pass(id):

@@ -21,7 +21,7 @@ from . import make_image as mi
 from . import uno_record as ur
 
 WATCH_FLAG = None
-ALL_DATA, ALL_PLAYER, INITIAL_NUM = [], [], 7
+ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN = [], [], 7, 0
 
 
 # ゲーム終了処理 (画像やロール削除)
@@ -131,10 +131,12 @@ async def declaration_uno(bot, ctx):
 
 # 途中参加
 async def joining_uno(bot, ctx):
-    ALL_PLAYER.append(ctx.author.id)
+    global TURN
     ALL_DATA.append([ctx.author.id, [], None, [False, None], 0])
-    await send_card(bot, -1, INITIAL_NUM, False)
+    ALL_PLAYER.append(ctx.author.id)
+    TURN = TURN % len(ALL_DATA)
     await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} が途中参加しました")
+    await send_card(bot, -1, INITIAL_NUM, False)
 
 
 # UNOゲーム実行処理
@@ -159,7 +161,7 @@ async def run_uno(bot, ctx, type):
     if uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中なので開始出来ません", delete_after=5)
 
-    global ALL_DATA, ALL_PLAYER, INITIAL_NUM
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN
     normal_flag, special_flag, mode_str = False, False, ""
     uf.Card = uf.Card_Normal
     mi.AREA_PASS, mi.BG_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp
@@ -323,14 +325,14 @@ async def run_uno(bot, ctx, type):
                 ok_player.append(reply.author.id)
         if len(ok_player) == len(ALL_PLAYER):
             break
-    cnt, card, penalty, winner, msg1, msg2, time_cut = 0, [uf.number_card()], 0, None, None, None, 0
+    TURN, card, penalty, winner, msg1, msg2, time_cut = 0, [uf.number_card()], 0, None, None, None, 0
     start_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
     shutil.copy(mi.AREA_PASS, mi.AREA_COPY_PASS)
     mi.make_area(card[-1])
 
     while True:
         # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
-        i, bet_flag, get_flag, drop_flag, bet_card = cnt % len(ALL_DATA), False, False, False, ""
+        i, bet_flag, get_flag, drop_flag, bet_card = TURN % len(ALL_DATA), False, False, False, ""
         # 参加者のIDリスト
         ALL_PLAYER = [ALL_DATA[j][0] for j in range(len(ALL_DATA))]
         # 制限時間設定
@@ -384,7 +386,7 @@ async def run_uno(bot, ctx, type):
                         j = uf.search_player(reply.raw_mentions[0], ALL_DATA)
                         if j is not None:
                             await ctx.send(f"{all_mention(guild)}\n{bot.get_user(ALL_DATA[j][0]).mention} を棄権させました")
-                            cnt = i - 1 if j < i else i
+                            TURN = i - 1 if j < i else i
                             if normal_flag:
                                 drop_name = guild.get_member(ALL_DATA[j][0]).display_name
                                 ur.add_penalty(ALL_DATA[j][0], drop_name, ALL_DATA[j][1])
@@ -398,7 +400,7 @@ async def run_uno(bot, ctx, type):
                     j = uf.search_player(reply.author.id, ALL_DATA)
                     if j is not None:
                         await ctx.send(f"{all_mention(guild)}\n{reply.author.mention} が棄権しました")
-                        cnt = i - 1 if j < i else i
+                        TURN = i - 1 if j < i else i
                         if normal_flag:
                             drop_name = guild.get_member(reply.author.id).display_name
                             ur.add_penalty(reply.author.id, drop_name, ALL_DATA[j][1])
@@ -410,21 +412,21 @@ async def run_uno(bot, ctx, type):
             # ゲームを強制中止する
             elif input == "!cancel" and reply.author.id in ALL_PLAYER:
                 await ctx.send(f"{all_mention(guild)}\nゲームを中止しますか？(過半数が `!OK` で中止、`!NG` でキャンセル)")
-                cnt_cancel, cnt_ng, cancel_player, ng_player = 0, 0, [], []
+                TURN_cancel, TURN_ng, cancel_player, ng_player = 0, 0, [], []
                 while True:
                     confirm = await bot.wait_for('message', check=user_check)
                     input = jaconv.z2h(confirm.content, ascii=True).lower()
                     if input == "!ok" and confirm.author.id not in cancel_player:
-                        cnt_cancel += 1
+                        TURN_cancel += 1
                         cancel_player.append(confirm.author.id)
                     elif input == "!ng" and confirm.author.id not in ng_player:
-                        cnt_ng += 1
+                        TURN_ng += 1
                         ng_player.append(confirm.author.id)
-                    if cnt_cancel >= len(ALL_PLAYER) // 2 + 1:
+                    if TURN_cancel >= len(ALL_PLAYER) // 2 + 1:
                         await uno_end(guild, True, False)
                         await ctx.send(f"{all_mention(guild)}\nゲームを中止しました")
                         return
-                    elif cnt_ng >= len(ALL_PLAYER) // 2 + 1:
+                    elif TURN_ng >= len(ALL_PLAYER) // 2 + 1:
                         await ctx.send(f"{all_mention(guild)}\nキャンセルしました")
                         break
             # 自分のターンでの行動
@@ -517,7 +519,7 @@ async def run_uno(bot, ctx, type):
                 for j in range(len(ALL_PLAYER)):
                     if ALL_DATA[i - 1][0] != ALL_PLAYER[j]:
                         await send_card(bot, j, penalty, True)
-            penalty, cnt, = 0, cnt - 1
+            penalty, TURN, = 0, TURN - 1
         # 手札が0枚となったので上がり
         if not ALL_DATA[i][1] and not ALL_DATA[i][3][0]:
             await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} YOU WIN!")
@@ -542,7 +544,7 @@ async def run_uno(bot, ctx, type):
         # スキップ処理
         if uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
             await ctx.send(f"{2 * len(bet_card) - 1}人スキップします", delete_after=10)
-            cnt += 2 * len(bet_card) - 1
+            TURN += 2 * len(bet_card) - 1
         # リバース処理
         elif uf.card_to_id(card[-1]) % 100 == 11 and bet_flag:
             await ctx.send(f"{len(bet_card)}回リバースします", delete_after=10)
@@ -550,7 +552,7 @@ async def run_uno(bot, ctx, type):
                 # リバースを出した人のリバースされた配列中の位置を代入
                 tmp = copy.copy(ALL_DATA[i][0])
                 ALL_DATA.reverse()
-                cnt = uf.search_player(tmp, ALL_DATA)
+                TURN = uf.search_player(tmp, ALL_DATA)
         # ワイルドカードで順番シャッフル
         elif 530 <= uf.card_to_id(card[-1]) <= 534 and bet_flag:
             await ctx.send(f"{all_mention(guild)}\n順番がシャッフルされました", delete_after=10)
@@ -559,7 +561,7 @@ async def run_uno(bot, ctx, type):
         if bet_flag:
             [mi.make_area(j) for j in bet_card]
         # ターンエンド → 次のプレイヤーへ
-        cnt += 1
+        TURN += 1
 
     # 点数計算
     all_name, stc = [], ""
@@ -686,7 +688,7 @@ class Uno(commands.Cog):
         inputs = jaconv.z2h(jaconv.h2z(ctx.content), kana=False, ascii=True, digit=True).lower()
         if "!uno" in inputs and ctx.author.id in ALL_PLAYER:
             await declaration_uno(self.bot, ctx)
-        elif inputs in ["!j", "!join"] and ctx.author.id not in ALL_PLAYER:
+        elif inputs in ["!j", "!join"] and ctx.author.id in ALL_PLAYER:
             await joining_uno(self.bot, ctx)
 
     @commands.command()
