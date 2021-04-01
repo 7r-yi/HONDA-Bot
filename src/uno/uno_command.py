@@ -327,10 +327,21 @@ async def run_uno(bot, ctx, type):
             break
     TURN, card, penalty, winner, msg1, msg2, time_cut = 0, [uf.number_card()], 0, None, None, None, 0
     start_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
+    msg_watchgame = None
     shutil.copy(mi.AREA_PASS, mi.AREA_COPY_PASS)
     mi.make_area(card[-1])
 
     while True:
+        # 観戦機能ON時は手札を表示
+        if WATCH_FLAG is not None:
+            if msg_watchgame is not None:
+                await msg_watchgame.delete()
+            msg = ""
+            for j in range(len(ALL_DATA)):
+                msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【{uf.card_to_string(ALL_DATA[j][1])}】\n"
+                if len(msg) > 1970 // len(ALL_PLAYER):
+                    msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【文字数制限を超過しているため表示できません】\n"
+            msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"現在の全プレイヤーの手札一覧```\n{msg}```")
         # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
         i, bet_flag, get_flag, drop_flag, bet_card = TURN % len(ALL_DATA), False, False, False, ""
         # 参加者のIDリスト
@@ -535,12 +546,6 @@ async def run_uno(bot, ctx, type):
         # 上がれない手札だったらUNOフラグを降ろす
         elif not uf.check_win(ALL_DATA[i][1]):
             ALL_DATA[i][3] = [False, None]
-        # 観戦機能ON時は手札を表示(5分間)
-        if WATCH_FLAG is not None:
-            msg = f"{guild.get_member(ALL_DATA[i][0]).display_name}【{uf.card_to_string(ALL_DATA[i][1])}】"
-            if len(msg) > 2000:
-                msg = f"{guild.get_member(ALL_DATA[i][0]).display_name}【文字数制限を超過しているため表示できません】"
-            await bot.get_channel(WATCH_FLAG).send(msg, delete_after=300)
         # スキップ処理
         if uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
             await ctx.send(f"{2 * len(bet_card) - 1}人スキップします", delete_after=10)
