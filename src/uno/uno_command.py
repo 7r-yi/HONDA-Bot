@@ -644,7 +644,7 @@ async def run_record(bot, guild, ctx, name):
             embed.set_thumbnail(url=url)
             embed.add_field(name="順位", value=f"**{data[0]}** /{player}位", inline=False)
             embed.add_field(name="総得点", value=f"**{data[3]}**点")
-            embed.add_field(name="総撃破人数", value=f"{data[4]}人")
+            embed.add_field(name="勝利人数", value=f"{data[4]}人")
             embed.add_field(name="優勝率", value=f"{data[5]} ({data[7]}回/{data[6]}戦)")
             embed.add_field(name="最高獲得点", value=f"{data[9]}点")
             embed.add_field(name="最低減少点", value=f"{data[10]}点")
