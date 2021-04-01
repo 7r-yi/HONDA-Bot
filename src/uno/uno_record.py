@@ -1,7 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-from src.uno import uno_func
+from src.uno import uno_func, uno_command
 
 
 def road_spreadsheet(sheet_name):
@@ -63,8 +63,10 @@ def add_penalty(id, name, card):
             data_row[0].value = name
             # ペナルティー書き込み(-100点)
             data_row[2].value = int(data_row[2].value) - 100
+            # 撃破数書き込み(全員に負けた判定)
+            data_row[3].value = int(data_row[3].value) - len(uno_command.ALL_PLAYER) + 1
             # ポイント書き込み
-            for j in range(3, len(data[i]) + 1):
+            for j in range(4, len(data[i]) + 1):
                 if not data_row[j].value:
                     data_row[j].value = pts
                     break
@@ -72,13 +74,15 @@ def add_penalty(id, name, card):
             break
         # 新規ユーザーのデータ作成
         elif data[i][2] == "":
-            data_row = sheet.range(f'B{i + 1}:E{i + 1}')
+            data_row = sheet.range(f'B{i + 1}:F{i + 1}')
             # 名前書き込み
             data_row[0].value = name
             # ID書き込み
             data_row[1].value = str(id)
             # ペナルティー書き込み(-100点)
             data_row[2].value = -100
+            # 撃破数書き込み(全員に負けた判定)
+            data_row[3].value = - len(uno_command.ALL_PLAYER) + 1
             # ポイント書き込み
             for j in range(3, len(data[i]) + 1):
                 if not data_row[j].value:
@@ -101,8 +105,10 @@ def data_save(all_data, all_name):
                 data_row = sheet.range(f'B{j + 1}:{num_to_alpha(len(data[j]) + 1)}{j + 1}')
                 # 名前書き込み
                 data_row[0].value = all_name[i]
+                # 撃破数書き込み
+                data_row[3].value = int(data_row[3].value) + len(all_data) - 1 - 2 * i
                 # ポイント書き込み
-                for k in range(3, len(data[j]) + 1):
+                for k in range(4, len(data[j]) + 1):
                     if not data_row[k].value:
                         data_row[k].value = all_data[i][5]
                         break
@@ -110,15 +116,17 @@ def data_save(all_data, all_name):
                 break
             # 新規ユーザーのデータ作成
             elif data[j][2] == "":
-                data_row = sheet.range(f'B{j + 1}:E{j + 1}')
+                data_row = sheet.range(f'B{j + 1}:F{j + 1}')
                 # 名前書き込み
                 data_row[0].value = all_name[i]
                 # ID書き込み
                 data_row[1].value = str(all_data[i][0])
                 # ペナルティー書き込み(0点)
                 data_row[2].value = 0
+                # 撃破数書き込み
+                data_row[3].value = len(all_data) - 1 - 2 * i
                 # ポイント書き込み
-                data_row[3].value = all_data[i][5]
+                data_row[4].value = all_data[i][5]
                 sheet.update_cells(data_row, value_input_option='USER_ENTERED')
                 times += 1
                 break

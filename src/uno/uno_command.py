@@ -569,6 +569,8 @@ async def run_uno(bot, ctx, type):
         ALL_DATA[i].append(ur.calculate_point(ALL_DATA[i][1]))
     # 1位には他ユーザーの合計得点をプラス
     ALL_DATA[winner][5] = sum([ALL_DATA[i][5] for i in range(len(ALL_DATA))]) * -1
+
+    # 結果データをソート
     sort_data = sorted(ALL_DATA, key=lambda x: x[5], reverse=True)
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
@@ -642,11 +644,11 @@ async def run_record(bot, guild, ctx, name):
             embed.set_thumbnail(url=url)
             embed.add_field(name="順位", value=f"**{data[0]}** /{player}位", inline=False)
             embed.add_field(name="総得点", value=f"**{data[3]}**点")
-            embed.add_field(name="勝率", value=f"{data[4]} ({data[5]}戦 {data[6]}勝{data[7]}敗)")
-            embed.add_field(name="直近5戦", value=f"{data[11]}点")
-            embed.add_field(name="最高獲得点", value=f"{data[8]}点")
-            embed.add_field(name="最低減少点", value=f"{data[9]}点")
-            embed.add_field(name="加点/減点", value=f"{data[10]}点")
+            embed.add_field(name="撃破人数", value=f"{data[4]}人")
+            embed.add_field(name="優勝率", value=f"{data[5]} ({data[7]}回/{data[6]}戦)")
+            embed.add_field(name="最高獲得点", value=f"{data[9]}点")
+            embed.add_field(name="最低減少点", value=f"{data[10]}点")
+            embed.add_field(name="直近5戦", value=f"{data[12]}点")
             await ctx.send(embed=embed)
             return await msg.delete()
 
