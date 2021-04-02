@@ -496,14 +496,16 @@ async def run_uno(bot, ctx, type):
                     await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                     break
+                if color.author.id != ALL_DATA[i][0]:
+                    continue
+                if uf.translate_input(input) not in uf.Color:
+                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
+                    continue
                 if color.author.id == ALL_DATA[i][0] and uf.translate_input(input) in uf.Color:
                     card[-1] = f"{uf.translate_input(input)}{card[-1]}"
-                    break
                 elif color.author.id == ALL_DATA[i][0] and input in ["ランダム", "x"]:
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
-                    break
-                elif color.author.id == ALL_DATA[i][0]:
-                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
+                break
             bet_card[-1] = card[-1]
             await msg.delete()
         # ディスカードオール処理
