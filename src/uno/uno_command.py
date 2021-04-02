@@ -647,14 +647,15 @@ async def run_record(bot, guild, ctx, name):
     msg = await ctx.send(f"{name}のデータを検索中...")
     for member in get_role(guild, cs.Visitor).members:
         if name.lower() == member.display_name.lower():
-            data, player, url = ur.record_output(member.id)
+            data, player, url, rank = ur.record_output(member.id)
             user, id = member.display_name, member.id
             embed = discord.Embed(title=user, color=0xFF3333)
             embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
             embed.set_thumbnail(url=url)
-            embed.add_field(name="順位", value=f"**{data[0]}** /{player}位", inline=False)
+            embed.add_field(name="順位 (総得点)", value=f"**{data[0]}** /{player}位", inline=False)
+            embed.add_field(name="順位 (勝利人数)", value=f"**{rank}** /{player}位", inline=False)
             embed.add_field(name="総得点", value=f"**{data[3]}**点")
-            embed.add_field(name="勝利人数", value=f"{data[4]}人")
+            embed.add_field(name="勝利人数", value=f"{data[4]:+}人")
             embed.add_field(name="優勝率", value=f"{data[5]} ({data[7]}回/{data[6]}戦)")
             embed.add_field(name="最高獲得点", value=f"{data[9]}点")
             embed.add_field(name="最低減少点", value=f"{data[10]}点")

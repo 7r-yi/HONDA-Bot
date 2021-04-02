@@ -151,16 +151,21 @@ def record_output(id):
     sheet = road_spreadsheet('ランキング')
     data = sheet.get_all_values()
 
+    # 勝利人数でソート
+    sort_data = []
     for i in range(1, len(data)):
-        if str(id) == data[i][2]:
-            if int(data[i][3].replace("+", "")) <= 0:
+        if data[i][1] != "":
+            data[i][4] = int(data[i][4].replace("+", ""))
+            sort_data.append(data[i])
+    sort_data = sorted(sort_data, key=lambda x: x[4], reverse=True)
+
+    for i in range(len(sort_data)):
+        if str(id) == sort_data[i][2]:
+            if int(sort_data[i][3].replace("+", "")) <= 0:
                 url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
             else:
                 url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
-
-            # プレイヤー数の取得
-            for j in range(i, len(data)):
-                if data[j][1] == "":
-                    return data[i], j - 1, url
+            # データ、人数、URL、勝利人数での順位
+            return sort_data[i], len(sort_data), url, i + 1
 
     return None, None, None
