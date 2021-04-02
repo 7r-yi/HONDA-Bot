@@ -178,7 +178,8 @@ class Zyanken(commands.Cog):
         # _, _, winner, loser = zf.ranking_output(self.bot.get_guild(ctx.guild.id), type="winsmax")
         # zf.Former_winner, zf.Former_loser = winner, loser
         # self.role_update.start()
-        self.data_auto_save.start()
+        # self.data_auto_save.start()
+        pass
 
     # 定期的にWinner/Loserロール更新
     @tasks.loop(minutes=60)
@@ -199,9 +200,8 @@ class Zyanken(commands.Cog):
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
             zf.File_backup = await self.bot.get_channel(cs.Test_room).send(
                 f"{time}\nData Auto Saved", file=discord.File(zf.RECORD_PASS))
-        data = "\n".join(zf.No_reply)
         with open(zf.REPLY_PASS, 'w') as f:
-            f.write(data)
+            f.write("\n".join(zf.No_reply))
 
     @commands.Cog.listener(name='on_message')
     @commands.guild_only()
