@@ -498,7 +498,7 @@ async def run_uno(bot, ctx, type):
                     break
                 if color.author.id != ALL_DATA[i][0]:
                     continue
-                if uf.translate_input(input) not in uf.Color:
+                if uf.translate_input(input) not in uf.Color + ["ランダム", "x"]:
                     await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
                     continue
                 if color.author.id == ALL_DATA[i][0] and uf.translate_input(input) in uf.Color:
