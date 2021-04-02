@@ -163,10 +163,10 @@ def record_output(id):
 
     for i in range(len(sort_data)):
         if str(id) == sort_data[i][2]:
-            if int(sort_data[i][0]) + i + 1 < len(sort_data):
-                url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
-            else:
+            if int(sort_data[i][0]) + i + 1 <= len(sort_data):
                 url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
+            else:
+                url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
             # データ、人数、URL、勝利人数での順位
             return sort_data[i], len(sort_data), url, i + 1
 
