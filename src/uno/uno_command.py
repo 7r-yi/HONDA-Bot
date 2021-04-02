@@ -340,10 +340,13 @@ async def run_uno(bot, ctx, type):
                 await msg_watchgame.delete()
             msg = ""
             for j in range(len(ALL_DATA)):
-                msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【{uf.card_to_string(ALL_DATA[j][1])}】\n\n"
-                if len(msg) > 1970 // len(ALL_PLAYER):
-                    msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【文字数制限を超過しているため表示できません】\n"
-            msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"現在の全プレイヤーの手札一覧```\n{msg}```")
+                name = f"{j + 1}. {guild.get_member(ALL_DATA[j][0]).display_name}"
+                hand = uf.card_to_string(ALL_DATA[j][1])
+                if len(name) + len(hand) <= 1970 // len(ALL_PLAYER):
+                    msg += f"{name}【{hand}】\n\n"
+                else:
+                    msg += f"{name}【文字数制限を超過しているため表示できません】\n\n"
+            msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"```\n現在の全プレイヤーの手札一覧\n\n{msg}```")
         # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
         i, bet_flag, get_flag, drop_flag, bet_card = TURN % len(ALL_DATA), False, False, False, ""
         # 参加者のIDリスト
@@ -363,7 +366,7 @@ async def run_uno(bot, ctx, type):
         msg1 = await ctx.send(f"```\n各プレイヤーの現在の手札枚数\n\n{''.join(stc)}```"
                               f"__現在の場札のカード : {card[-1]}__", file=discord.File(mi.AREA_COPY_PASS))
         msg2 = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} の番です (制限時間{time:g}秒)")
-        # 手札が200枚を超えたら脱落
+        # 手札が100枚を超えたら脱落
         if len(ALL_DATA[i][1]) > 100 and special_flag:
             await ctx.send(f"{all_mention(guild)}\n{bot.get_user(ALL_DATA[i][0]).mention} 手札が100枚を超えたので脱落となります")
             if len(ALL_PLAYER) == 1:
