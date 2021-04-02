@@ -50,8 +50,9 @@ class Talk(commands.Cog):
     @commands.has_role(cs.Visitor)
     async def on_message(self, ctx):
         if cs.Honda in ctx.raw_mentions and not ctx.author.bot:
-            reply = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "不敬罪ですよ"]
-            await ctx.channel.send(f"{ctx.author.mention} {reply[random.randint(0, 4)]}", delete_after=5)
+            reply = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "なんですか？",
+                     "不敬罪ですよ", "君とお話している時間はないんで", "ダル絡みやめてください", "おい", "🖕", "👎"]
+            await ctx.channel.send(f"{ctx.author.mention} {reply[random.randint(0, 10)]}", delete_after=5)
 
     # ケイスケホンダ宛てのDMを出力
     @commands.Cog.listener(name='on_message')
