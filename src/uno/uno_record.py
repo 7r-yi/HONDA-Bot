@@ -1,6 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+from operator import itemgetter
 from src.uno import uno_func, uno_command
 
 
@@ -151,17 +152,18 @@ def record_output(id):
     sheet = road_spreadsheet('ランキング')
     data = sheet.get_all_values()
 
-    # 勝利人数でソート
+    # 勝利人数 → 得点でソート
     sort_data = []
     for i in range(1, len(data)):
         if data[i][1] != "":
+            data[i][3] = int(data[i][3].replace("+", ""))
             data[i][4] = int(data[i][4].replace("+", ""))
             sort_data.append(data[i])
-    sort_data = sorted(sort_data, key=lambda x: x[4], reverse=True)
+    sort_data = sorted(sort_data, key=itemgetter(4, 3), reverse=True)
 
     for i in range(len(sort_data)):
         if str(id) == sort_data[i][2]:
-            if int(sort_data[i][3].replace("+", "")) <= 0:
+            if int(sort_data[i][0]) + i + 1 < len(sort_data):
                 url = 'https://i.imgur.com/adtGl7h.png'  # YOU LOSE
             else:
                 url = 'https://i.imgur.com/1JXc9eD.png'  # YOU WIN
