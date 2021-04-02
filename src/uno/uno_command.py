@@ -482,30 +482,6 @@ async def run_uno(bot, ctx, type):
         # 棄権時は以下の処理を飛ばす
         if drop_flag:
             continue
-        # ワイルドカードを出した後の色指定
-        if 500 <= uf.card_to_id(card[-1]) and bet_flag:
-            msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色を指定してください (制限時間20秒)\n"
-                                 f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
-            start = datetime.now()
-            while True:
-                try:
-                    color = await bot.wait_for('message', check=user_check,
-                                               timeout=20 - (datetime.now() - start).seconds)
-                    input = jaconv.z2h(color.content, ascii=True, kana=False).lower()
-                except asyncio.exceptions.TimeoutError:
-                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
-                    card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
-                    break
-                if color.author.id == ALL_DATA[i][0] and uf.translate_input(input) in uf.Color:
-                    card[-1] = f"{uf.translate_input(input)}{card[-1]}"
-                    break
-                elif color.author.id == ALL_DATA[i][0] and input in ["ランダム", "x", "random"]:
-                    card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
-                    break
-                elif color.author.id == ALL_DATA[i][0]:
-                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
-            bet_card[-1] = card[-1]
-            await msg.delete()
         # ディスカードオール処理
         if uf.card_to_id(card[-1]) % 100 == 13 and bet_flag:
             colors = set([f"{bet_card[j][0]}色" for j in range(len(bet_card))])
@@ -551,6 +527,30 @@ async def run_uno(bot, ctx, type):
         # 上がれない手札だったらUNOフラグを降ろす
         elif not uf.check_win(ALL_DATA[i][1]):
             ALL_DATA[i][3] = [False, None]
+        # ワイルドカード処理(色指定)
+        if 500 <= uf.card_to_id(card[-1]) and bet_flag:
+            msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色を指定してください (制限時間20秒)\n"
+                                 f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
+            start = datetime.now()
+            while True:
+                try:
+                    color = await bot.wait_for('message', check=user_check,
+                                               timeout=20 - (datetime.now() - start).seconds)
+                    input = jaconv.z2h(color.content, ascii=True, kana=False).lower()
+                except asyncio.exceptions.TimeoutError:
+                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
+                    card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
+                    break
+                if color.author.id == ALL_DATA[i][0] and uf.translate_input(input) in uf.Color:
+                    card[-1] = f"{uf.translate_input(input)}{card[-1]}"
+                    break
+                elif color.author.id == ALL_DATA[i][0] and input in ["ランダム", "x", "random"]:
+                    card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
+                    break
+                elif color.author.id == ALL_DATA[i][0]:
+                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
+            bet_card[-1] = card[-1]
+            await msg.delete()
         # スキップ処理
         if uf.card_to_id(card[-1]) % 100 == 10 and bet_flag:
             await ctx.send(f"{2 * len(bet_card) - 1}人スキップします", delete_after=10)
