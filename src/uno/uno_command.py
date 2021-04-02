@@ -340,7 +340,7 @@ async def run_uno(bot, ctx, type):
                 await msg_watchgame.delete()
             msg = ""
             for j in range(len(ALL_DATA)):
-                msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【{uf.card_to_string(ALL_DATA[j][1])}】\n"
+                msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【{uf.card_to_string(ALL_DATA[j][1])}】\n\n"
                 if len(msg) > 1970 // len(ALL_PLAYER):
                     msg += f"{guild.get_member(ALL_DATA[j][0]).display_name}【文字数制限を超過しているため表示できません】\n"
             msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"現在の全プレイヤーの手札一覧```\n{msg}```")
