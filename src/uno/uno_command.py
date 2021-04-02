@@ -346,7 +346,7 @@ async def run_uno(bot, ctx, type):
                     msg += f"{name}【{hand}】\n\n"
                 else:
                     msg += f"{name}【文字数制限を超過しているため表示できません】\n\n"
-            msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"```\n現在の全プレイヤーの手札一覧\n\n{msg}```")
+            msg_watchgame = await bot.get_channel(WATCH_FLAG).send(f"```\n各プレイヤーの現在の手札一覧\n\n{msg}```")
         # i: ユーザー指定変数, bet_flag: カードを出したか, get_flag: !getでカードを引いたか, drop_flag: 棄権者が出たか
         i, bet_flag, get_flag, drop_flag, bet_card = TURN % len(ALL_DATA), False, False, False, ""
         # 参加者のIDリスト
