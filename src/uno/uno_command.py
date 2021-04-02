@@ -75,7 +75,7 @@ async def send_card(bot, n, times, send_flag):
             card_msg = f"追加カード↓```{uf.card_to_string(uf.sort_card(add_card))}```"
         card_msg += f"現在の手札↓```{uf.card_to_string(ALL_DATA[n][1])}```"
         if len(card_msg) > 2000:
-            card_msg = "現在の手札↓```文字数制限(2000文字)を超過しているため、文字で送信できません```"
+            card_msg = "現在の手札↓```1度に送信できる文字数制限を超過しているため送信できません```"
         ALL_DATA[n][2] = await bot.get_user(ALL_DATA[n][0]).send(card_msg, file=discord.File(mi.HAND_PASS))
         os.remove(mi.HAND_PASS)
     else:
@@ -102,17 +102,19 @@ async def declaration_uno(bot, ctx):
                                        f"UNOと言っていないのでペナルティーで2枚追加されます", delete_after=10)
                 await send_card(bot, j, 2, True)
             else:
-                j = uf.search_player(ctx.author.id, ALL_DATA)
-                if ALL_DATA[j][4] == 0:
-                    ALL_DATA[j][4] += 0.5
-                    await ctx.channel.send(f"{ctx.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
-                                           f"(次自分のターンが来るまでに、もう1度間違った指摘を行うとペナルティーとなります)",
-                                           delete_after=10)
-                elif ALL_DATA[j][4] == 0.5:
-                    ALL_DATA[j][4] += 0.5
-                    await ctx.channel.send(f"{ctx.author.mention} そのユーザーは、今はまだUNOの状態ではありません\n"
-                                           f"指摘間違いペナルティーとして、次のあなたのターンを1回パスします",
-                                           delete_after=10)
+                if uf.check_win(ALL_DATA[j][1]):
+                    msg = "そのユーザーは、既にUNOと宣言済みです"
+                else:
+                    msg = "そのユーザーは、今はまだUNOの状態ではありません"
+                k = uf.search_player(ctx.author.id, ALL_DATA)
+                if ALL_DATA[k][4] == 0:
+                    ALL_DATA[k][4] += 0.5
+                    await ctx.channel.send(f"{ctx.author.mention} {msg}\n"
+                                           f"(次自分のターンが来るまでに、もう1度間違うとペナルティーとなります)", delete_after=10)
+                elif ALL_DATA[k][4] == 0.5:
+                    ALL_DATA[k][4] += 0.5
+                    await ctx.channel.send(f"{ctx.author.mention} {msg}\n"
+                                           f"指摘間違いペナルティーとして、次のあなたのターンを1回パスします", delete_after=10)
                 else:
                     await ctx.channel.send(f"{ctx.author.mention} あなたは現在UNOの指摘は出来ません", delete_after=10)
     # 自分の宣言
