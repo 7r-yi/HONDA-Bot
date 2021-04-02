@@ -585,7 +585,7 @@ async def run_uno(bot, ctx, type):
     for i in range(len(sort_data)):
         all_name.append(guild.get_member(sort_data[i][0]).display_name)
         last_card = uf.card_to_string(sort_data[i][1])
-        if len(last_card) > 300:
+        if len(last_card) > 1900 // len(ALL_PLAYER) or len(last_card) > 400:
             last_card = "多すぎるため表示出来ません"
         stc += f"{i + 1}位 : {all_name[-1]} ({sort_data[i][5]:+}pts)\n残り手札【{last_card}】\n\n"
 

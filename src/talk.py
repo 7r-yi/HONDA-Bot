@@ -32,39 +32,29 @@ class Talk(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # 一般の長文を削除
     @commands.Cog.listener(name='on_message')
     @commands.guild_only()
     @commands.has_role(cs.Visitor)
     async def on_message(self, ctx):
-        if ctx.channel.id != cs.General or role_check_mode(ctx) or ctx.author.bot:
-            return
-        if ctx.content.count("\n") < 7 and len(ctx.content) < 400:
-            return
-        await ctx.delete()
-        await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=5)
-
-    # Botにメンションしたら返答
-    @commands.Cog.listener(name='on_message')
-    @commands.guild_only()
-    @commands.has_role(cs.Visitor)
-    async def on_message(self, ctx):
+        # Botにメンションしたら返答
         if cs.Honda in ctx.raw_mentions and not ctx.author.bot:
-            reply = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "なんですか？",
-                     "不敬罪ですよ", "君とお話している時間はないんで", "ダル絡みやめてください", "おい", "🖕", "👎"]
-            await ctx.channel.send(f"{ctx.author.mention} {reply[random.randint(0, 10)]}", delete_after=5)
+            msg = ["うるさい", "話しかけてこないでくれませんか？", "YOU LOSE 俺の勝ち", "メンションするな", "なんですか？",
+                   "不敬罪ですよ", "君とお話している時間はないんで", "ダル絡みやめてください", "おい", "🖕", "👎"]
+            await ctx.channel.send(f"{ctx.author.mention} {msg[random.randint(0, 10)]}", delete_after=5)
 
-    # ケイスケホンダ宛てのDMを出力
-    @commands.Cog.listener(name='on_message')
-    @commands.has_role(cs.Visitor)
-    async def on_message(self, ctx):
-        if ctx.author.bot or type(ctx.channel) != discord.DMChannel:
-            return
-        time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
-        msg = f"{ctx.author} が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
-        if len(msg) > 2000:
-            msg = f"{ctx.author} が、ケイスケホンダに {ctx.content[:100]} (文字数が多すぎるため略) とDMを送信しました ({time})"
-        await self.bot.get_channel(cs.Mod_room).send(msg)
+        # 一般の長文を削除
+        if ctx.channel.id == cs.General and not role_check_mode(ctx) and not ctx.author.bot:
+            if ctx.content.count("\n") >= 7 and len(ctx.content) >= 400:
+                await ctx.delete()
+                await ctx.channel.send(f"{ctx.author.mention} 改行/文字数が多いため削除されました", delete_after=5)
+
+        # ケイスケホンダ宛てのDMを出力
+        if ctx.author.bot and type(ctx.channel) == discord.DMChannel:
+            time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M:%S')
+            msg = f"{ctx.author} が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
+            if len(msg) > 2000:
+                msg = f"{ctx.author} が、ケイスケホンダに {ctx.content[:100]} (文字数が多すぎるため略) とDMを送信しました ({time})"
+            await self.bot.get_channel(cs.Mod_room).send(msg)
 
     # コマンド入力ミスのエラーを表示させない
     @commands.Cog.listener(name='on_command_error')
