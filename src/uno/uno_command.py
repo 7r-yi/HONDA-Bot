@@ -21,7 +21,7 @@ from . import make_image as mi
 from . import uno_record as ur
 
 WATCH_FLAG = None
-ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN = [], [], 7, 0
+ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, COLOR_WAIT = [], [], 7, 0, False
 
 
 # ゲーム終了処理 (画像やロール削除)
@@ -85,6 +85,7 @@ async def send_card(bot, n, times, send_flag):
 
 # UNOの指摘/宣言
 async def declaration_uno(bot, ctx):
+    global ALL_DATA, COLOR_WAIT
     # ケイスケホンダに指摘
     if cs.Honda in ctx.raw_mentions:
         j = uf.search_player(ctx.author.id, ALL_DATA)
@@ -121,7 +122,7 @@ async def declaration_uno(bot, ctx):
     else:
         j = uf.search_player(ctx.author.id, ALL_DATA)
         # 自分のUNOフラグが立っている場合
-        if ALL_DATA[j][3][0]:
+        if ALL_DATA[j][3][0] and not COLOR_WAIT:
             ALL_DATA[j][3] = [False, None]
             await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} がUNOを宣言しました")
         # まだ上がれない手札の場合
@@ -133,7 +134,7 @@ async def declaration_uno(bot, ctx):
 
 # 途中参加
 async def joining_uno(bot, ctx):
-    global TURN
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN
     ALL_DATA.append([ctx.author.id, [], None, [False, None], 0])
     ALL_PLAYER.append(ctx.author.id)
     TURN = TURN % len(ALL_DATA)
@@ -163,7 +164,7 @@ async def run_uno(bot, ctx, type):
     if uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中なので開始出来ません", delete_after=5)
 
-    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, COLOR_WAIT
     normal_flag, special_flag, mode_str = False, False, ""
     uf.Card = uf.Card_Normal
     mi.AREA_PASS, mi.BG_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp
@@ -483,6 +484,7 @@ async def run_uno(bot, ctx, type):
         if drop_flag:
             continue
         # ワイルドカード処理(色指定)
+        COLOR_WAIT = True
         if 500 <= uf.card_to_id(card[-1]) <= 569 and bet_flag:
             msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
@@ -564,6 +566,7 @@ async def run_uno(bot, ctx, type):
         # ディスカードオール以外の場合の手札更新
         elif bet_flag:
             await send_card(bot, i, 0, False)
+        COLOR_WAIT = False
         # ペナルティーを受ける
         if penalty > 0 and not bet_flag:
             # ドローの場合
