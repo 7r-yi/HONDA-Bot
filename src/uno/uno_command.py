@@ -21,12 +21,12 @@ from . import make_image as mi
 from . import uno_record as ur
 
 WATCH_FLAG = None
-ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, COLOR_WAIT = [], [], 7, 0, False
+ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, DECLARATION_WAIT, JOINING_WAIT = [], [], 7, 0, False, True
 
 
 # ゲーム終了処理 (画像やロール削除)
 async def uno_end(guild, image_flag=False, new_flag=False):
-    global ALL_DATA, ALL_PLAYER, INITIAL_NUM
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, JOINING_WAIT
     if image_flag:
         os.remove(mi.AREA_COPY_PASS)
     # 新規プレイヤーにはUNOロール付与
@@ -35,7 +35,7 @@ async def uno_end(guild, image_flag=False, new_flag=False):
             if cs.UNO not in [roles.id for roles in guild.get_member(player).roles]:
                 await guild.get_member(player).add_roles(get_role(guild, cs.UNO))
     uf.UNO_start = False
-    ALL_DATA, ALL_PLAYER, INITIAL_NUM = [], [], 7
+    ALL_DATA, ALL_PLAYER, INITIAL_NUM, JOINING_WAIT = [], [], 7, True
 
 
 # ゲーム開始処理
@@ -85,7 +85,7 @@ async def send_card(bot, n, times, send_flag):
 
 # UNOの指摘/宣言
 async def declaration_uno(bot, ctx):
-    global ALL_DATA, COLOR_WAIT
+    global ALL_DATA, DECLARATION_WAIT
     # ケイスケホンダに指摘
     if cs.Honda in ctx.raw_mentions:
         j = uf.search_player(ctx.author.id, ALL_DATA)
@@ -121,10 +121,10 @@ async def declaration_uno(bot, ctx):
     # 自分の宣言
     else:
         j = uf.search_player(ctx.author.id, ALL_DATA)
-        if COLOR_WAIT:
+        if DECLARATION_WAIT:
             await ctx.channel.send(f"{ctx.author.mention} UNOの宣言は色の選択後にしてください", delete_after=5)
         # 自分のUNOフラグが立っている場合
-        elif ALL_DATA[j][3][0] and not COLOR_WAIT:
+        elif ALL_DATA[j][3][0] and not DECLARATION_WAIT:
             ALL_DATA[j][3] = [False, None]
             await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} がUNOを宣言しました")
         # まだ上がれない手札の場合
@@ -136,7 +136,10 @@ async def declaration_uno(bot, ctx):
 
 # 途中参加
 async def joining_uno(bot, ctx):
-    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, JOINING_WAIT
+    if JOINING_WAIT:
+        await ctx.channel.send(f"{ctx.author.mention} もう少し待ってから途中参加してください", delete_after=5)
+        return
     ALL_DATA.append([ctx.author.id, [], None, [False, None], 0])
     ALL_PLAYER.append(ctx.author.id)
     TURN = TURN % len(ALL_DATA)
@@ -166,7 +169,7 @@ async def run_uno(bot, ctx, type):
     if uf.UNO_start:
         return await ctx.send(f"{ctx.author.mention} 現在プレイ中なので開始出来ません", delete_after=5)
 
-    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, COLOR_WAIT
+    global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, DECLARATION_WAIT, JOINING_WAIT
     normal_flag, special_flag, mode_str = False, False, ""
     uf.Card = uf.Card_Normal
     mi.AREA_PASS, mi.BG_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp
@@ -335,6 +338,7 @@ async def run_uno(bot, ctx, type):
     msg_watchgame = None
     shutil.copy(mi.AREA_PASS, mi.AREA_COPY_PASS)
     mi.make_area(card[-1])
+    JOINING_WAIT = False
 
     while True:
         # 観戦機能ON時は手札を表示
@@ -486,7 +490,7 @@ async def run_uno(bot, ctx, type):
         if drop_flag:
             continue
         # ワイルドカード処理(色指定)
-        COLOR_WAIT = True
+        DECLARATION_WAIT = True
         if 500 <= uf.card_to_id(card[-1]) <= 569 and bet_flag:
             msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
@@ -505,9 +509,9 @@ async def run_uno(bot, ctx, type):
                 if uf.translate_input(input) not in uf.Color + ["ランダム", "x"]:
                     await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
                     continue
-                if color.author.id == ALL_DATA[i][0] and uf.translate_input(input) in uf.Color:
+                if uf.translate_input(input) in uf.Color:
                     card[-1] = f"{uf.translate_input(input)}{card[-1]}"
-                elif color.author.id == ALL_DATA[i][0] and input in ["ランダム", "x"]:
+                else:
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                 break
             bet_card[-1] = card[-1]
@@ -520,13 +524,13 @@ async def run_uno(bot, ctx, type):
                     wild_cnt += 1
             if wild_cnt >= 1:
                 msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} "
-                                     f"消去したい色を{wild_cnt}色指定してください(重複可) (制限時間20秒)\n"
+                                     f"消去したい色を{wild_cnt}色指定してください(重複可) (制限時間25秒)\n"
                                      f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
                 start = datetime.now()
                 while True:
                     try:
                         color = await bot.wait_for('message', check=user_check,
-                                                   timeout=20 - (datetime.now() - start).seconds)
+                                                   timeout=25 - (datetime.now() - start).seconds)
                         input = uf.string_to_card(jaconv.z2h(color.content, ascii=True, kana=False).lower())
                     except asyncio.exceptions.TimeoutError:
                         await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
@@ -538,7 +542,7 @@ async def run_uno(bot, ctx, type):
                     if color.author.id != ALL_DATA[i][0]:
                         continue
                     if not all([uf.translate_input(input[j]) in uf.Color + ["ランダム", "x"] for j in range(len(input))]):
-                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} そんな色はありません", delete_after=5)
+                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 間違った色が含まれています", delete_after=5)
                         continue
                     if len(input) != wild_cnt:
                         await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色の数が間違っています", delete_after=5)
@@ -546,10 +550,10 @@ async def run_uno(bot, ctx, type):
                     k = 0
                     for j in range(-len(bet_card), 0):
                         if 570 <= uf.card_to_id(card[j]) <= 574:
-                            if input[k] in ["ランダム", "x"]:
-                                card[j] = f"{random.choice(uf.Color)}{card[j]}"
-                            else:
+                            if input[k] in uf.Color:
                                 card[j] = f"{uf.translate_input(input[k])}{card[j]}"
+                            else:
+                                card[j] = f"{random.choice(uf.Color)}{card[j]}"
                             bet_card[j] = card[j]
                             k += 1
                     break
@@ -568,7 +572,7 @@ async def run_uno(bot, ctx, type):
         # ディスカードオール以外の場合の手札更新
         elif bet_flag:
             await send_card(bot, i, 0, False)
-        COLOR_WAIT = False
+        DECLARATION_WAIT = False
         # ペナルティーを受ける
         if penalty > 0 and not bet_flag:
             # ドローの場合
