@@ -117,19 +117,21 @@ async def declaration_uno(bot, ctx):
                     await ctx.channel.send(f"{ctx.author.mention} {msg}\n"
                                            f"指摘間違いペナルティーとして、次のあなたのターンを1回パスします", delete_after=10)
                 else:
-                    await ctx.channel.send(f"{ctx.author.mention} あなたは現在UNOの指摘は出来ません", delete_after=10)
+                    await ctx.channel.send(f"{ctx.author.mention} あなたは現在UNOの指摘は出来ません", delete_after=5)
     # 自分の宣言
     else:
         j = uf.search_player(ctx.author.id, ALL_DATA)
+        if COLOR_WAIT:
+            await ctx.channel.send(f"{ctx.author.mention} UNOの宣言は色の選択後にしてください", delete_after=5)
         # 自分のUNOフラグが立っている場合
-        if ALL_DATA[j][3][0] and not COLOR_WAIT:
+        elif ALL_DATA[j][3][0] and not COLOR_WAIT:
             ALL_DATA[j][3] = [False, None]
             await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} がUNOを宣言しました")
         # まだ上がれない手札の場合
         elif not uf.check_win(ALL_DATA[j][1]):
-            await ctx.channel.send(f"{ctx.author.mention} まだUNOを宣言できる手札ではありません", delete_after=10)
+            await ctx.channel.send(f"{ctx.author.mention} まだUNOを宣言できる手札ではありません", delete_after=5)
         else:
-            await ctx.channel.send(f"{ctx.author.mention} 既にUNOと宣言済みです", delete_after=10)
+            await ctx.channel.send(f"{ctx.author.mention} 既にUNOと宣言済みです", delete_after=5)
 
 
 # 途中参加
