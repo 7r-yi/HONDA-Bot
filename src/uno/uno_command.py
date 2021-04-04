@@ -624,6 +624,10 @@ async def run_uno(bot, ctx, type):
         # 場札更新
         if bet_flag:
             [mi.make_area(j) for j in bet_card]
+        if "ドロー4" in bet_flag:
+            await ctx.send(file=discord.File('src/uno/Draw4_YuGiOh.jpg'))
+        elif "ドボン" in bet_flag:
+            await ctx.send(file=discord.File('src/uno/EIKO!_GO!!.png'))
         # ターンエンド → 次のプレイヤーへ
         TURN += 1
 
