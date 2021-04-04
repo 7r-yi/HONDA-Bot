@@ -527,13 +527,13 @@ async def run_uno(bot, ctx, type):
                     wild_cnt += 1
             if wild_cnt >= 1:
                 msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} "
-                                     f"消去したい色を{wild_cnt}色指定してください(重複可) (制限時間25秒)\n"
+                                     f"消去したい色を{wild_cnt}色指定してください(重複可) (制限時間20秒)\n"
                                      f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
                 start = datetime.now()
                 while True:
                     try:
                         color = await bot.wait_for('message', check=user_check,
-                                                   timeout=25 - (datetime.now() - start).seconds)
+                                                   timeout=20 - (datetime.now() - start).seconds)
                         input = uf.string_to_card(jaconv.z2h(color.content, ascii=True, kana=False).lower())
                     except asyncio.exceptions.TimeoutError:
                         await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
