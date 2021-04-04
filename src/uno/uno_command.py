@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.errors import Forbidden, DiscordServerError, HTTPException
-import aiohttp.client_exceptions as ac
+import aiohttp
 import asyncio
 import asyncio.exceptions
 import os
@@ -42,7 +42,7 @@ async def uno_end(guild, image_flag=False, new_flag=False):
 async def run_uno_config(bot, ctx, type):
     try:
         await run_uno(bot, ctx, type)
-    except DiscordServerError or HTTPException or ac.ClientOSError:
+    except DiscordServerError or HTTPException or aiohttp.ClientOSError:
         await ctx.channel.send("サーバーエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), True, False)
     except:
@@ -144,7 +144,10 @@ async def joining_uno(bot, ctx):
     ALL_PLAYER.append(ctx.author.id)
     TURN = TURN % len(ALL_DATA)
     await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} が途中参加しました")
-    await send_card(bot, -1, INITIAL_NUM, False)
+    try:
+        await send_card(bot, -1, INITIAL_NUM, False)
+    except FileNotFoundError:
+        pass
 
 
 # UNOゲーム実行処理
