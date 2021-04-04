@@ -492,8 +492,8 @@ async def run_uno(bot, ctx, type):
         # 棄権時は以下の処理を飛ばす
         if drop_flag:
             continue
-        # ワイルドカード処理(色指定)
         DECLARATION_WAIT = True
+        # ワイルドカード処理(色指定)
         if 500 <= uf.card_to_id(card[-1]) <= 569 and bet_flag:
             msg = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 色を指定してください (制限時間20秒)\n"
                                  f"(赤[R] / 青[B] / 緑[G] / 黄[Y] / ランダム[X] と入力)")
