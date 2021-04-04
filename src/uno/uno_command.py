@@ -624,11 +624,11 @@ async def run_uno(bot, ctx, type):
         # 場札更新
         if bet_flag:
             [mi.make_area(j) for j in bet_card]
-        # ドロー4 or ドボン1/2 が出された時は画像送信
-        if any([530 <= uf.card_to_id(j) <= 534 for j in bet_card]):
-            await ctx.send(file=discord.File('src/uno/Draw4_YuGiOh.jpg'), delete_after=30)
-        elif 550 <= uf.card_to_id(card[-1]) <= 564:
-            await ctx.send(file=discord.File('src/uno/EIKO!_GO!!.png'), delete_after=30)
+            # ドロー4 or ドボン1/2 が出された時は画像送信
+            if any([540 <= uf.card_to_id(j) <= 544 for j in bet_card]):
+                await ctx.send(file=discord.File('src/uno/Draw4_YuGiOh.jpg'), delete_after=30)
+            elif 550 <= uf.card_to_id(card[-1]) <= 564:
+                await ctx.send(file=discord.File('src/uno/EIKO!_GO!!.png'), delete_after=30)
         # ターンエンド → 次のプレイヤーへ
         TURN += 1
 
