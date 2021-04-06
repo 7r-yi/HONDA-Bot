@@ -488,7 +488,7 @@ async def run_uno(bot, ctx, type):
                         bet_flag = True
                         break
                     else:
-                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} {error}", delete_after=7)
+                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} {error}", delete_after=5)
         # 棄権時は以下の処理を飛ばす
         if drop_flag:
             continue
@@ -504,7 +504,7 @@ async def run_uno(bot, ctx, type):
                                                timeout=20 - (datetime.now() - start).seconds)
                     input = jaconv.z2h(color.content, ascii=True, kana=False).lower()
                 except asyncio.exceptions.TimeoutError:
-                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
+                    await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=5)
                     card[-1] = f"{random.choice(uf.Color)}{card[-1]}"
                     break
                 if color.author.id != ALL_DATA[i][0]:
@@ -536,7 +536,7 @@ async def run_uno(bot, ctx, type):
                                                    timeout=20 - (datetime.now() - start).seconds)
                         input = uf.string_to_card(jaconv.z2h(color.content, ascii=True, kana=False).lower())
                     except asyncio.exceptions.TimeoutError:
-                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=10)
+                        await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} 時間切れなのでランダムで決めます", delete_after=5)
                         for j in range(-len(bet_card), 0):
                             if 570 <= uf.card_to_id(card[j]) <= 574:
                                 card[j] = f"{random.choice(uf.Color)}{card[j]}"
@@ -563,7 +563,7 @@ async def run_uno(bot, ctx, type):
                 await msg.delete()
             colors = set([f"{bet_card[j][0]}色" for j in range(len(bet_card))])
             await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} "
-                           f"{', '.join(colors)} のカードを全て捨てます", delete_after=10)
+                           f"{', '.join(colors)} のカードを全て捨てます", delete_after=5)
             for j in range(len(bet_card)):
                 ALL_DATA[i][1] = uf.remove_color_card(bet_card[j][0], ALL_DATA[i][1])
             # 全部カードが無くなった場合
