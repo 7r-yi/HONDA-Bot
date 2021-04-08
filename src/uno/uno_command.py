@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord.errors import Forbidden, DiscordServerError, HTTPException
-import aiohttp
 import asyncio
 import asyncio.exceptions
 import os
@@ -42,7 +41,7 @@ async def uno_end(guild, image_flag=False, new_flag=False):
 async def run_uno_config(bot, ctx, type):
     try:
         await run_uno(bot, ctx, type)
-    except DiscordServerError or HTTPException or aiohttp.ClientOSError:
+    except DiscordServerError or HTTPException:
         await ctx.channel.send("サーバーエラーが発生しました\nゲームを終了します")
         await uno_end(bot.get_guild(ctx.guild.id), True, False)
     except:
@@ -85,7 +84,7 @@ async def send_card(bot, n, times, send_flag):
 
 # UNOの指摘/宣言
 async def declaration_uno(bot, ctx):
-    global ALL_DATA, DECLARATION_WAIT
+    global ALL_DATA, TURN, DECLARATION_WAIT
     # ケイスケホンダに指摘
     if cs.Honda in ctx.raw_mentions:
         j = uf.search_player(ctx.author.id, ALL_DATA)
@@ -106,7 +105,7 @@ async def declaration_uno(bot, ctx):
                 if uf.check_win(ALL_DATA[j][1]):
                     msg = "そのユーザーは、既にUNOと宣言済みです"
                 else:
-                    msg = "そのユーザーは、今はまだUNOの状態ではありません"
+                    msg = "今は、そのユーザーへのUNOの指摘は無効です"
                 k = uf.search_player(ctx.author.id, ALL_DATA)
                 if ALL_DATA[k][4] == 0:
                     ALL_DATA[k][4] += 0.5
@@ -121,7 +120,8 @@ async def declaration_uno(bot, ctx):
     # 自分の宣言
     else:
         j = uf.search_player(ctx.author.id, ALL_DATA)
-        if DECLARATION_WAIT:
+        # 自ターンのプレイヤーが色選択前にUNOを宣言しようとした場合
+        if DECLARATION_WAIT and j == TURN % len(ALL_DATA):
             await ctx.channel.send(f"{ctx.author.mention} UNOの宣言は色の選択後にしてください", delete_after=5)
         # 自分のUNOフラグが立っている場合
         elif ALL_DATA[j][3][0] and not DECLARATION_WAIT:
