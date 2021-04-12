@@ -101,7 +101,7 @@ async def run_quizstart(bot, ctx, num):
         while 0 <= j <= 3:
             reply = await bot.wait_for('message')
             elap = (start - datetime.now()).seconds
-            if reply.content == Answer[f'A{i + 1}'] and reply.channel.id == cs.Quiz_room:
+            if reply.content == Answer[f'A{i + 1}']:
                 if reply.author.id not in winner:
                     winner.append(reply.author.id)
                     j, flag = j + 1, True
@@ -155,6 +155,7 @@ class Quiz(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    """
     @commands.command()
     @commands.has_role(cs.Administrator)
     async def qe(self, ctx, num=0):
@@ -194,6 +195,7 @@ class Quiz(commands.Cog):
     @commands.has_role(cs.Administrator)
     async def quizstart(self, ctx, num=0):
         await run_quizstart(self.bot, ctx, num)
+    """
 
 
 def setup(bot):
