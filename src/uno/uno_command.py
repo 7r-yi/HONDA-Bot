@@ -138,16 +138,19 @@ async def declaration_uno(bot, ctx):
 async def joining_uno(bot, ctx):
     global ALL_DATA, ALL_PLAYER, INITIAL_NUM, TURN, JOINING_WAIT
     if JOINING_WAIT:
-        await ctx.channel.send(f"{ctx.author.mention} もう少し待ってから途中参加してください", delete_after=5)
+        await ctx.channel.send(f"{ctx.author.mention} 今は途中参加できません", delete_after=5)
         return
+
+    JOINING_WAIT = True
     ALL_DATA.append([ctx.author.id, [], None, [False, None], 0])
     ALL_PLAYER.append(ctx.author.id)
-    TURN = TURN % len(ALL_DATA)
-    await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} が途中参加しました")
     try:
         await send_card(bot, -1, INITIAL_NUM, False)
     except FileNotFoundError:
         pass
+    await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} が途中参加しました")
+    TURN = TURN % (len(ALL_DATA) - 1)
+    JOINING_WAIT = False
 
 
 # UNOゲーム実行処理
@@ -177,16 +180,13 @@ async def run_uno(bot, ctx, type):
     uf.Card = uf.Card_Normal
     mi.AREA_PASS, mi.BG_PASS = mi.AREA_PASS_temp, mi.BG_PASS_temp
     if type.lower() in ["n", "normal"]:
-        normal_flag = True
-        mode_str = "ノーマルモードで"
+        normal_flag, mode_str = True, "ノーマルモードで"
     elif type.lower() in ["s", "special"]:
-        special_flag = True
+        special_flag, mode_str = True, "特殊ルールモードで"
         mi.AREA_PASS, mi.BG_PASS = mi.AREA_SP_PASS, mi.BG_SP_PASS
-        mode_str = "特殊ルールモードで"
     elif type.lower() in ["f", "free"]:
-        special_flag = True
+        special_flag, mode_str = True, "フリープレイモードで"
         mi.AREA_PASS, mi.BG_PASS = mi.AREA_FREE_PASS, mi.BG_FREE_PASS
-        mode_str = "フリープレイモードで"
     else:
         return await ctx.send(f"{ctx.author.mention} そんなモードはありません", delete_after=5)
     if all([ctx.channel.id != cs.UNO_room, ctx.channel.id != cs.Test_room]) and not special_flag:
@@ -376,7 +376,7 @@ async def run_uno(bot, ctx, type):
         msg1 = await ctx.send(f"```\n各プレイヤーの現在の手札枚数\n\n{''.join(stc)}```"
                               f"__現在の場札のカード : {card[-1]}__", file=discord.File(mi.AREA_COPY_PASS))
         msg2 = await ctx.send(f"{bot.get_user(ALL_DATA[i][0]).mention} の番です (制限時間{time:g}秒)")
-        # 手札が100枚を超えたら脱落
+        # 手札が100枚を超えたら脱落(特殊ルールモード)
         if len(ALL_DATA[i][1]) > 100 and special_flag:
             await ctx.send(f"{all_mention(guild)}\n{bot.get_user(ALL_DATA[i][0]).mention} 手札が100枚を超えたので脱落となります")
             if len(ALL_PLAYER) == 1:
@@ -438,21 +438,21 @@ async def run_uno(bot, ctx, type):
             # ゲームを強制中止する
             elif input == "!cancel" and reply.author.id in ALL_PLAYER:
                 await ctx.send(f"{all_mention(guild)}\nゲームを中止しますか？(過半数が `!OK` で中止、`!NG` でキャンセル)")
-                TURN_cancel, TURN_ng, cancel_player, ng_player = 0, 0, [], []
+                turn_cancel, turn_ng, cancel_player, ng_player = 0, 0, [], []
                 while True:
                     confirm = await bot.wait_for('message', check=user_check)
                     input = jaconv.z2h(confirm.content, ascii=True).lower()
                     if input == "!ok" and confirm.author.id not in cancel_player:
-                        TURN_cancel += 1
+                        turn_cancel += 1
                         cancel_player.append(confirm.author.id)
                     elif input == "!ng" and confirm.author.id not in ng_player:
-                        TURN_ng += 1
+                        turn_ng += 1
                         ng_player.append(confirm.author.id)
-                    if TURN_cancel >= len(ALL_PLAYER) // 2 + 1:
+                    if turn_cancel >= len(ALL_PLAYER) // 2 + 1:
                         await uno_end(guild, True, False)
                         await ctx.send(f"{all_mention(guild)}\nゲームを中止しました")
                         return
-                    elif TURN_ng >= len(ALL_PLAYER) // 2 + 1:
+                    elif turn_ng >= len(ALL_PLAYER) // 2 + 1:
                         await ctx.send(f"{all_mention(guild)}\nキャンセルしました")
                         break
             # 自分のターンでの行動
@@ -699,25 +699,28 @@ async def run_record(bot, guild, ctx, name):
             pass
 
     msg = await ctx.send(f"{name}のデータを検索中...")
+    data, player, url, rank, user, id = None, None, None, None, None, None
     for member in get_role(guild, cs.Visitor).members:
         if name.lower() == member.display_name.lower():
             data, player, url, rank = ur.record_output(member.id)
             user, id = member.display_name, member.id
-            embed = discord.Embed(title=user, color=0xFF3333)
-            embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
-            embed.set_thumbnail(url=url)
-            embed.add_field(name="順位 (総得点)", value=f"**{data[0]}** /{player}位 ({data[3]:+}点)", inline=False)
-            embed.add_field(name="順位 (勝利人数)", value=f"**{rank}** /{player}位 ({data[4]:+}人)", inline=False)
-            embed.add_field(name="優勝率", value=f"{data[5]} ({data[7]}回/{data[6]}戦)", inline=False)
-            embed.add_field(name="最高獲得点", value=f"{data[9]}点")
-            embed.add_field(name="最低減少点", value=f"{data[10]}点")
-            embed.add_field(name="直近5戦", value=f"{data[11]}点")
-            await ctx.send(embed=embed)
-            return await msg.delete()
+            if data is not None:
+                break
 
-    await ctx.send(f"{ctx.author.mention} データが記録されていません")
+    if data is not None:
+        embed = discord.Embed(title=user, color=0xFF3333)
+        embed.set_author(name='UNO Records', icon_url=bot.get_user(id).avatar_url)
+        embed.set_thumbnail(url=url)
+        embed.add_field(name="順位 (総得点)", value=f"**{data[0]}** /{player}位 ({data[3]:+}点)", inline=False)
+        embed.add_field(name="順位 (勝利人数)", value=f"**{rank}** /{player}位 ({data[4]:+}人)", inline=False)
+        embed.add_field(name="優勝率", value=f"{data[5]} ({data[7]}回/{data[6]}戦)", inline=False)
+        embed.add_field(name="最高獲得点", value=f"{data[9]}点")
+        embed.add_field(name="最低減少点", value=f"{data[10]}点")
+        embed.add_field(name="直近5戦", value=f"{data[11]}点")
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send(f"{ctx.author.mention} データが記録されていません")
     await msg.delete()
-    return
 
 
 # BotとのDMを全削除

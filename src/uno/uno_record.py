@@ -170,4 +170,4 @@ def record_output(id):
             # データ、人数、URL、勝利人数での順位
             return sort_data[i], len(sort_data), url, i + 1
 
-    return None, None, None
+    return None, None, None, None
