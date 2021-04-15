@@ -26,7 +26,7 @@ class Welcome(commands.Cog):
             password = f"_join {time.strftime('%Y/%m/%d')}"
             if str(ctx.author.id) in REJECT_ID:
                 await ctx.delete()
-                await ctx.channel.send(f'{ctx.author.mention} コマンド実行権限がありません', delete_after=5.0)
+                # await ctx.channel.send(f'{ctx.author.mention} コマンド実行権限がありません', delete_after=5.0)
             elif ctx.content == password:
                 await ctx.delete()
                 await ctx.author.add_roles(get_role(self.bot.get_guild(ctx.guild.id), cs.Visitor))
