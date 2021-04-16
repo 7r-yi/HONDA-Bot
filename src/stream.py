@@ -82,6 +82,7 @@ class Stream(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    """
     @commands.command()
     @commands.has_role(cs.Visitor)
     async def c(self, ctx):
@@ -131,6 +132,7 @@ class Stream(commands.Cog):
     @commands.has_role(cs.Visitor)
     async def pickup(self, ctx, num=0):
         await run_pickup(self.bot, ctx, num)
+    """
 
 
 def setup(bot):
