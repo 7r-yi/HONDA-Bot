@@ -128,9 +128,10 @@ async def declaration_uno(bot, ctx):
             ALL_DATA[j][3] = [False, None]
             await ctx.channel.send(f"{all_mention(bot.get_guild(ctx.guild.id))}\n{ctx.author.mention} がUNOを宣言しました")
         # まだ上がれない手札の場合
-        elif not uf.check_win(ALL_DATA[j][1]):
+        elif ALL_DATA[j][3][0] and not uf.check_win(ALL_DATA[j][1]):
             await ctx.channel.send(f"{ctx.author.mention} まだUNOを宣言できる手札ではありません", delete_after=5)
-        else:
+        # UNOと宣言済みの場合
+        elif not ALL_DATA[j][3][0] and uf.check_win(ALL_DATA[j][1]):
             await ctx.channel.send(f"{ctx.author.mention} 既にUNOと宣言済みです", delete_after=5)
 
 
