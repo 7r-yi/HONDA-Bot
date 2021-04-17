@@ -775,11 +775,13 @@ class Uno(commands.Cog):
         await run_watchgame(ctx)
 
     @commands.command()
+    @commands.has_role(cs.UNO)
     @commands.guild_only()
     async def us(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
 
     @commands.command()
+    @commands.has_role(cs.UNO)
     @commands.guild_only()
     async def unostart(self, ctx, type="normal"):
         await run_uno_config(self.bot, ctx, type)
@@ -795,10 +797,12 @@ class Uno(commands.Cog):
         await run_record(self.bot, self.bot.get_guild(ctx.guild.id), ctx, name)
 
     @commands.command()
+    @commands.has_role(cs.UNO)
     async def cdm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
     @commands.command()
+    @commands.has_role(cs.UNO)
     async def cleardm(self, ctx):
         await run_cleardm(self.bot, ctx)
 
