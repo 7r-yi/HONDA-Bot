@@ -17,7 +17,7 @@ async def run_amongusstart(bot, ctx):
 
     AmongUs_playing = True
     embed = discord.Embed(title="Among Us VC のサーバーミュート指示",
-                          description="リアクションをタップすると実行されます", color=0xFF3333)
+                          description="リアクションをタップすると実行されます", color=0x0000CD)
     embed.set_thumbnail(url='https://i.imgur.com/rsN0YMC.png')
     embed.add_field(name="🔇", value="全員をミュートする", inline=False)
     embed.add_field(name="🔊", value="全員のミュートを解除する", inline=False)
