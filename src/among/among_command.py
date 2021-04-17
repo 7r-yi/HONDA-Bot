@@ -16,14 +16,14 @@ async def run_amongusstart(bot, ctx):
         return await ctx.send(f'{ctx.author.mention} 既に実行済みです', delete_after=5)
 
     AmongUs_playing = True
-    embed = discord.Embed(title="Among Us VC のサーバーミュート指示",
+    embed = discord.Embed(title="Among Us VC のサーバーミュート操作",
                           description="リアクションをタップすると実行されます", color=0x0000CD)
     embed.set_thumbnail(url='https://i.imgur.com/rsN0YMC.png')
     embed.add_field(name="🔇", value="全員をミュートする", inline=False)
     embed.add_field(name="🔊", value="全員のミュートを解除する", inline=False)
     embed.add_field(name="🤫", value="自分のミュートが解除されないように設定する", inline=False)
     embed.add_field(name="✅", value="全員のミュートを解除して個人設定をリセットする", inline=False)
-    embed.add_field(name="❌", value="ミュート指示コマンドを終了", inline=False)
+    embed.add_field(name="❌", value="ミュート操作コマンドを終了", inline=False)
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("🔇")
     await msg.add_reaction("🔊")
