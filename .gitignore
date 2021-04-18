@@ -1,0 +1,7 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+__pycache__/
+/src/zyanken/former_data/
+
+heroku log.bat
+/src/among/
