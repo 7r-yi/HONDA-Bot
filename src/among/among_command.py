@@ -78,12 +78,12 @@ class Among_command(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator, cs.AmongUs)
+    @commands.has_role(cs.AmongUs)
     async def aus(self, ctx):
         await run_amongusstart(self.bot, ctx)
 
     @commands.command()
-    @commands.has_any_role(cs.Administrator, cs.Moderator, cs.AmongUs)
+    @commands.has_role(cs.AmongUs)
     async def amongusstart(self, ctx):
         await run_amongusstart(self.bot, ctx)
 
