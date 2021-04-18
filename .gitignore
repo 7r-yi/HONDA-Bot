@@ -2,6 +2,7 @@
 .idea/
 __pycache__/
 /src/zyanken/former_data/
+/src/among/
 .gitignore
 heroku log.bat
-/src/among/
+
