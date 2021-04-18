@@ -12,6 +12,5 @@ for filename in os.listdir('./src'):
         bot.load_extension(f'src.{filename[:-3]}')
 bot.load_extension('src.zyanken.zyanken_command')
 bot.load_extension('src.uno.uno_command')
-bot.load_extension('src.among.among_command')
 
 bot.run(os.environ['TOKEN'])
