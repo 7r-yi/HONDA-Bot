@@ -21,7 +21,7 @@ async def run_amongusstart(bot, ctx):
                           description="リアクションをタップすると実行されます", color=0x0000CD)
     embed.set_thumbnail(url='https://i.imgur.com/rsN0YMC.png')
     embed.add_field(name=emoji[0], value="全員をミュート", inline=False)
-    embed.add_field(name=emoji[1], value="全員をミュート解除", inline=False)
+    embed.add_field(name=emoji[1], value="全員のミュートを解除", inline=False)
     embed.add_field(name=emoji[2], value="ミュート操作コマンドを終了", inline=False)
     msg = await ctx.send(embed=embed)
     await msg.add_reaction(emoji[0])
