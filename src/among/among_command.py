@@ -50,14 +50,14 @@ async def run_amongusstart(bot, ctx):
         # 全員ミュートする
         if str(reaction.emoji) == emoji[0]:
             for member in among_vc.members:
-                if member.voice.mute:
-                    await member.edit(mute=False)
+                if not member.voice.mute:
+                    await member.edit(mute=True)
             AmongUs_playing = True
         # 全員ミュート解除する
         elif str(reaction.emoji) == emoji[1]:
             for member in among_vc.members:
-                if not member.voice.mute:
-                    await member.edit(mute=True)
+                if member.voice.mute:
+                    await member.edit(mute=False)
             AmongUs_playing = False
         # 全員のミュート解除 & 終了
         elif str(reaction.emoji) == emoji[2]:
