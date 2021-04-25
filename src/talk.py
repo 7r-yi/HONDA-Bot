@@ -28,6 +28,20 @@ async def run_send(bot, ctx, to_id, *msg):
     await ctx.send(f"{ctx.author.mention} 送信しました", delete_after=5)
 
 
+# メンション先にメッセージを送信する
+async def run_user(bot, ctx, id):
+    if id is None:
+        return await ctx.send("IDを入力してください", delete_after=5)
+    elif not id.isdecimal():
+        return await ctx.send("数字のみで入力してください", delete_after=5)
+
+    member = bot.get_guild(ctx.guild.id).get_member(int(id))
+    if member is not None:
+        await ctx.send(member.mention)
+    else:
+        await ctx.send("ユーザーが見つかりませんでした", delete_after=5)
+
+
 class Talk(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -60,7 +74,7 @@ class Talk(commands.Cog):
     @commands.Cog.listener(name='on_command_error')
     @commands.guild_only()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, dec.CommandNotFound) or isinstance(error, dec.CommandInvokeError):
+        if isinstance(error, dec.CommandNotFound):
             return
         elif isinstance(error, dec.MissingRole) or isinstance(error, dec.MissingAnyRole):
             return await ctx.channel.send(f"{ctx.author.mention} コマンドを実行できるロールを所持していません", delete_after=5)
@@ -73,8 +87,15 @@ class Talk(commands.Cog):
     # メンション先にメッセージを送信する
     @commands.command()
     @commands.has_any_role(cs.Administrator, cs.Moderator)
+    @commands.guild_only()
     async def send(self, ctx, to_id=None, *msg):
         await run_send(self.bot, ctx, to_id, *msg)
+
+    @commands.command()
+    @commands.has_role(cs.Administrator)
+    @commands.guild_only()
+    async def user(self, ctx, id=None):
+        await run_user(self.bot, ctx, id)
 
 
 def setup(bot):
