@@ -45,10 +45,10 @@ class Welcome(commands.Cog):
         if cs.Visitor in [role.id for role in member.roles]:
             time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y/%m/%d %H:%M')
             await self.bot.get_channel(cs.Gate).send(f"{member.mention}({member}) が離脱しました ({time})")
-            REJECT_ID.append(str(member.id))
-            with open(RECEJT_PASS, 'w') as file:
-                file.write("\n".join(REJECT_ID))
-            await self.bot.get_channel(cs.Test_room).send(f"{time}\nData Output", file=discord.File(RECEJT_PASS))
+            # REJECT_ID.append(str(member.id))
+            # with open(RECEJT_PASS, 'w') as file:
+            # file.write("\n".join(REJECT_ID))
+            # await self.bot.get_channel(cs.Test_room).send(f"{time}\nData Output", file=discord.File(RECEJT_PASS))
         # データを削除
         if str(member.id) in zf.ZData:
             zf.ZData.pop(str(member.id))
