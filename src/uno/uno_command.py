@@ -649,8 +649,8 @@ async def run_uno(bot, ctx, type):
         # 7人以上参加時はWinner/Loserロール付与 & 結果出力
         if 7 <= len(ALL_DATA):
             end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
-            await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.Winner))
-            await guild.get_member(sort_data[-1][0]).add_roles(get_role(guild, cs.Loser))
+            # await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.Winner))
+            # await guild.get_member(sort_data[-1][0]).add_roles(get_role(guild, cs.Loser))
             await bot.get_channel(cs.Result).send(f"__★UNO試合結果 ({start_time} ～ {end_time})__")
             embed = discord.Embed(color=0xff0000)
             embed.set_author(name='Results', icon_url='https://i.imgur.com/F2oH0Bu.png')
@@ -661,8 +661,8 @@ async def run_uno(bot, ctx, type):
             embed.add_field(name=f"最下位 ({sort_data[-1][5]}点)", value=f"{all_name[-1]}")
             await bot.get_channel(cs.Result).send(embed=embed)
             role_W, role_L = get_role(guild, cs.Winner), get_role(guild, cs.Loser)
-            await bot.get_channel(cs.Result).send(f"{role_W.mention} : {guild.get_member(sort_data[0][0]).mention}\n"
-                                                  f"{role_L.mention} : {guild.get_member(sort_data[-1][0]).mention}")
+            # await bot.get_channel(cs.Result).send(f"{role_W.mention} : {guild.get_member(sort_data[0][0]).mention}\n"
+            # f"{role_L.mention} : {guild.get_member(sort_data[-1][0]).mention}")
         ur.data_save(sort_data, all_name)
         await ctx.send(f"{all_mention(guild)}```\n★ゲーム結果\n\n{stc}```結果を記録してゲームを終了しました")
         await uno_end(guild, True, True)

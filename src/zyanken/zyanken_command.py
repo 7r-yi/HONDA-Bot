@@ -172,6 +172,7 @@ class Zyanken(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    """
     # 現在のWinner/Loserロールを取得
     @commands.Cog.listener()
     async def on_ready(self):
@@ -202,6 +203,7 @@ class Zyanken(commands.Cog):
                 f"{time}\nData Auto Saved", file=discord.File(zf.RECORD_PASS))
         with open(zf.REPLY_PASS, 'w') as f:
             f.write("\n".join(zf.No_reply))
+    """
 
     @commands.Cog.listener(name='on_message')
     @commands.guild_only()
