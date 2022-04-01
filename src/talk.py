@@ -68,7 +68,7 @@ class Talk(commands.Cog):
             msg = f"{ctx.author} が、ケイスケホンダに {ctx.content} とDMを送信しました ({time})"
             if len(msg) > 2000:
                 msg = f"{ctx.author} が、ケイスケホンダに {ctx.content[:100]} (文字数が多すぎるため略) とDMを送信しました ({time})"
-            await self.bot.get_channel(cs.Mod_room).send(msg)
+            await self.bot.get_channel(cs.Test_room).send(msg)
 
     # コマンド入力ミスのエラーを表示させない
     @commands.Cog.listener(name='on_command_error')
