@@ -9,7 +9,7 @@ AmongUs_playing = False
 # ゲーム中のミュート処理
 async def run_amongusstart(bot, ctx):
     global AmongUs_playing
-    if ctx.channel.id != cs.Among_room and ctx.channel.id != cs.Test_room:
+    if ctx.channel.id != cs.Gaming_room and ctx.channel.id != cs.Test_room:
         await ctx.delete()
         return await ctx.send(f'{ctx.author.mention} このチャンネルでは実行できません', delete_after=5)
     elif AmongUs_playing:
