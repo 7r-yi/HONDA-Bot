@@ -646,8 +646,8 @@ async def run_uno(bot, ctx, type):
 
     # ゲーム終了処理 (画像やロール削除)
     if normal_flag:
-        # 7人以上参加時はWinner/Loserロール付与 & 結果出力
-        if 7 <= len(ALL_DATA):
+        # 8人以上参加時はWinner/Loserロール付与 & 結果出力
+        if 8 <= len(ALL_DATA):
             end_time = datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%m/%d %H:%M')
             # await guild.get_member(sort_data[0][0]).add_roles(get_role(guild, cs.Winner))
             # await guild.get_member(sort_data[-1][0]).add_roles(get_role(guild, cs.Loser))
@@ -660,7 +660,7 @@ async def run_uno(bot, ctx, type):
                 embed.add_field(name=f"{i + 1}位 ({sort_data[i][5]}点)", value=f"{all_name[i]}")
             embed.add_field(name=f"最下位 ({sort_data[-1][5]}点)", value=f"{all_name[-1]}")
             await bot.get_channel(cs.Result).send(embed=embed)
-            role_W, role_L = get_role(guild, cs.Winner), get_role(guild, cs.Loser)
+            # role_W, role_L = get_role(guild, cs.Winner), get_role(guild, cs.Loser)
             # await bot.get_channel(cs.Result).send(f"{role_W.mention} : {guild.get_member(sort_data[0][0]).mention}\n"
             # f"{role_L.mention} : {guild.get_member(sort_data[-1][0]).mention}")
         ur.data_save(sort_data, all_name)

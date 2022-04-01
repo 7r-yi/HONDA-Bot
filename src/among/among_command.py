@@ -30,38 +30,38 @@ async def run_amongusstart(bot, ctx):
 
     def reaction_check(check_reaction, check_user):
         # 参加者ではないメンバー、指定されていないリアクションについては無視
-        if cs.AmongUs not in [roles.id for roles in guild.get_member(check_user.id).roles] or check_user.bot:
+        if cs.Gaming not in [roles.id for roles in guild.get_member(check_user.id).roles] or check_user.bot:
             return False
         elif str(check_reaction.emoji) not in emoji:
             return False
         return True
 
     guild = bot.get_guild(ctx.guild.id)
-    among_vc = bot.get_channel(cs.Among_vc)
+    gaming_vc = bot.get_channel(cs.Gaming_vc)
     while True:
         try:
             reaction, user = await bot.wait_for('reaction_add', timeout=1000, check=reaction_check)
         except asyncio.exceptions.TimeoutError:
-            for member in among_vc.members:
+            for member in gaming_vc.members:
                 if member.voice.mute:
                     await member.edit(mute=False)
             await ctx.send("一定時間反応が無かったのでコマンド実行を終了しました", delete_after=30)
             break
         # 全員ミュートする
         if str(reaction.emoji) == emoji[0]:
-            for member in among_vc.members:
+            for member in gaming_vc.members:
                 if not member.voice.mute:
                     await member.edit(mute=True)
             AmongUs_playing = True
         # 全員ミュート解除する
         elif str(reaction.emoji) == emoji[1]:
-            for member in among_vc.members:
+            for member in gaming_vc.members:
                 if member.voice.mute:
                     await member.edit(mute=False)
             AmongUs_playing = False
         # 全員のミュート解除 & 終了
         elif str(reaction.emoji) == emoji[2]:
-            for member in among_vc.members:
+            for member in gaming_vc.members:
                 if member.voice.mute:
                     await member.edit(mute=False)
             await ctx.send("コマンド実行を終了しました", delete_after=10)
@@ -78,12 +78,12 @@ class Among_command(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_role(cs.AmongUs)
+    @commands.has_role(cs.Gaming)
     async def aus(self, ctx):
         await run_amongusstart(self.bot, ctx)
 
     @commands.command()
-    @commands.has_role(cs.AmongUs)
+    @commands.has_role(cs.Gaming)
     async def amongusstart(self, ctx):
         await run_amongusstart(self.bot, ctx)
 
@@ -98,11 +98,11 @@ class Among_command(commands.Cog):
 
         try:
             # AmongUsボイスチャンネルに入ってきたユーザーをミュート
-            if after.channel.id == cs.Among_vc and before.channel != after.channel:
+            if after.channel.id == cs.Gaming_vc and before.channel != after.channel:
                 if not member.voice.mute:
                     await member.edit(mute=True)
             # AmongUsボイスチャンネルから抜けたユーザーをミュート解除
-            elif before.channel.id == cs.Among_vc and before.channel != after.channel:
+            elif before.channel.id == cs.Gaming_vc and before.channel != after.channel:
                 if member.voice.mute:
                     await member.edit(mute=False)
         except AttributeError:
